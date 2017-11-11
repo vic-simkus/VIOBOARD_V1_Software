@@ -1,0 +1,180 @@
+/*
+* This file is part of the software stack for Vic's IO board and its
+* associated projects.
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+* Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
+*/
+
+#include "lib/context.hpp"
+
+#include "lib/config.hpp"
+#include "lib/message_processor.hpp"
+#include "lib/socket_reader.hpp"
+#include "lib/logger.hpp"
+#include "lib/string_lib.hpp"
+#include "lib/globals.hpp"
+#include "lib/threads/logic_thread.hpp"
+#include "lib/hvac_types.hpp"
+
+#include "lib/threads/serial_io_thread.hpp"
+#include "lib/threads/thread_registry.hpp"
+
+#include <unistd.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+
+#include <sstream>
+#include <iostream>
+
+#include <pthread.h>
+
+using namespace BBB_HVAC;
+using namespace BBB_HVAC::CLIENT;
+using namespace BBB_HVAC::SERVER;
+using namespace BBB_HVAC::EXCEPTIONS;
+
+/*************************************
+ *
+ * Begin HS_CLIENT_CONTEXT stuff
+ *
+ *************************************/
+
+HS_CLIENT_CONTEXT::HS_CLIENT_CONTEXT(int _client_socket) :
+	BASE_CONTEXT("HS_CLIENT_CONTEXT")
+{
+	INIT_LOGGER("BBB_HVAC::HS_CLIENT_CONTEXT");
+	this->remote_socket = _client_socket;
+	return;
+}
+
+HS_CLIENT_CONTEXT::~HS_CLIENT_CONTEXT()
+{
+	return;
+}
+
+ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message) throw(exception)
+{
+	ENUM_MESSAGE_CALLBACK_RESULT ret;
+
+	if(BASE_CONTEXT::process_message(_direction, _ctx, _message) == ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED)
+	{
+		ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
+	}
+	else
+	{
+		ENUM_MESSAGE_TYPE t = _message->get_message_type()->type;
+
+		if(t == ENUM_MESSAGE_TYPE::GET_LABELS)
+		{
+			MESSAGE_PTR m = this->message_processor->create_get_labels_message_response(CONFIG_ENTRY::string_to_type(_message->get_part_as_s(0)));
+			this->message_processor->send_message(m, this->remote_socket);
+			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
+		}
+		else if(t == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG)
+		{
+			std::string board_tag = _message->get_part_as_s(0);
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			IOCOMM::ADC_CACHE_ENTRY dac_cache[GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT];
+			comm_thread->get_dac_cache(dac_cache);
+			vector<string> parts;
+
+			for(unsigned int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++)
+			{
+				for(unsigned int j = 0; j < GC_IO_AI_COUNT; j++)
+				{
+					parts.push_back(dac_cache[i][j].to_string());
+				}
+			}
+
+			MESSAGE_PTR m(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG), parts));
+			this->message_processor->send_message(m, this->remote_socket);
+			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
+		}
+		else if(t == ENUM_MESSAGE_TYPE::READ_STATUS)
+		{
+			IOCOMM::DO_CACHE_ENTRY do_cache;
+			IOCOMM::PMIC_CACHE_ENTRY pmic_cache;
+			IOCOMM::ADC_CACHE_ENTRY dac_cache[GC_IO_AI_COUNT];
+			std::string board_tag = _message->get_part_as_s(0);
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			comm_thread->get_latest_state_values(dac_cache,do_cache,pmic_cache);
+			//GLOBALS::io_instance->get_latest_adc_values( dac_cache );
+			//GLOBALS::io_instance->get_latest_do_status( do_cache );
+			//GLOBALS::io_instance->get_latest_pmic_status( pmic_cache );
+			vector<string> parts;
+
+			for(unsigned int j = 0; j < GC_IO_AI_COUNT; j++)
+			{
+				parts.push_back(dac_cache[j].to_string());
+			}
+
+			parts.push_back(do_cache.to_string());
+			parts.push_back(pmic_cache.to_string());
+			MESSAGE_PTR m(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::READ_STATUS), parts));
+			this->message_processor->send_message(m, this->remote_socket);
+			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
+		}
+		else if(t == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS)
+		{
+			/*
+			 * Set PMIC Status
+			 */
+			std::string board_tag = _message->get_part_as_s(0);
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			comm_thread->cmd_set_pmic_status((uint8_t) _message->get_part_as_ui(0));
+		}
+		else if(t == ENUM_MESSAGE_TYPE::SET_STATUS)
+		{
+			/*
+			 * Set DO Status
+			 */
+			std::string board_tag = _message->get_part_as_s(0);
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			comm_thread->cmd_set_do_status((uint8_t) _message->get_part_as_ui(0));
+		}
+		else
+		{
+			ret = ENUM_MESSAGE_CALLBACK_RESULT::IGNORED;
+		}
+	}
+
+	// We don't flip the cond variable because on the logic_core side nothing is waiting for it.
+	return ret;
+}
+
+/*************************************
+ *
+ * Begin HS_SERVER_CLIENT stuff
+ *
+ *************************************/
+
+HS_SERVER_CONTEXT::HS_SERVER_CONTEXT() :
+	BASE_CONTEXT("HS_SERVER_CONTEXT")
+{
+	INIT_LOGGER("BBB_HVAC::HS_SERVER_CONTEXT");
+	return;
+}
+
+HS_SERVER_CONTEXT::~HS_SERVER_CONTEXT()
+{
+	unlink(GC_LOCAL_COMMAND_SOCKET);
+	return;
+}
+
