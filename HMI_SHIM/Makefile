@@ -1,0 +1,57 @@
+
+#
+# This file is mechanically generated.  Any changes will most likely be lost.
+#
+# File generated on: 2017-11-11T23:08:52.310269
+#
+
+#
+# Top-level project targets
+#
+
+all: HMI_SHIM_all
+
+clean: HMI_SHIM_clean
+
+HMI_SHIM_all: HMI_SHIM_all_o
+	g++ -fexceptions  -o bin/HMI_SHIM bin/hmi_shim.o -L../HVAC_LIB/bin  -lHVAC_LIB  -pthread 
+
+HMI_SHIM_all_o: HMI_SHIM_make_dirs bin/hmi_shim.o  
+
+HMI_SHIM_clean: 
+	@echo Cleaning stuff.
+	- @rm bin/hmi_shim.o 2> /dev/null || true
+	- @rm bin/HMI_SHIM 2> /dev/null || true
+
+HMI_SHIM_make_dirs: 
+	- @mkdir -p bin/
+
+bin/hmi_shim.o: src/hmi_shim.cpp ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
+ ../HVAC_LIB/src/include/lib/message_lib.hpp \
+ ../HVAC_LIB/src/include/lib/message_types.hpp \
+ ../HVAC_LIB/src/include/lib/hvac_types.hpp \
+ ../HVAC_LIB/src/include/lib/exceptions.hpp \
+ ../HVAC_LIB/src/include/lib/string_lib.hpp \
+ ../HVAC_LIB/src/include/lib/message_processor.hpp \
+ ../HVAC_LIB/src/include/lib/configurator.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/globals.hpp \
+ ../HVAC_LIB/src/include/lib/config.hpp \
+ ../HVAC_LIB/src/include/lib/context.hpp \
+ ../HVAC_LIB/src/include/lib/message_callbacks.hpp \
+ ../HVAC_LIB/src/include/lib/threads/thread_base.hpp \
+ ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
+ ../HVAC_LIB/src/include/lib/outgoing_message_queue.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/board_state_cache.hpp \
+ ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
+ ../HVAC_LIB/src/include/lib/serial_io_type_operators.hpp \
+ ../HVAC_LIB/src/include/lib/threads/thread_registry.hpp \
+ ../HVAC_LIB/src/include/lib/threads/serial_io_thread.hpp
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -pthread  -c src/hmi_shim.cpp -o bin/hmi_shim.o
+
+#
+# EOF
+#
+		
