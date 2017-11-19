@@ -2,7 +2,7 @@
 #
 # This file is mechanically generated.  Any changes will most likely be lost.
 #
-# File generated on: 2017-10-22T15:59:51.939065
+# File generated on: 2017-11-11T23:09:06.022730
 #
 
 #
@@ -14,7 +14,7 @@ all: LOGIC_CORE_all
 clean: LOGIC_CORE_clean
 
 LOGIC_CORE_all: LOGIC_CORE_all_o
-	g++ -fexceptions  -o bin/LOGIC_CORE bin/bbb_hvac.o -L../HVAC_LIB/bin  -lpthread -lHVAC_LIB   
+	g++ -fexceptions  -o bin/LOGIC_CORE bin/bbb_hvac.o -L../HVAC_LIB/bin  -lHVAC_LIB  -pthread 
 
 LOGIC_CORE_all_o: LOGIC_CORE_make_dirs bin/bbb_hvac.o  
 
@@ -54,7 +54,7 @@ bin/bbb_hvac.o: src/bbb_hvac.cpp ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
  ../HVAC_LIB/src/include/lib/threads/serial_io_thread.hpp \
  ../HVAC_LIB/src/include/lib/threads/shim_listener_thread.hpp \
  ../HVAC_LIB/src/include/lib/threads/thread_registry.hpp
-	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions  -c src/bbb_hvac.cpp -o bin/bbb_hvac.o
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -pthread  -c src/bbb_hvac.cpp -o bin/bbb_hvac.o
 
 #
 # EOF

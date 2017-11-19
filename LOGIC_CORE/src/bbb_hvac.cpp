@@ -153,8 +153,19 @@ bool start_io_threads(CONFIGURATOR* config)
 		const CONFIG_ENTRY& bc = config->get_config_entry(*i);
 		const string board_name = bc.get_part_as_string(0);
 		const string board_dev = bc.get_part_as_string(1);
+		bool debug = false;
+
+		if(bc.get_part_count() == 3)
+		{
+			if(bc.get_part_as_string(2) == "DEBUG")
+			{
+				LOG_INFO_STAT("Starting board " + board_name + " in debug mode.");
+				debug = true;
+			}
+		}
+
 		LOG_DEBUG_STAT("Starting thread for board: " + board_name);
-		IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM(board_dev.data(),board_name);
+		IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM(board_dev.data(),board_name,debug);
 
 		if(ser_comm->init()!= IOCOMM::ENUM_ERRORS::ERR_NONE)
 		{

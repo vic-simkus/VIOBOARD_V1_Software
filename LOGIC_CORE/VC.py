@@ -17,9 +17,6 @@ class MyContext(Context):
 
 	RELATED_PROJECTS=("../HVAC_LIB",)
 
-	Context.LIBRARIES += ["pthread"]
-
-
 
 def vc_init():
 	return MyContext()
