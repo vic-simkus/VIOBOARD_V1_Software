@@ -23,7 +23,23 @@
 #include <string>
 
 //PING = 0, PONG, HELLO, READ_STATUS, SET_STATUS, GET_LABELS, __MSG_END__
-static std::string __message_type_list[] = { "INVALID", "PING", "PONG", "HELLO", "READ_STATUS", "READ_STATUS_RAW_ANALOG","SET_STATUS", "SET_PMIC_STATUS", "GET_LABELS", "SET_POINT" };
+static std::string __message_type_list[] = { "INVALID", \
+											"PING", \
+											"PONG", \
+											"HELLO", \
+											"READ_STATUS", \
+											"READ_STATUS_RAW_ANALOG", \
+											"SET_STATUS", \
+											"SET_PMIC_STATUS", \
+											"GET_LABELS", \
+											"SET_POINT", \
+											"ERROR", \
+											"GET_L1_CAL_VALS", \
+											"GET_L2_CAL_VALS", \
+											"SET_L1_CAL_VALS", \
+											"SET_L2_CAL_VALS", \
+											"GET_BOOT_COUNT" \
+											 };
 
 using namespace BBB_HVAC;
 

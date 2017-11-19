@@ -119,7 +119,7 @@
  * Size of the incoming serial data buffer.
  * \see BBB_HVAC::IOCOMM::SER_IO_COMM::buffer
  */
-#define GC_SERIAL_BUFF_SIZE 256
+#define GC_SERIAL_BUFF_SIZE 1024
 
 /**
  * Number of lines in the processed line table.  Each line is of size GC_SERIAL_BUFF_SIZE
@@ -132,7 +132,9 @@
 /**
  * Baud rate of the serial port.  The value is the appropriate define for termios struct.
  */
-#define GC_SERIAL_BAUD_RATE B115200
+//#define GC_SERIAL_BAUD_RATE B115200
+#define GC_SERIAL_BAUD_RATE B19200
+
 
 /**
  * Serial port to use for communication with the board.
@@ -152,7 +154,7 @@
 /**
  * The depth of the local IO state cache.
  */
-#define GC_IO_STATE_BUFFER_DEPTH 8
+#define GC_IO_STATE_BUFFER_DEPTH 1
 
 /**
  * Number of analog inputs on the board.

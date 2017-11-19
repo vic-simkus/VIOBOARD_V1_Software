@@ -183,6 +183,12 @@ namespace BBB_HVAC
 		SET_PMIC_STATUS,			///	Requests for the DO and AI PMICs to be set to specified states.
 		GET_LABELS, 				/// Requests the map between human readable labels and input/output ports.
 		SET_POINT,					/// Sets an adjustable point in the logic core
+		ERROR,						/// Error response
+		GET_L1_CAL_VALS,
+		GET_L2_CAL_VALS,
+		SET_L1_CAL_VALS,
+		SET_L2_CAL_VALS,
+		GET_BOOT_COUNT,
 		__MSG_END__					/// Terminator of the enum.  Used in iterating through the enum values.
 	} ;
 
@@ -207,6 +213,8 @@ namespace BBB_HVAC
 	 * A label to message type map type definition.
 	 */
 	typedef std::map<std::string, MESSAGE_TYPE> MAP_LABEL_TO_TYPE;
+
+	typedef std::vector<uint16_t> CAL_VALUE_ARRAY;
 
 }
 

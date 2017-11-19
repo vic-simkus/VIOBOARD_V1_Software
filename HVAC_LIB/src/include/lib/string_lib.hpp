@@ -161,7 +161,7 @@ std::string int_to_hex(const uint16_t _num);
  * \param _length Number of bytes in the buffer to convert.
  * \return Output string.
  */
-std::string buffer_to_hex(const unsigned char* _buff, const size_t _length);
+std::string buffer_to_hex(const unsigned char* _buff, const size_t _length,bool _fancy = false);
 
 /**
  * Tests the methods in the library.
@@ -186,5 +186,8 @@ ssize_t find_last_index_of(const unsigned char* _str, const char _chr, ssize_t _
  * \return Index of the first occurrence past _start_index of the specified character.  If not found -1 is returned.
  */
 ssize_t find_index_of(const unsigned char* _str, const char _chr, const ssize_t _start_idx, const ssize_t _str_len);
+
+void convert_vector_to_string(const std::vector<int>& _source,std::vector<std::string>& _dest);
+void convert_vector_to_string(const std::vector<uint16_t>& _source,std::vector<std::string>& _dest);
 
 #endif /* STRING_LIB_H_ */

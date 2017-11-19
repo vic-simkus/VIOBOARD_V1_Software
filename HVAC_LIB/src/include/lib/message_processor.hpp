@@ -193,10 +193,15 @@ namespace BBB_HVAC
 		 */
 		MESSAGE_PTR create_set_status(const std::string& _board_tag,uint8_t _val) throw(exception);
 
-		/**
-		 * Maximum protocol version that this client library supports.
-		 */
-		static unsigned int MAX_SUPPORTED_PROTOCOL;
+		MESSAGE_PTR create_get_l1_cal_vals(const std::string& _board_tag) throw(exception);
+		MESSAGE_PTR create_get_l2_cal_vals(const std::string& _board_tag) throw(exception);
+
+		MESSAGE_PTR create_set_l1_cal_vals(const std::string& _board_tag,const CAL_VALUE_ARRAY& _vals) throw(exception);
+		MESSAGE_PTR create_set_l2_cal_vals(const std::string& _board_tag,const CAL_VALUE_ARRAY& _vals) throw(exception);
+
+		MESSAGE_PTR create_get_boot_count(const std::string& _board_tag) throw(exception);
+
+		MESSAGE_PTR create_error(int _code,const std::string& _message) throw(exception);
 
 		/**
 		 * Processes an incoming message of type HELLO
@@ -224,6 +229,12 @@ namespace BBB_HVAC
 		}
 
 		string to_string(void) const;
+
+		/**
+		 * Maximum protocol version that this client library supports.
+		 */
+		static unsigned int MAX_SUPPORTED_PROTOCOL;
+
 
 	protected:
 

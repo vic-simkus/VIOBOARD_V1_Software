@@ -53,6 +53,8 @@ using namespace BBB_HVAC::IOCOMM;
 
 #define ASSEMBLE_16INT(char_1,char_2)  ((uint16_t)((((uint16_t)char_1)<<8) | ((uint16_t)char_2)))
 
+#define RESP_HEAD_SIZE 5
+
 void SER_IO_COMM::serial_port_close(void)
 {
 	tcflush(this->serial_fd, TCIOFLUSH);
@@ -80,7 +82,7 @@ SER_IO_COMM::~SER_IO_COMM()
 	return;
 }
 
-SER_IO_COMM::SER_IO_COMM(const char* _tty, const string& _tag) :
+SER_IO_COMM::SER_IO_COMM(const char* _tty, const string& _tag,bool _debug) :
 	IO_COMM_BASE(_tag)
 {
 	this->logger->configure("BBB_HVAC::SERIAL_IO[" + _tag + "]");
@@ -93,6 +95,9 @@ SER_IO_COMM::SER_IO_COMM(const char* _tty, const string& _tag) :
 	this->outgoing_messages = new OUTGOING_MESSAGE_QUEUE(this->tag + "/" + "OUT_QUEUE");
 	this->reset_buffer_context();
 	this->board_has_reset = false;
+	this->in_debug_mode = _debug;
+	memset(this->buffer,0xFF,GC_SERIAL_BUFF_SIZE);
+
 	return;
 }
 
@@ -273,12 +278,42 @@ bool SER_IO_COMM::drain_serial(void)
 			 */
 			LOG_ERROR_P("Serial receive buffer overflowed.  Data has been lost.");
 			this->reset_buffer_context();
+			memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
 		}
 	}
 
 	return rc;
 }
 
+bool SER_IO_COMM::clear_to_send(void) const
+{
+	unsigned int flow_ctrl_status;
+	unsigned int output_queue;
+
+	if (ioctl(this->serial_fd, TIOCOUTQ, &output_queue) != 0)
+	{
+		LOG_ERROR_P(create_perror_string("Failed get IOCTL port status"));
+		return false;
+	}
+
+	if (ioctl(this->serial_fd, TIOCMGET, &flow_ctrl_status) != 0)
+	{
+		LOG_ERROR_P(create_perror_string("Failed get IOCTL port status"));
+		return false;
+	}
+
+	else
+	{
+		if (output_queue == 0 && (flow_ctrl_status & TIOCM_CTS))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+}
 ENUM_ERRORS SER_IO_COMM::serial_port_open(void)
 {
 	this->serial_fd = open(this->tty_dev.data(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_NDELAY);
@@ -312,10 +347,7 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open(void)
 	this->current_tio.c_cflag &= ~CSTOPB;
 	this->current_tio.c_cflag &= ~CSIZE;
 	this->current_tio.c_cflag |= CS8;
-	/*
-	 * Enable hardware control
-	 */
-	this->current_tio.c_cflag |= CRTSCTS;
+
 	/*
 	 * Enable raw mode; disable canonical mode, echo, and signals
 	 */
@@ -338,6 +370,11 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open(void)
 	 */
 	this->current_tio.c_cc[VMIN] = 0;
 	this->current_tio.c_cc[VTIME] = 0;
+
+	/*
+	 * Enable hardware control
+	 */
+	this->current_tio.c_cflag |= CRTSCTS;
 
 	if(tcsetattr(this->serial_fd, TCSANOW, &this->current_tio) < 0)
 	{
@@ -377,11 +414,16 @@ bool SER_IO_COMM::write_buffer(const unsigned char* _buffer, size_t _length)
 
 	while(this->abort_thread == false)
 	{
+		if(!this->clear_to_send())
+		{
+			continue;
+		}
+
 		rc = write(this->serial_fd, _buffer + bytes_written, _length - bytes_written);
 
 		if(rc < 0)
 		{
-			LOG_ERROR_P(create_perror_string(this->tag + ": Failed to write message to IO board."));
+			LOG_ERROR_P(create_perror_string(this->tag + ": Failed to write message to IO board. rc < 0"));
 			return false;
 		}
 
@@ -395,7 +437,7 @@ bool SER_IO_COMM::write_buffer(const unsigned char* _buffer, size_t _length)
 
 	if(_length != (size_t) bytes_written)
 	{
-		LOG_ERROR_P("Write loop aborted before writing full buffer.");
+		LOG_ERROR_P("Write loop aborted before writing full buffer.  bytes written: " + num_to_str(bytes_written) +"; buffer length: " + num_to_str(_length));
 		return false;
 	}
 	else
@@ -416,12 +458,62 @@ bool SER_IO_COMM::add_pmic_status(size_t _idx)
 	return true;
 }
 
+bool SER_IO_COMM::add_cache_values(size_t _idx,unsigned char _level)
+{
+	BOARD_STATE_CACHE::CAL_VALUE_ADDER_PTR adder_ptr;
+	unsigned char* line = this->active_table->table[_idx];
+	uint16_t length = ASSEMBLE_16INT(line[3], line[4]);
+	size_t result_index = 0;
+
+	if(length != GC_IO_AI_COUNT * 2)
+	{
+		LOG_ERROR_P("Invalid payload length for cache value response.");
+		return false;
+	}
+
+	if(_level == 1)
+	{
+		adder_ptr = &BOARD_STATE_CACHE::add_l1_cal_value;
+	}
+	else if(_level == 2)
+	{
+		adder_ptr = &BOARD_STATE_CACHE::add_l2_cal_value;
+	}
+	else
+	{
+		LOG_ERROR_P("Invalid cache level parameter supplied.");
+		return false;
+	}
+
+	for(size_t i = 0; i < length; i += 2)
+	{
+		adder_ptr(this->state_cache,result_index, ASSEMBLE_16INT(line[5 + i], line[5 + i + 1]));
+		result_index += 1;
+	}
+
+	return true;
+}
+
+bool SER_IO_COMM::add_boot_count(size_t _idx)
+{
+	unsigned char* line = this->active_table->table[_idx];
+	uint16_t length = ASSEMBLE_16INT(line[3], line[4]);
+
+	if(length != 2)
+	{
+		LOG_ERROR_P("Invalid payload length received for boot count response.");
+		return false;
+	}
+
+	this->state_cache.set_boot_count(ASSEMBLE_16INT(line[5], line[6]));
+
+	return true;
+}
+
 bool SER_IO_COMM::add_ai_result(size_t _line_index)
 {
-	//LOG_DEBUG_P( "add_ai_result" );
 	unsigned char* line = this->active_table->table[_line_index];
 	uint16_t length = ASSEMBLE_16INT(line[3], line[4]);
-	//LOG_DEBUG_P( "[" + buffer_to_hex( line, 5 + length ) );
 	size_t result_index = 0;
 
 	for(size_t i = 0; i < length; i += 2)
@@ -463,7 +555,7 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 		{
 			if(length % 2 != 0)
 			{
-				LOG_ERROR_P("Payload length is not a multiple of two.  Clearing offending line.");
+				LOG_ERROR_P("Payload length for response to CMD_ID_GET_AI_SATATUS is not a multiple of two [" + num_to_str(length) + "].  Clearing offending line.");
 				this->set_active_table_line_blank(_idx);
 				return;
 			}
@@ -502,6 +594,36 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 		{
 			//LOG_ERROR_P( "Accepting response to CMD_ID_SET_PMIC_STATUS is not yet implemented." );
 			this->set_active_table_line_blank(_idx);
+			break;
+		}
+
+		case CMD_ID_GET_L1_CAL_VALS:
+		{
+			this->add_cache_values(_idx,1);
+			break;
+		}
+
+		case CMD_ID_GET_L2_CAL_VALS:
+		{
+			this->add_cache_values(_idx,2);
+			break;
+		}
+
+		case CMD_ID_SET_L1_CAL_VALS:
+		{
+			//LOG_ERROR_P( "Accepting response to CMD_ID_SET_L1_CAL_VALS is not yet implemented." );
+			break;
+		}
+
+		case CMD_ID_SET_L2_CAL_VALS:
+		{
+			LOG_ERROR_P( "Accepting response to CMD_ID_SET_L2_CAL_VALS is not yet implemented." );
+			break;
+		}
+
+		case CMD_ID_GET_BOOT_COUNT:
+		{
+			this->add_boot_count(_idx);
 			break;
 		}
 
@@ -591,7 +713,7 @@ void SER_IO_COMM::process_protocol_message(size_t _idx)
 	 */
 	vector<string> tokens = this->create_protocol_line_tokens(token_indexes, _idx);
 
-	if(tokens[0] == "FROM IOCONTROLLER" && tokens[1] == "IOCONTROLLER UP")
+	if(tokens[0] == "F IC" && tokens[1] == "IC UP")
 	{
 		LOG_DEBUG_P("Board reset sensed.");
 		this->board_has_reset = true;
@@ -604,7 +726,7 @@ void SER_IO_COMM::process_text_message(size_t _idx)
 {
 	LOG_DEBUG_P(string((char*)(this->active_table->table[_idx])));
 
-	if(this->active_table->table[_idx][4] == 'P')
+	if(this->active_table->table[_idx][2] == '9')
 	{
 		this->process_protocol_message(_idx);
 	}
@@ -758,49 +880,109 @@ int SER_IO_COMM::assemble_serial_data(void)
 
 	for(; this->buffer_context.buffer_work_index < this->buffer_context.buffer_idx; this->buffer_context.buffer_work_index++)
 	{
-		// Look for a line terminator.
-		if(this->buffer[this->buffer_context.buffer_work_index] == 0x10)   // begin of binary marker record.
+		unsigned char work_char = this->buffer[this->buffer_context.buffer_work_index];
+
+		if(work_char == 0x10)   // begin of binary marker record.
 		{
 			/*
-			 * Binary data
+			Once we have the marker of the binary message, we enter enter binary message mode.
+			*/
+			this->buffer_context.bin_msg_start_index = this->buffer_context.buffer_work_index;
+			this->buffer_context.in_bin_message = true;
+			//LOG_DEBUG_P("Binary marker @ " + num_to_str(this->buffer_context.buffer_work_index));
+			continue;
+		}
+		else if(this->buffer_context.in_bin_message == true)
+		{
+
+			/*
+			 *
 			 */
-			size_t expected_index = this->buffer_context.buffer_work_index + 4;
+			size_t expected_index = this->buffer_context.bin_msg_start_index + RESP_HEAD_SIZE;
 
-			if(this->buffer_context.buffer_idx >= expected_index)   // make sure we have enough data in the buffer for the standard preamble
+			if(this->buffer_context.buffer_idx + this->buffer_context.bin_msg_start_index >= expected_index)   // make sure we have enough data in the buffer for the standard preamble
 			{
-				uint16_t length = ASSEMBLE_16INT(this->buffer[this->buffer_context.buffer_work_index + 3], this->buffer[this->buffer_context.buffer_work_index + 4]);
+				uint16_t length = ASSEMBLE_16INT(this->buffer[this->buffer_context.bin_msg_start_index + 3], this->buffer[this->buffer_context.bin_msg_start_index + 4]);
 
-				if((this->buffer_context.buffer_work_index + 4 + length) == GC_SERIAL_BUFF_SIZE)
+				if(length >= GC_SERIAL_BUFF_SIZE || length > 32)
 				{
-					LOG_ERROR_P("Possible buffer overflow.  Record length: " + to_string(this->buffer_context.buffer_work_index + 4 + length) + ", GC_SERIAL_BUFF_SIZE: " + to_string(GC_SERIAL_BUFF_SIZE));
-					LOG_ERROR_P("Resetting buffer index to 0.  Data was most likely lost.");
-					this->buffer_context.buffer_work_index = 0;
+					LOG_ERROR_P("Weird message size: " + num_to_str(length) + "; nuking context");
+					this->reset_buffer_context();
+					memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
+					break;
+				}
+				//LOG_DEBUG_P("Expected message length: " + num_to_str(length));
+
+				if((this->buffer_context.bin_msg_start_index +  RESP_HEAD_SIZE + length) == GC_SERIAL_BUFF_SIZE)
+				{
+					LOG_ERROR_P("Possible buffer overflow.  Record length: " + to_string(this->buffer_context.buffer_work_index + RESP_HEAD_SIZE + length) + ", GC_SERIAL_BUFF_SIZE: " + to_string(GC_SERIAL_BUFF_SIZE) + ".  Nuking context.");
+					this->reset_buffer_context();
+					memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
 					break;
 				}
 
-				expected_index = this->buffer_context.buffer_work_index + 4 + length;
+				expected_index = this->buffer_context.bin_msg_start_index + RESP_HEAD_SIZE + length;
 
 				if(this->buffer_context.buffer_idx >= expected_index)
 				{
-					this->add_to_active_table(this->buffer + this->buffer_context.buffer_work_index, length + 5);   // the binary record marker, preable, and data
-					this->buffer_context.buffer_work_index += length + 4;
+					//LOG_DEBUG_P("Message start index: " + num_to_str(this->buffer_context.bin_msg_start_index) + ", message end index: " + num_to_str(expected_index) + ", buffer index: " + num_to_str(this->buffer_context.buffer_idx));
+					//LOG_DEBUG_P("\n" + buffer_to_hex(this->buffer,this->buffer_context.buffer_idx,false));
+					this->add_to_active_table(this->buffer + this->buffer_context.bin_msg_start_index, length + RESP_HEAD_SIZE);   // the binary record marker, preamble, and data
+					//this->buffer_context.buffer_work_index = this->buffer_context.bin_msg_start_index + length + 4;
+
+					/*
+					We just processed a binary message.
+					Need to remove the chunk of data from the buffer and adjust the buffer_work_index accordingly.
+					*/
+
+					unsigned char * source_ptr = this->buffer + expected_index;
+					unsigned char * dest_ptr = this->buffer + this->buffer_context.bin_msg_start_index;
+					size_t move_length = this->buffer_context.buffer_idx - expected_index;
+
+					if(source_ptr < this->buffer || source_ptr > (this->buffer + GC_SERIAL_BUFF_SIZE))
+					{
+						LOG_ERROR_P("Source pointer weirdness.  Nuking context.");
+						this->reset_buffer_context();
+						memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
+						break;
+					}
+
+					if(dest_ptr < this->buffer || (dest_ptr + move_length) > (this->buffer + GC_SERIAL_BUFF_SIZE) || move_length > GC_SERIAL_BUFF_SIZE)
+					{
+						LOG_ERROR_P("Destination pointer weirdness.  Nuking context.");
+						this->reset_buffer_context();
+						memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
+						break;
+					}
+
+					//LOG_DEBUG_P("Offset: " + num_to_str(expected_index) + ", buffer index: " + num_to_str(this->buffer_context.buffer_idx));
+					//LOG_DEBUG_P("Move length: " + num_to_str(move_length));
+
+					if(move_length > 0)
+					{
+						memmove(dest_ptr,source_ptr,move_length);
+					}
+
+					this->buffer_context.buffer_idx = this->buffer_context.bin_msg_start_index + move_length;
+					this->buffer_context.buffer_work_index = 0 ;
+					this->buffer_context.in_bin_message = false;
+					this->buffer_context.bin_msg_start_index = 0;
+
 					//LOG_DEBUG_P( "Binary marker" );
 				}
 				else
 				{
 					/*
-					 * If we don't have enough data for the whole record bail.
+					 * If we don't have enough data for the whole record.  Wait for more data.
 					 */
-					LOG_DEBUG_P("Not enough data to read whole binary entry.  buffer_idx = " + to_string(this->buffer_context.buffer_idx) + ", buffer_work_index = " + to_string(this->buffer_context.buffer_work_index) + ".  Expecting buffer_idx >= " + to_string(expected_index));
 					break;
 				}
 			}
 			else
 			{
 				/*
-				 * If we don't have enough data for the preamble bail.
+				 * If we don't have enough data for the preamble.  Wait for more data.
 				 */
-				LOG_DEBUG_P("Not enough data to read binary preamble.  buffer_idx = " + to_string(this->buffer_context.buffer_idx) + ", buffer_work_index = " + to_string(this->buffer_context.buffer_work_index));
 				break;
 			}
 
@@ -821,13 +1003,14 @@ int SER_IO_COMM::assemble_serial_data(void)
 			}
 
 			continue;
-		}
-		else if(this->buffer[this->buffer_context.buffer_work_index] == '\n' || this->buffer[this->buffer_context.buffer_work_index] == '\r')
+
+		} // we're inside a binary message
+		else if(work_char ==  '\n' || work_char == '\r')
 		{
 			/*
 			 * Text data
 			 *
-			 * This block has to be second because \n and \r are valid in binary messages
+			 * This block has to be second because \n and \r are valid in binary message bytes
 			 */
 			if(this->buffer_context.buffer_work_index == 0)
 			{
@@ -851,6 +1034,14 @@ int SER_IO_COMM::assemble_serial_data(void)
 
 			if(copy_len > 0)
 			{
+				if(copy_len >= GC_SERIAL_BUFF_SIZE)
+				{
+					LOG_ERROR_P("Text message length (" + num_to_str(copy_len) + ") is greater than GC_SERIAL_BUFF_SIZE.  Nuking context.");
+					this->reset_buffer_context();
+					memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
+					break;
+				}
+
 				this->add_to_active_table(buffer + this->buffer_context.buffer_start_index, copy_len);
 				this->buffer_context.buffer_start_index = this->buffer_context.buffer_work_index + 1; // Advance past the current line terminator
 			}
@@ -882,7 +1073,12 @@ void SER_IO_COMM::clear_active_table_current_line(void)
 void SER_IO_COMM::add_to_active_table(const unsigned char* _buffer, size_t _length)
 {
 	this->clear_active_table_current_line();
+
 	memcpy(this->active_table->table[this->active_table->index], _buffer, _length);
+
+	std::string b = buffer_to_hex(this->active_table->table[this->active_table->index],_length);
+	//LOG_DEBUG_P("Buffer: " + b);
+
 	this->active_table->index += 1;
 
 	if(this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES)
@@ -920,7 +1116,15 @@ bool SER_IO_COMM::main_event_loop(void)
 	/*
 	 * Reset board as a first order of business so that we can be sure of its state.
 	 */
-	this->cmd_reset_board();
+
+	if(this->in_debug_mode)
+	{
+		this->board_has_reset = true;
+	}
+	else
+	{
+		this->cmd_reset_board();
+	}
 
 	/*
 	 * The goal here is to get the data out of the UART as fast as possible because the IO board comm chip blocks on hardware flow control.
@@ -966,6 +1170,9 @@ bool SER_IO_COMM::main_event_loop(void)
 					this->cmd_refresh_analog_inputs();
 					this->cmd_refresh_digital_outputs();
 					this->cmd_refresh_pmic_status();
+					this->cmd_refresh_l1_cal_values();
+					this->cmd_refresh_l2_cal_values();
+					this->cmd_refresh_boot_count();
 				}
 				else
 				{
@@ -1010,7 +1217,11 @@ bool SER_IO_COMM::main_event_loop(void)
 
 		if(zero_fd_counter == 1000)
 		{
-			this->handle_hung_board();
+			if(!this->in_debug_mode)
+			{
+				this->handle_hung_board();
+			}
+
 			zero_fd_counter = 0;
 		}
 
@@ -1060,6 +1271,8 @@ bool SER_IO_COMM::write_event_loop(void) throw(LOCK_ERROR)
 			if(!this->write_buffer(msg.message.get(), msg.message_length))
 			{
 				LOG_ERROR_P("Failed to write whole message.");
+				this->abort_thread = true;
+				break;
 			}
 
 			work_queue.pop();
@@ -1135,12 +1348,10 @@ bool SER_IO_COMM::get_pmic_cache(PMIC_CACHE_ENTRY(& _dest)[GC_IO_STATE_BUFFER_DE
 	return true;
 }
 
-bool SER_IO_COMM::get_latest_state_values(ADC_CACHE_ENTRY(& _dest)[GC_IO_AI_COUNT] , DO_CACHE_ENTRY& _do_cache, PMIC_CACHE_ENTRY& _pmic_cache)
+bool SER_IO_COMM::get_latest_state_values(BOARD_STATE_CACHE& _target)
 {
 	this->obtain_lock();
-	this->state_cache.get_latest_adc_values(_dest);
-	this->state_cache.get_latest_do_status(_do_cache);
-	this->state_cache.get_latest_pmic_status(_pmic_cache);
+	_target = this->state_cache;
 	this->release_lock();
 	return true;
 }
@@ -1191,10 +1402,93 @@ bool SER_IO_COMM::cmd_set_pmic_status(uint8_t _status)
 	return this->send_message((const unsigned char*)(&buffer), 5);
 }
 
+bool SER_IO_COMM::cmd_refresh_l1_cal_values(void)
+{
+	unsigned char buffer [4];
+	buffer[0] = '@';
+	buffer[1] = 0x00;	// length MSB
+	buffer[2] = 0x01;	// length LSB
+	buffer[3] = CMD_ID_GET_L1_CAL_VALS;
+
+	return this->send_message((const unsigned char*)(&buffer), 4);
+}
+
+bool SER_IO_COMM::cmd_refresh_l2_cal_values(void)
+{
+	unsigned char buffer [4];
+	buffer[0] = '@';
+	buffer[1] = 0x00;	// length MSB
+	buffer[2] = 0x01;	// length LSB
+	buffer[3] = CMD_ID_GET_L2_CAL_VALS;
+
+	return this->send_message((const unsigned char*)(&buffer), 4);
+}
+
+bool SER_IO_COMM::cmd_refresh_boot_count(void)
+{
+	unsigned char buffer [4];
+	buffer[0] = '@';
+	buffer[1] = 0x00;	// length MSB
+	buffer[2] = 0x01;	// length LSB
+	buffer[3] = CMD_ID_GET_BOOT_COUNT;
+
+	return this->send_message((const unsigned char*)(&buffer), 4);
+}
+
+bool SER_IO_COMM::cmd_set_l1_calibration_values(const CAL_VALUE_ARRAY & _values)
+{
+	return this->cmd_set_calibration_values(CMD_ID_SET_L1_CAL_VALS,_values);
+}
+bool SER_IO_COMM::cmd_set_l2_calibration_values(const CAL_VALUE_ARRAY & _values)
+{
+	return this->cmd_set_calibration_values(CMD_ID_SET_L2_CAL_VALS,_values);
+}
+
+bool SER_IO_COMM::cmd_set_calibration_values(unsigned char _cmd,const CAL_VALUE_ARRAY & _values)
+{
+	std::vector<std::string> sv;
+	convert_vector_to_string(_values,sv);
+	//LOG_DEBUG_P(join_vector(sv,':'));
+	#define BUFF_LENGTH 4 + (GC_IO_AI_COUNT * 2)
+	unsigned char buffer [BUFF_LENGTH];
+
+	buffer[0] = '@';
+	buffer[1] = 0x00;	// length MSB
+	buffer[2] = 0x11;	// length LSB
+						// 1 + (GC_IO_AI_COUNT * 2)
+						// Theres eight inputs and each input takes two bytes to describe the calibration offset.  Plus one for the call index hence:
+						// 1 + (8 * 2)
+	buffer[3] = _cmd;
+
+	unsigned char * ob = buffer;
+	unsigned char * b = ob;
+
+	b += 4;
+
+	for(size_t i=0;i<GC_IO_AI_COUNT;i++)
+	{
+		uint16_t v = _values[i];
+
+		unsigned char msb = (unsigned char)((v >> 8) & 0x00FF);
+		unsigned char lsb = (unsigned char)((v) & 0x00FF);
+
+		//LOG_DEBUG_P("Value(" + num_to_str(i) + "): " + num_to_str(v) + "; MSB:" + num_to_str(msb) + ", LSB:" + num_to_str(lsb));
+		b[i * 2] = msb;
+		b[(i * 2) + 1] = lsb;
+	}
+
+	//LOG_DEBUG_P("Sending binary set calibration message");
+	//LOG_DEBUG_P(buffer_to_hex(buffer,BUFF_LENGTH));
+
+	return this->send_message((const unsigned char*)(&buffer),BUFF_LENGTH);
+	//return true;
+}
+
 bool SER_IO_COMM::cmd_reset_board(void)
 {
 	this->board_has_reset = false;
 	return this->send_message((const unsigned char*) "@\x00\x01\x00", 4);
+	//return true;
 }
 
 bool SER_IO_COMM::cmd_refresh_analog_inputs(void)

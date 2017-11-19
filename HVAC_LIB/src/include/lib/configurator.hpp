@@ -61,6 +61,8 @@ namespace BBB_HVAC
 
 		string write_self_to_file(void) const throw(exception);
 
+		size_t get_part_count(void) const;
+
 		static string type_to_string(ENUM_CONFIG_TYPES _type) throw(exception);
 		static ENUM_CONFIG_TYPES string_to_type(const string& _type) throw(exception);
 

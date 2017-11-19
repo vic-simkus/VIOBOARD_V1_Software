@@ -59,6 +59,7 @@ namespace BBB_HVAC
 			inline IO_COMM_BASE(const string& _tag) :
 				THREAD_BASE(_tag) {
 				this->tag = _tag;
+				this->is_io_thread = true;
 				return;
 			}
 
@@ -122,7 +123,12 @@ namespace BBB_HVAC
 				CMD_ID_GET_DO_STATUS,	//	0x02
 				CMD_ID_SET_DO_STATUS,	//	0x03
 				CMD_ID_GET_PMIC_STATUS,	//	0x04
-				CMD_ID_SET_PMIC_STATUS	//	0x05
+				CMD_ID_SET_PMIC_STATUS,	//	0x05
+				CMD_ID_GET_L1_CAL_VALS,	//	0x06
+				CMD_ID_GET_L2_CAL_VALS,	//	0x07
+				CMD_ID_SET_L1_CAL_VALS,	//	0x08
+				CMD_ID_SET_L2_CAL_VALS,	//	0x09
+				CMD_ID_GET_BOOT_COUNT	//	0x0A
 			} ;
 
 			/**
@@ -131,7 +137,7 @@ namespace BBB_HVAC
 			 * \param _tty  Device to communicate through.  Just the name.  No /dev prefix.  ttyS0, for example.  Not /dev/ttyS0
 			 * \param _tag Tag destined for human consumption used for debugging purposes.
 			 */
-			SER_IO_COMM(const char* _tty, const string& _tag);
+			SER_IO_COMM(const char* _tty, const string& _tag,bool _debug);
 
 			/**
 			 * Initializes the instance.  Must be called after instantiation.
@@ -195,7 +201,7 @@ namespace BBB_HVAC
 			/**
 			 * Copies all of latest values into the supplied buffers.
 			 */
-			bool get_latest_state_values(ADC_CACHE_ENTRY(& _dest)[GC_IO_AI_COUNT] , DO_CACHE_ENTRY& _do_cache, PMIC_CACHE_ENTRY& _pmic_cache);
+			bool get_latest_state_values(BOARD_STATE_CACHE& _target);
 
 			/**
 			 * Creates and sends a command to the board to set the digital outputs to specified states.
@@ -209,7 +215,12 @@ namespace BBB_HVAC
 			 */
 			bool cmd_set_pmic_status(uint8_t _status);
 
+			bool cmd_set_l1_calibration_values(const CAL_VALUE_ARRAY & _values);
+			bool cmd_set_l2_calibration_values(const CAL_VALUE_ARRAY & _values);
+
 		protected:
+
+			bool cmd_set_calibration_values(unsigned char _cmd,const CAL_VALUE_ARRAY & _values);
 
 			/**
 			 * Refreshes analog input values from the board.  This method is automagically called on a periodic basis by the owning thread.  Should not be invoked casually.
@@ -232,6 +243,16 @@ namespace BBB_HVAC
 			 */
 			bool cmd_refresh_pmic_status(void);
 
+			/**
+			Refreshes the board's L1 cal values.  This method is magically called on a regular basis by the owning thread.
+			*/
+			bool cmd_refresh_l1_cal_values(void);
+			/**
+			Refreshes the board's L2 cal values.  This method is magically called on a regular basis by the owning thread.
+			*/
+			bool cmd_refresh_l2_cal_values(void);
+
+			bool cmd_refresh_boot_count(void);
 			/**
 			 * Refreshes the help output of the connected board.  Used for development debugging.  Should not be used under normal circumstances.
 			 * @return
@@ -343,6 +364,12 @@ namespace BBB_HVAC
 			 */
 			bool add_pmic_status(size_t _idx);
 
+			bool add_cache_values(size_t _idx,unsigned char _level);
+
+			bool add_boot_count(size_t _idx);
+
+
+
 			/**
 			 * Adds data to the line table.
 			 * \param _buffer Source of the data
@@ -375,6 +402,7 @@ namespace BBB_HVAC
 			ENUM_ERRORS serial_port_open(void);
 			void handle_hung_board(void);
 
+			bool clear_to_send(void) const;
 		private:
 
 
@@ -449,6 +477,8 @@ namespace BBB_HVAC
 			BOARD_STATE_CACHE state_cache;
 
 			bool board_has_reset;
+
+			bool in_debug_mode;
 		} ;
 
 		inline void serial_io_shim_func(void* _parm)

@@ -57,6 +57,14 @@ namespace BBB_HVAC
 				std::swap(this->message_queue, *_destination);
 				return;
 			}
+
+			inline void clear(void)
+			{
+				while(!this->message_queue.empty())
+				{
+					this->message_queue.pop();
+				}
+			}
 		protected:
 
 			void signal(void);

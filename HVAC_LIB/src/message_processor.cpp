@@ -31,6 +31,7 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -219,16 +220,23 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message(const std::string& _buffer) throw(e
 	}
 	else if(mt->type == ENUM_MESSAGE_TYPE::READ_STATUS)
 	{
-		if(parts.size() != 2)
+		if(parts.size() < 1)
 		{
-			THROW_EXCEPTION(EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a READ_STATUS message.  Expecting 2, received: " + num_to_str((unsigned int) parts.size()) + ".");
+			THROW_EXCEPTION(EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a READ_STATUS message.  Expecting >1, received: " + num_to_str((unsigned int) parts.size()) + ".");
 		}
 	}
 	else if(mt->type == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG)
 	{
-		if(parts.size() != 2)
+		if(parts.size() < 1)
 		{
-			THROW_EXCEPTION(EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a READ_STATUS_RAW_ANALOG message.  Expecting 2, received: " + num_to_str((unsigned int) parts.size()) + ".");
+			THROW_EXCEPTION(EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a READ_STATUS_RAW_ANALOG message.  Expecting >1, received: " + num_to_str((unsigned int) parts.size()) + ".");
+		}
+	}
+	else if(mt->type == ENUM_MESSAGE_TYPE::ERROR)
+	{
+		if(parts.size() < 2)
+		{
+			THROW_EXCEPTION(EXCEPTIONS::PROTOCOL_ERROR,"Invalid number of parts for an ERROR message.  Expecting >2, received: " + num_to_str((unsigned int)parts.size()) + ".");
 		}
 	}
 
@@ -367,6 +375,50 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_pong_message(void)
 {
 	vector<string> parts;
 	return MESSAGE_PTR(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::PONG), parts));
+}
+MESSAGE_PTR MESSAGE_PROCESSOR::create_error(int _code,const std::string& _message) throw(exception)
+{
+	vector<string> parts;
+	parts.push_back(num_to_str(_code));
+	parts.push_back(_message);
+	return MESSAGE_PTR(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::ERROR),parts));
+}
+
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_l1_cal_vals(const std::string& _board_tag) throw(exception)
+{
+	vector<string> parts;
+	parts.push_back(_board_tag);
+	return MESSAGE_PTR(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::GET_L1_CAL_VALS),parts));
+}
+
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_l2_cal_vals(const std::string& _board_tag) throw(exception)
+{
+	vector<string> parts;
+	parts.push_back(_board_tag);
+	return MESSAGE_PTR(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::GET_L2_CAL_VALS),parts));
+}
+
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l1_cal_vals(const std::string& _board_tag,const CAL_VALUE_ARRAY& _vals) throw(exception)
+{
+	vector<string> parts;
+	parts.push_back(_board_tag);
+	convert_vector_to_string(_vals,parts);
+	return MESSAGE_PTR(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::SET_L1_CAL_VALS),parts));
+}
+
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l2_cal_vals(const std::string& _board_tag,const CAL_VALUE_ARRAY& _vals) throw(exception)
+{
+	vector<string> parts;
+	parts.push_back(_board_tag);
+	convert_vector_to_string(_vals,parts);
+	return MESSAGE_PTR(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::SET_L2_CAL_VALS),parts));
+}
+
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_boot_count(const std::string& _board_tag) throw(exception)
+{
+	vector<string> parts;
+	parts.push_back(_board_tag);
+	return MESSAGE_PTR(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::GET_BOOT_COUNT),parts));
 }
 
 MESSAGE_PTR MESSAGE_PROCESSOR::get_latest_outgoing_ping(void)

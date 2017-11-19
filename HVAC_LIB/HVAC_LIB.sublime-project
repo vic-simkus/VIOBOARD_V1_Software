@@ -1,9 +1,23 @@
 {
 	"folders":
 	[
+
 		{
 			"path": ".",
-			"folder_exclude_patterns" : ["bin","doc"]
-		}
+			"name" : "ROOT",
+			"folder_exclude_patterns" : ["bin","doc","src"]
+		},
+
+		{
+			"path": "src",
+			"name": "SOURCE",
+			"folder_exclude_patterns": ["include"]
+		},
+
+		{
+			"path": "src/include",
+			"name": "INCLUDES",
+			//"folder_exclude_patterns": ["include"]
+		},
 	]
 }

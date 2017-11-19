@@ -65,6 +65,8 @@ namespace BBB_HVAC
 		 */
 		size_t get_length(void) const;
 
+		size_t get_part_count(void) const;
+
 		/**
 		 * Returns the message payload as it will be sent or was received.
 		 * \return Payload including the terminating new line.
@@ -98,12 +100,12 @@ namespace BBB_HVAC
 		 * \param _part Index of the part to convert to a number.
 		 * \return Value of the part as an unsigned integer.  Throws an exception if the part payload can not be parsed into a numerical form.
 		 */
-		unsigned int get_part_as_ui(unsigned int _part) throw(exception);
+		uint16_t get_part_as_ui(unsigned int _part) throw(exception);
 		/**
 		 * Gets a message part as a signed integer.
 		 * \see get_par_as_ui(_part)
 		 */
-		int get_part_as_si(unsigned int _part) throw(exception);
+		int16_t get_part_as_si(unsigned int _part) throw(exception);
 
 		/**
 		 * Gets a message part as a string

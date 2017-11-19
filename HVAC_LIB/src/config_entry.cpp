@@ -221,3 +221,7 @@ string CONFIG_ENTRY::write_self_to_file(void) const throw(exception)
 	ret.insert(ret.end(), this->parts.begin(), this->parts.end());
 	return join_vector(ret, '\t');
 }
+size_t CONFIG_ENTRY::get_part_count(void) const
+{
+	return this->parts.size();
+}

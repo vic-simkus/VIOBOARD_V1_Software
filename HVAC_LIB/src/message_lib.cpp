@@ -109,26 +109,26 @@ const vector<string>& MESSAGE::get_parts(void) const
 	return this->parts;
 }
 
-unsigned int MESSAGE::get_part_as_ui(unsigned int _part) throw(exception)
+uint16_t MESSAGE::get_part_as_ui(unsigned int _part) throw(exception)
 {
 	this->check_part_index(_part);
 
 	try
 	{
-		return (stoi(this->parts[_part]));
+		return ((uint16_t)stoi(this->parts[_part]));
 	}
 	catch(const exception& e)
 	{
 		throw runtime_error(string("Failed to parse part ") + this->parts[_part] + " to an unsigned integer: " + e.what());
 	}
 }
-int MESSAGE::get_part_as_si(unsigned int _part) throw(exception)
+int16_t MESSAGE::get_part_as_si(unsigned int _part) throw(exception)
 {
 	this->check_part_index(_part);
 
 	try
 	{
-		return (stoi(this->parts[_part]));
+		return ((int16_t)stoi(this->parts[_part]));
 	}
 	catch(const exception& e)
 	{
@@ -141,6 +141,10 @@ string MESSAGE::get_part_as_s(unsigned int _part) throw(exception)
 	return this->parts[_part];
 }
 
+size_t MESSAGE::get_part_count(void) const
+{
+	return this->parts.size();
+}
 void MESSAGE::check_part_index(unsigned int _idx) throw(exception)
 {
 	if(this->parts.size() == 0 || _idx >= this->parts.size())

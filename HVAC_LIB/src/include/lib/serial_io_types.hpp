@@ -93,7 +93,8 @@ namespace BBB_HVAC
 
 			/**
 			 * Provides a mechanism for the derived class to populate its value from a string representation.
-			 * @param _str
+			 * This method is invoked by from_string with a cleaned up value portion of the serialized string representation.
+			 * \param _str String value
 			 */
 			virtual void value_from_string(const std::string& _str) = 0;
 
@@ -272,6 +273,18 @@ namespace BBB_HVAC
 		};
 
 		/**
+		A calibration value cache entry.
+		*/
+		class CAL_VALUE_ENTRY : public CACHE_ENTRY_16BIT
+		{
+		public:
+			CAL_VALUE_ENTRY();
+			CAL_VALUE_ENTRY(uint16_t _val);
+			explicit CAL_VALUE_ENTRY(const std::string & _source);
+		};
+
+
+		/**
 		 * Outgoing message.
 		 * Outgoing messages are not sent immediately.  They are queued and written out by a separate thread.
 		 */
@@ -390,6 +403,9 @@ namespace BBB_HVAC
 			 * If the first character in the buffer is a line terminator, buffer_start_index will be 1 so that we ignore the said line terminator.
 			 */
 			size_t buffer_start_index;
+			size_t bin_msg_start_index;
+			bool in_bin_message;
+
 		} ST_SERIAL_BUFFER_CONTEXT;
 
 		/**
