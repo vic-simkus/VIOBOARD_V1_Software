@@ -97,7 +97,6 @@ SER_IO_COMM::SER_IO_COMM(const char* _tty, const string& _tag,bool _debug) :
 	this->board_has_reset = false;
 	this->in_debug_mode = _debug;
 	memset(this->buffer,0xFF,GC_SERIAL_BUFF_SIZE);
-
 	return;
 }
 
@@ -290,21 +289,20 @@ bool SER_IO_COMM::clear_to_send(void) const
 	unsigned int flow_ctrl_status;
 	unsigned int output_queue;
 
-	if (ioctl(this->serial_fd, TIOCOUTQ, &output_queue) != 0)
+	if(ioctl(this->serial_fd, TIOCOUTQ, &output_queue) != 0)
 	{
 		LOG_ERROR_P(create_perror_string("Failed get IOCTL port status"));
 		return false;
 	}
 
-	if (ioctl(this->serial_fd, TIOCMGET, &flow_ctrl_status) != 0)
+	if(ioctl(this->serial_fd, TIOCMGET, &flow_ctrl_status) != 0)
 	{
 		LOG_ERROR_P(create_perror_string("Failed get IOCTL port status"));
 		return false;
 	}
-
 	else
 	{
-		if (output_queue == 0 && (flow_ctrl_status & TIOCM_CTS))
+		if(output_queue == 0 && (flow_ctrl_status & TIOCM_CTS))
 		{
 			return true;
 		}
@@ -347,7 +345,6 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open(void)
 	this->current_tio.c_cflag &= ~CSTOPB;
 	this->current_tio.c_cflag &= ~CSIZE;
 	this->current_tio.c_cflag |= CS8;
-
 	/*
 	 * Enable raw mode; disable canonical mode, echo, and signals
 	 */
@@ -370,7 +367,6 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open(void)
 	 */
 	this->current_tio.c_cc[VMIN] = 0;
 	this->current_tio.c_cc[VTIME] = 0;
-
 	/*
 	 * Enable hardware control
 	 */
@@ -506,7 +502,6 @@ bool SER_IO_COMM::add_boot_count(size_t _idx)
 	}
 
 	this->state_cache.set_boot_count(ASSEMBLE_16INT(line[5], line[6]));
-
 	return true;
 }
 
@@ -617,13 +612,19 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 
 		case CMD_ID_SET_L2_CAL_VALS:
 		{
-			LOG_ERROR_P( "Accepting response to CMD_ID_SET_L2_CAL_VALS is not yet implemented." );
+			LOG_ERROR_P("Accepting response to CMD_ID_SET_L2_CAL_VALS is not yet implemented.");
 			break;
 		}
 
 		case CMD_ID_GET_BOOT_COUNT:
 		{
 			this->add_boot_count(_idx);
+			break;
+		}
+
+		case CMD_ID_GET_CONFIRM_OUTPUT:
+		{
+			// Do nothing
 			break;
 		}
 
@@ -894,7 +895,6 @@ int SER_IO_COMM::assemble_serial_data(void)
 		}
 		else if(this->buffer_context.in_bin_message == true)
 		{
-
 			/*
 			 *
 			 */
@@ -911,6 +911,7 @@ int SER_IO_COMM::assemble_serial_data(void)
 					memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
 					break;
 				}
+
 				//LOG_DEBUG_P("Expected message length: " + num_to_str(length));
 
 				if((this->buffer_context.bin_msg_start_index +  RESP_HEAD_SIZE + length) == GC_SERIAL_BUFF_SIZE)
@@ -929,14 +930,12 @@ int SER_IO_COMM::assemble_serial_data(void)
 					//LOG_DEBUG_P("\n" + buffer_to_hex(this->buffer,this->buffer_context.buffer_idx,false));
 					this->add_to_active_table(this->buffer + this->buffer_context.bin_msg_start_index, length + RESP_HEAD_SIZE);   // the binary record marker, preamble, and data
 					//this->buffer_context.buffer_work_index = this->buffer_context.bin_msg_start_index + length + 4;
-
 					/*
 					We just processed a binary message.
 					Need to remove the chunk of data from the buffer and adjust the buffer_work_index accordingly.
 					*/
-
-					unsigned char * source_ptr = this->buffer + expected_index;
-					unsigned char * dest_ptr = this->buffer + this->buffer_context.bin_msg_start_index;
+					unsigned char* source_ptr = this->buffer + expected_index;
+					unsigned char* dest_ptr = this->buffer + this->buffer_context.bin_msg_start_index;
 					size_t move_length = this->buffer_context.buffer_idx - expected_index;
 
 					if(source_ptr < this->buffer || source_ptr > (this->buffer + GC_SERIAL_BUFF_SIZE))
@@ -967,7 +966,6 @@ int SER_IO_COMM::assemble_serial_data(void)
 					this->buffer_context.buffer_work_index = 0 ;
 					this->buffer_context.in_bin_message = false;
 					this->buffer_context.bin_msg_start_index = 0;
-
 					//LOG_DEBUG_P( "Binary marker" );
 				}
 				else
@@ -1003,7 +1001,6 @@ int SER_IO_COMM::assemble_serial_data(void)
 			}
 
 			continue;
-
 		} // we're inside a binary message
 		else if(work_char ==  '\n' || work_char == '\r')
 		{
@@ -1073,12 +1070,9 @@ void SER_IO_COMM::clear_active_table_current_line(void)
 void SER_IO_COMM::add_to_active_table(const unsigned char* _buffer, size_t _length)
 {
 	this->clear_active_table_current_line();
-
 	memcpy(this->active_table->table[this->active_table->index], _buffer, _length);
-
 	std::string b = buffer_to_hex(this->active_table->table[this->active_table->index],_length);
 	//LOG_DEBUG_P("Buffer: " + b);
-
 	this->active_table->index += 1;
 
 	if(this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES)
@@ -1157,9 +1151,9 @@ bool SER_IO_COMM::main_event_loop(void)
 
 			this->digest_line_table();
 
-			if(loop_counter >= 250)
+			if(loop_counter >= 100)
 			{
-				if(loop_counter > 250)
+				if(loop_counter > 100)
 				{
 					LOG_WARNING_P("Delayed state refresh.  Counter: " + num_to_str(loop_counter));
 				}
@@ -1173,10 +1167,11 @@ bool SER_IO_COMM::main_event_loop(void)
 					this->cmd_refresh_l1_cal_values();
 					this->cmd_refresh_l2_cal_values();
 					this->cmd_refresh_boot_count();
+					this->cmd_confirm_output_state();
 				}
 				else
 				{
-					LOG_DEBUG_P("Waiting for board to reset.");
+					//LOG_DEBUG_P("Waiting for board to reset.");
 				}
 
 				loop_counter = 0;
@@ -1409,7 +1404,6 @@ bool SER_IO_COMM::cmd_refresh_l1_cal_values(void)
 	buffer[1] = 0x00;	// length MSB
 	buffer[2] = 0x01;	// length LSB
 	buffer[3] = CMD_ID_GET_L1_CAL_VALS;
-
 	return this->send_message((const unsigned char*)(&buffer), 4);
 }
 
@@ -1420,7 +1414,6 @@ bool SER_IO_COMM::cmd_refresh_l2_cal_values(void)
 	buffer[1] = 0x00;	// length MSB
 	buffer[2] = 0x01;	// length LSB
 	buffer[3] = CMD_ID_GET_L2_CAL_VALS;
-
 	return this->send_message((const unsigned char*)(&buffer), 4);
 }
 
@@ -1431,47 +1424,51 @@ bool SER_IO_COMM::cmd_refresh_boot_count(void)
 	buffer[1] = 0x00;	// length MSB
 	buffer[2] = 0x01;	// length LSB
 	buffer[3] = CMD_ID_GET_BOOT_COUNT;
-
 	return this->send_message((const unsigned char*)(&buffer), 4);
 }
 
-bool SER_IO_COMM::cmd_set_l1_calibration_values(const CAL_VALUE_ARRAY & _values)
+bool SER_IO_COMM::cmd_confirm_output_state(void)
+{
+	unsigned char buffer [4];
+	buffer[0] = '@';
+	buffer[1] = 0x00;	// length MSB
+	buffer[2] = 0x01;	// length LSB
+	buffer[3] = CMD_ID_GET_CONFIRM_OUTPUT;
+	return this->send_message((const unsigned char*)(&buffer), 4);
+}
+
+bool SER_IO_COMM::cmd_set_l1_calibration_values(const CAL_VALUE_ARRAY& _values)
 {
 	return this->cmd_set_calibration_values(CMD_ID_SET_L1_CAL_VALS,_values);
 }
-bool SER_IO_COMM::cmd_set_l2_calibration_values(const CAL_VALUE_ARRAY & _values)
+bool SER_IO_COMM::cmd_set_l2_calibration_values(const CAL_VALUE_ARRAY& _values)
 {
 	return this->cmd_set_calibration_values(CMD_ID_SET_L2_CAL_VALS,_values);
 }
 
-bool SER_IO_COMM::cmd_set_calibration_values(unsigned char _cmd,const CAL_VALUE_ARRAY & _values)
+bool SER_IO_COMM::cmd_set_calibration_values(unsigned char _cmd,const CAL_VALUE_ARRAY& _values)
 {
 	std::vector<std::string> sv;
 	convert_vector_to_string(_values,sv);
 	//LOG_DEBUG_P(join_vector(sv,':'));
-	#define BUFF_LENGTH 4 + (GC_IO_AI_COUNT * 2)
+#define BUFF_LENGTH 4 + (GC_IO_AI_COUNT * 2)
 	unsigned char buffer [BUFF_LENGTH];
-
 	buffer[0] = '@';
 	buffer[1] = 0x00;	// length MSB
 	buffer[2] = 0x11;	// length LSB
-						// 1 + (GC_IO_AI_COUNT * 2)
-						// Theres eight inputs and each input takes two bytes to describe the calibration offset.  Plus one for the call index hence:
-						// 1 + (8 * 2)
+	// 1 + (GC_IO_AI_COUNT * 2)
+	// Theres eight inputs and each input takes two bytes to describe the calibration offset.  Plus one for the call index hence:
+	// 1 + (8 * 2)
 	buffer[3] = _cmd;
-
-	unsigned char * ob = buffer;
-	unsigned char * b = ob;
-
+	unsigned char* ob = buffer;
+	unsigned char* b = ob;
 	b += 4;
 
-	for(size_t i=0;i<GC_IO_AI_COUNT;i++)
+	for(size_t i=0; i<GC_IO_AI_COUNT; i++)
 	{
 		uint16_t v = _values[i];
-
 		unsigned char msb = (unsigned char)((v >> 8) & 0x00FF);
 		unsigned char lsb = (unsigned char)((v) & 0x00FF);
-
 		//LOG_DEBUG_P("Value(" + num_to_str(i) + "): " + num_to_str(v) + "; MSB:" + num_to_str(msb) + ", LSB:" + num_to_str(lsb));
 		b[i * 2] = msb;
 		b[(i * 2) + 1] = lsb;
@@ -1479,7 +1476,6 @@ bool SER_IO_COMM::cmd_set_calibration_values(unsigned char _cmd,const CAL_VALUE_
 
 	//LOG_DEBUG_P("Sending binary set calibration message");
 	//LOG_DEBUG_P(buffer_to_hex(buffer,BUFF_LENGTH));
-
 	return this->send_message((const unsigned char*)(&buffer),BUFF_LENGTH);
 	//return true;
 }

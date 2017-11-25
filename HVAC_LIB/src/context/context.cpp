@@ -114,19 +114,15 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIR
 			IOCOMM::ADC_CACHE_ENTRY dac_cache[GC_IO_AI_COUNT];
 			IOCOMM::CAL_VALUE_ENTRY l1_cal_cache[GC_IO_AI_COUNT];
 			IOCOMM::CAL_VALUE_ENTRY l2_cal_cache[GC_IO_AI_COUNT];
-
 			std::string board_tag = _message->get_part_as_s(0);
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
 			IOCOMM::BOARD_STATE_CACHE state_cache;
-
 			comm_thread->get_latest_state_values(state_cache);
-
 			state_cache.get_latest_adc_values(dac_cache);
 			state_cache.get_latest_do_status(do_cache);
 			state_cache.get_latest_pmic_status(pmic_cache);
 			state_cache.get_latest_l1_cal_values(l1_cal_cache);
 			state_cache.get_latest_l2_cal_values(l2_cal_cache);
-
 			/*
 			Response message parts
 			*/
@@ -169,10 +165,8 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIR
 			We wrap it into a cache entry in order to keep the format consistent.
 			*/
 			parts.push_back(IOCOMM::CACHE_ENTRY_16BIT(state_cache.get_boot_count()).to_string());
-
 			MESSAGE_PTR m(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::READ_STATUS), parts));
 			this->message_processor->send_message(m, this->remote_socket);
-
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
 		else if(t == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS)
@@ -205,29 +199,28 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIR
 		{
 			std::string board_tag = _message->get_part_as_s(0);
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
-
 			CAL_VALUE_ARRAY cal_values;
-			for(unsigned int i=1;i<_message->get_part_count();i++)
+
+			for(unsigned int i=1; i<_message->get_part_count(); i++)
 			{
 				cal_values.push_back(_message->get_part_as_ui(i));
 			}
-			comm_thread->cmd_set_l1_calibration_values(cal_values);
 
+			comm_thread->cmd_set_l1_calibration_values(cal_values);
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
 		else if(t == ENUM_MESSAGE_TYPE::SET_L2_CAL_VALS)
 		{
 			std::string board_tag = _message->get_part_as_s(0);
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
-
 			CAL_VALUE_ARRAY cal_values;
-			for(unsigned int i=1;i<_message->get_part_count();i++)
+
+			for(unsigned int i=1; i<_message->get_part_count(); i++)
 			{
 				cal_values.push_back(_message->get_part_as_ui(i));
 			}
+
 			comm_thread->cmd_set_l2_calibration_values(cal_values);
-
-
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
 		else

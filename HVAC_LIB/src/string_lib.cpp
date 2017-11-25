@@ -283,13 +283,11 @@ std::string buffer_to_hex(const unsigned char* _buff, const size_t _length,bool 
 
 		if(_fancy)
 		{
-			if( i>0 && i%8==0)
+			if(i>0 && i%8==0)
 			{
 				out << std::endl;
 			}
 		}
-
-
 	}
 
 	return out.str();
@@ -332,7 +330,7 @@ ssize_t find_index_of(const unsigned char* _str, const char _chr, const ssize_t 
 
 void convert_vector_to_string(const std::vector<int>& _source,std::vector<std::string>& _dest)
 {
-	for(std::vector<int>::const_iterator i=_source.begin();i!=_source.end();++i)
+	for(std::vector<int>::const_iterator i=_source.begin(); i!=_source.end(); ++i)
 	{
 		_dest.push_back(num_to_str(*i));
 	}
@@ -342,7 +340,7 @@ void convert_vector_to_string(const std::vector<int>& _source,std::vector<std::s
 
 void convert_vector_to_string(const std::vector<uint16_t>& _source,std::vector<std::string>& _dest)
 {
-	for(std::vector<uint16_t>::const_iterator i=_source.begin();i!=_source.end();++i)
+	for(std::vector<uint16_t>::const_iterator i=_source.begin(); i!=_source.end(); ++i)
 	{
 		_dest.push_back(num_to_str(*i));
 	}

@@ -424,7 +424,7 @@ namespace BBB_HVAC
 		{
 			return;
 		}
-		CAL_VALUE_ENTRY::CAL_VALUE_ENTRY(const std::string & _source) : CACHE_ENTRY_16BIT(_source)
+		CAL_VALUE_ENTRY::CAL_VALUE_ENTRY(const std::string& _source) : CACHE_ENTRY_16BIT(_source)
 		{
 			return;
 		}

@@ -58,10 +58,8 @@ namespace BBB_HVAC
 				return;
 			}
 
-			inline void clear(void)
-			{
-				while(!this->message_queue.empty())
-				{
+			inline void clear(void) {
+				while(!this->message_queue.empty()) {
 					this->message_queue.pop();
 				}
 			}

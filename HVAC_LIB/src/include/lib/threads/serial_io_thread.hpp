@@ -128,7 +128,9 @@ namespace BBB_HVAC
 				CMD_ID_GET_L2_CAL_VALS,	//	0x07
 				CMD_ID_SET_L1_CAL_VALS,	//	0x08
 				CMD_ID_SET_L2_CAL_VALS,	//	0x09
-				CMD_ID_GET_BOOT_COUNT	//	0x0A
+				CMD_ID_GET_BOOT_COUNT,	//	0x0A
+				CMD_ID_GET_BOARD_STATS,	//	0x0B
+				CMD_ID_GET_CONFIRM_OUTPUT	//	0x0C
 			} ;
 
 			/**
@@ -215,12 +217,12 @@ namespace BBB_HVAC
 			 */
 			bool cmd_set_pmic_status(uint8_t _status);
 
-			bool cmd_set_l1_calibration_values(const CAL_VALUE_ARRAY & _values);
-			bool cmd_set_l2_calibration_values(const CAL_VALUE_ARRAY & _values);
+			bool cmd_set_l1_calibration_values(const CAL_VALUE_ARRAY& _values);
+			bool cmd_set_l2_calibration_values(const CAL_VALUE_ARRAY& _values);
 
 		protected:
 
-			bool cmd_set_calibration_values(unsigned char _cmd,const CAL_VALUE_ARRAY & _values);
+			bool cmd_set_calibration_values(unsigned char _cmd,const CAL_VALUE_ARRAY& _values);
 
 			/**
 			 * Refreshes analog input values from the board.  This method is automagically called on a periodic basis by the owning thread.  Should not be invoked casually.
@@ -258,6 +260,12 @@ namespace BBB_HVAC
 			 * @return
 			 */
 			bool cmd_refresh_help(void);
+
+			/**
+			Confirms the output state of the board.
+			\see Board communications document
+			*/
+			bool cmd_confirm_output_state(void);
 
 			/**
 			 * Returns the process ID parsed out of the provided file that is the process ID that holds the lock on a serial port.  Used by the instance during locking checks/attempts of the serial port during initialization.

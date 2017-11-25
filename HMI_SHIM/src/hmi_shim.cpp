@@ -47,7 +47,6 @@ size_t calc_ai_offset(size_t x, size_t y)
 
 void client_main(CLIENT_CONTEXT* ctx) throw(exception)
 {
-
 	CAL_VALUE_ARRAY vals;
 	vals.push_back(0);
 	vals.push_back(1);
@@ -57,15 +56,14 @@ void client_main(CLIENT_CONTEXT* ctx) throw(exception)
 	vals.push_back(5);
 	vals.push_back(6);
 	vals.push_back(7);
-
 	size_t idx = 0;
+
 	while(1)
 	{
 		MESSAGE_PTR m = ctx->message_processor->create_set_l1_cal_vals("BOARD1",vals);
 		ctx->send_message(m);
 		cout << "[" << idx << "] -- "<< m->to_string() << endl;
 		idx += 1;
-
 		//usleep(100);
 		//sleep(1);
 	}
@@ -99,7 +97,6 @@ int main(void)
 	{
 		cerr << "Caught exception in client main: " + string(_e.what()) << endl;
 	}
-
 
 	THREAD_REGISTRY::stop_all();
 	THREAD_REGISTRY::init_cleanup();

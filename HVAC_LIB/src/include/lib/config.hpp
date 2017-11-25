@@ -79,7 +79,7 @@
 /**
  * Number of attempts the logic thread will try to obtain a mutex.  Between tries it will sleep for a random number of nanoseconds.
  */
-#define GC_MUTEX_LOCK_ATTEMPT 200
+#define GC_MUTEX_LOCK_ATTEMPT 400
 
 /**
  * Sets the size of the LOGIC_STATUS digital input buffer.  Obviously this has to equal to or be greater than the actual number of digital inputs used.

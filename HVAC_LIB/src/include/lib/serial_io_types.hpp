@@ -280,7 +280,7 @@ namespace BBB_HVAC
 		public:
 			CAL_VALUE_ENTRY();
 			CAL_VALUE_ENTRY(uint16_t _val);
-			explicit CAL_VALUE_ENTRY(const std::string & _source);
+			explicit CAL_VALUE_ENTRY(const std::string& _source);
 		};
 
 

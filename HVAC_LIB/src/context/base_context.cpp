@@ -338,6 +338,7 @@ bool BASE_CONTEXT::thread_func(void)
 							For example if they try to read from an IO board that doesn't exist.  The exception bubbles up to us here and we just punt.
 							*/
 							LOG_DEBUG_P("Failed to process message:" + string(e.what()));
+							LOG_DEBUG_P("Offending message: " + m->to_string());
 							this->abort_thread = true;
 							break;	// break out of the line processing loop
 						}
