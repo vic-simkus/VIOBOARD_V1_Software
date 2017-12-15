@@ -516,9 +516,9 @@ bool SER_IO_COMM::add_boot_count(size_t _idx)
 	unsigned char* line = this->active_table->table[_idx];
 	uint16_t length = ASSEMBLE_16INT(line[RESP_HEAD_LEN_LSB_IDX], line[RESP_HEAD_LEN_MSB_IDX]);
 
-	if(length != 10)
+	if(length != 4)
 	{
-		LOG_ERROR_P("Invalid payload length received for boot count response.");
+		LOG_ERROR_P("Invalid payload length received for boot count response: " + num_to_str(length));
 		return false;
 	}
 
@@ -662,6 +662,13 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 		case CMD_ID_GET_CONFIRM_OUTPUT:
 		{
 			// Do nothing
+			break;
+		}
+
+		case CMD_ID_SYS_FAILURE:
+		{
+			LOG_ERROR_P("Board returned a hard error.  Buffer output bellow:");
+			LOG_ERROR_P("\n" + buffer_to_hex(this->active_table->table[_idx],10));
 			break;
 		}
 
@@ -1223,8 +1230,8 @@ bool SER_IO_COMM::main_event_loop(void)
 					//LOG_DEBUG_P("Refreshing.");
 
 					this->cmd_refresh_analog_inputs();
-					this->cmd_refresh_digital_outputs();
-					this->cmd_refresh_pmic_status();
+					//this->cmd_refresh_digital_outputs();
+					//this->cmd_refresh_pmic_status();
 					//this->cmd_confirm_output_state();
 					//this->cmd_refresh_l1_cal_values();
 					//this->cmd_refresh_l2_cal_values();

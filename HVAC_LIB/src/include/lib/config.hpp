@@ -164,7 +164,7 @@ The nominal minimum interval between status updates from the board is (GC_SERIAL
 The interval is actually longer since the nominal interval does not take into account all of the other processing that the loop does
 \see BBB_HVAC::IOCOMM::SER_IO_COMM::main_event_loop
 */
-#define GC_SERIAL_THREAD_UPDATE_INTERVAL 10
+#define GC_SERIAL_THREAD_UPDATE_INTERVAL 100
 /**
  * The depth of the local IO state cache.
  */
