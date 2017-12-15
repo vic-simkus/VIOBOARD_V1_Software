@@ -147,10 +147,24 @@
  * Number of nanoseconds to sleep between iterations of the main serial processing thread.
  * We need some delay there to give other threads waiting to call into the serial thread a chance to grab the lock.
  * 10 useconds seems to be a workable value.
+ \note The unit here is NANOSECONDS
  * \see BBB_HVAC::IOCOMM::SER_IO_COMM::main_event_loop
  */
 #define GC_SERIAL_THREAD_SLEEP 10000
 
+/**
+Number of milliseconds before a poll call times out.
+\note The unit here is MILLISECONDS
+\see BBB_HVAC::IOCOMM::SER_IO_COMM::main_event_loop
+*/
+#define GC_SERIAL_THREAD_POLL_TIMEOUT 2
+/**
+Number of main serial thread processing loop iterations between pulls of status data from the IO board.
+The nominal minimum interval between status updates from the board is (GC_SERIAL_THREAD_SLEEP + GC_SERIAL_THREAD_POLL_TIMEOUT) * GC_SERIAL_THREAD_UPADTE_INTERVAL.
+The interval is actually longer since the nominal interval does not take into account all of the other processing that the loop does
+\see BBB_HVAC::IOCOMM::SER_IO_COMM::main_event_loop
+*/
+#define GC_SERIAL_THREAD_UPDATE_INTERVAL 10
 /**
  * The depth of the local IO state cache.
  */

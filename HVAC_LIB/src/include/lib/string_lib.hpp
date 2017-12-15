@@ -190,4 +190,6 @@ ssize_t find_index_of(const unsigned char* _str, const char _chr, const ssize_t 
 void convert_vector_to_string(const std::vector<int>& _source,std::vector<std::string>& _dest);
 void convert_vector_to_string(const std::vector<uint16_t>& _source,std::vector<std::string>& _dest);
 
+uint16_t checksum(const uint16_t * _buffer,size_t _length);
+
 #endif /* STRING_LIB_H_ */

@@ -86,13 +86,25 @@ namespace BBB_HVAC
 
 		bool OUTGOING_MESSAGE_QUEUE::add_message(const OUTGOING_MESSAGE& _msg)
 		{
+			bool ret = true;
 			this->obtain_lock_ex();
-			OUTGOING_MESSAGE msg = _msg;
-			msg.id = this->id_seq;
-			this->id_seq += 1;
-			this->message_queue.push(_msg);
-			this->signal();
-			return true;
+
+			if(this->message_queue.size() > 8)
+			{
+				this->release_lock();
+				ret = false;
+				LOG_ERROR_P("Outgoing message queue is full.");
+			}
+			else
+			{
+				OUTGOING_MESSAGE msg = _msg;
+				msg.id = this->id_seq;
+				this->id_seq += 1;
+				this->message_queue.push(_msg);
+				this->signal();
+			}
+
+			return ret;
 		}
 
 		bool OUTGOING_MESSAGE_QUEUE::has_more_messages(void) const
@@ -475,7 +487,7 @@ namespace BBB_HVAC
 		{
 			if(_x_index >= GC_IO_AI_COUNT)
 			{
-				throw out_of_range("Supplied x_index is greater than number of defined analog inputs.  See GC_IO_AI_COUNT.");
+				throw out_of_range("Supplied x_index " + num_to_str(_x_index) + " is greater than number of defined analog inputs.  See GC_IO_AI_COUNT.");
 			}
 
 			this->adc_cache[this->adc_cache_index][_x_index] = ADC_CACHE_ENTRY(_value);

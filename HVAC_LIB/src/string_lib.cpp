@@ -290,6 +290,26 @@ std::string buffer_to_hex(const unsigned char* _buff, const size_t _length,bool 
 		}
 	}
 
+	out << std::endl;
+	for(size_t i = 0; i < _length; i++)
+	{
+		out << "0x" << char_to_hex((unsigned char)i);
+
+		if(i + 1 < _length)
+		{
+			out << ":";
+		}
+
+		if(_fancy)
+		{
+			if(i>0 && i%8==0)
+			{
+				out << std::endl;
+			}
+		}
+	}
+
+
 	return out.str();
 }
 
@@ -346,4 +366,28 @@ void convert_vector_to_string(const std::vector<uint16_t>& _source,std::vector<s
 	}
 
 	return;
+}
+
+uint16_t checksum(const uint16_t * _buffer,size_t _length)
+{
+	uint32_t sum = 0;
+
+	/*
+	 * IP headers always contain an even number of bytes.
+	 */
+	while ( _length -- > 0 )
+	{
+		sum += *( _buffer++ );
+	}
+
+	/*
+	 * Use carries to compute 1's complement sum.
+	 */
+	sum = ( sum >> 16 ) + ( sum & 0xFFFF );
+	sum += sum >> 16;
+
+	/*
+	 * Return the inverted 16-bit result.
+	 */
+	return ((uint16_t ) ~sum );
 }

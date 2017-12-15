@@ -51,9 +51,24 @@ using namespace std;
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::IOCOMM;
 
-#define ASSEMBLE_16INT(char_1,char_2)  ((uint16_t)((((uint16_t)char_1)<<8) | ((uint16_t)char_2)))
+#define ASSEMBLE_16INT(_lsb,_msb)  ((uint16_t)((((uint16_t)_lsb)) | ((uint16_t)_msb<<8)))
 
-#define RESP_HEAD_SIZE 5
+/*
+Byte 1 - binary marker
+Byte 2 - Call index
+Byte 3 - Response code LSB
+Byte 4 - Response code MSB
+Byte 5 - Length LSB
+Byte 6 - Length MSB
+*/
+#define RESP_HEAD_SIZE 6
+
+#define RESP_HEAD_BM_IDX		0
+#define RESP_HEAD_CI_IDX		1
+#define RESP_HEAD_STAT_LSB_IDX	2
+#define RESP_HEAD_STAT_MSB_IDX	3
+#define RESP_HEAD_LEN_LSB_IDX	4
+#define RESP_HEAD_LEN_MSB_IDX	5
 
 void SER_IO_COMM::serial_port_close(void)
 {
@@ -240,8 +255,9 @@ bool SER_IO_COMM::try_lock_serial(void)
 bool SER_IO_COMM::drain_serial(void)
 {
 	bool rc = true;
+	long int bytes_read = 0;
 
-	while(true)
+	while(bytes_read < 128)
 	{
 		/*
 		 * If I make the type ssize_t arithmetic with size_t fails
@@ -265,6 +281,8 @@ bool SER_IO_COMM::drain_serial(void)
 			rc = false;
 			break;
 		}
+
+		bytes_read += rc;
 
 		// DEBUG SET A.2
 		//cerr << "[" << this->buffer_context.buffer_idx << "] -- 0x" << char_to_hex( buffer[this->buffer_context.buffer_idx]) << " -- " <<  (buffer[this->buffer_context.buffer_idx] != 0x0A ? char(buffer[this->buffer_context.buffer_idx]) : (char)' ')   << endl;
@@ -458,14 +476,17 @@ bool SER_IO_COMM::add_cache_values(size_t _idx,unsigned char _level)
 {
 	BOARD_STATE_CACHE::CAL_VALUE_ADDER_PTR adder_ptr;
 	unsigned char* line = this->active_table->table[_idx];
-	uint16_t length = ASSEMBLE_16INT(line[3], line[4]);
+	uint16_t length = ASSEMBLE_16INT(line[RESP_HEAD_LEN_LSB_IDX], line[RESP_HEAD_LEN_MSB_IDX]);
 	size_t result_index = 0;
 
+	/*
+	XXX - Need to reimplement
 	if(length != GC_IO_AI_COUNT * 2)
 	{
-		LOG_ERROR_P("Invalid payload length for cache value response.");
+		LOG_ERROR_P("Invalid payload length for cache value response.  Expecting: " + num_to_str(GC_IO_AI_COUNT * 2) + ", received: " + num_to_str(length));
 		return false;
 	}
+	*/
 
 	if(_level == 1)
 	{
@@ -481,9 +502,9 @@ bool SER_IO_COMM::add_cache_values(size_t _idx,unsigned char _level)
 		return false;
 	}
 
-	for(size_t i = 0; i < length; i += 2)
+	for(size_t i = 0; (i < length && result_index < GC_IO_AI_COUNT); i += 2)
 	{
-		adder_ptr(this->state_cache,result_index, ASSEMBLE_16INT(line[5 + i], line[5 + i + 1]));
+		adder_ptr(this->state_cache,result_index, ASSEMBLE_16INT(line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1]));
 		result_index += 1;
 	}
 
@@ -493,27 +514,32 @@ bool SER_IO_COMM::add_cache_values(size_t _idx,unsigned char _level)
 bool SER_IO_COMM::add_boot_count(size_t _idx)
 {
 	unsigned char* line = this->active_table->table[_idx];
-	uint16_t length = ASSEMBLE_16INT(line[3], line[4]);
+	uint16_t length = ASSEMBLE_16INT(line[RESP_HEAD_LEN_LSB_IDX], line[RESP_HEAD_LEN_MSB_IDX]);
 
-	if(length != 2)
+	if(length != 10)
 	{
 		LOG_ERROR_P("Invalid payload length received for boot count response.");
 		return false;
 	}
 
-	this->state_cache.set_boot_count(ASSEMBLE_16INT(line[5], line[6]));
+	this->state_cache.set_boot_count(ASSEMBLE_16INT(line[6], line[7]));
 	return true;
 }
 
 bool SER_IO_COMM::add_ai_result(size_t _line_index)
 {
 	unsigned char* line = this->active_table->table[_line_index];
-	uint16_t length = ASSEMBLE_16INT(line[3], line[4]);
+	uint16_t length = ASSEMBLE_16INT(line[RESP_HEAD_LEN_LSB_IDX], line[RESP_HEAD_LEN_MSB_IDX]);
+	length = (uint16_t)(length - 3); 	// This is goddamn ridiculous
 	size_t result_index = 0;
 
-	for(size_t i = 0; i < length; i += 2)
+	/*
+	We're expecting RESP_HEAD_SIZE of header, 16 bytes of payload, and 2 bytes of checksum
+	*/
+
+	for(size_t i = 0; (i < length && result_index < GC_IO_AI_COUNT); i += 2)
 	{
-		this->state_cache.add_adc_value(result_index, ASSEMBLE_16INT(line[5 + i], line[5 + i + 1]));
+		this->state_cache.add_adc_value(result_index, ASSEMBLE_16INT(line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1]));
 		result_index = result_index + 1;
 	}
 
@@ -532,7 +558,17 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 	//uint8_t cmd = this->active_table->table[_idx][1];
 	ENUM_BOARD_COMMANDS cmd = static_cast < ENUM_BOARD_COMMANDS >(this->active_table->table[_idx][1]);
 	//uint8_t status = this->active_table->table[i][2];
-	uint16_t length = ASSEMBLE_16INT(this->active_table->table[_idx][3], this->active_table->table[_idx][4]);
+	uint16_t length = ASSEMBLE_16INT(this->active_table->table[_idx][RESP_HEAD_LEN_LSB_IDX], this->active_table->table[_idx][RESP_HEAD_LEN_MSB_IDX]);
+	uint16_t * data_ptr = (uint16_t *)this->active_table->table[_idx];
+	uint16_t chksum = checksum(data_ptr,(length  + RESP_HEAD_SIZE)/ 2);
+
+	if(chksum != 0)
+	{
+		LOG_ERROR_P("Message failed checksum check: " + num_to_str(chksum) + ", in message: " + num_to_str(data_ptr[4]));
+		LOG_ERROR_P("Message length: " + num_to_str(length));
+		LOG_ERROR_P(buffer_to_hex(this->active_table->table[_idx],10));
+		goto _end;
+	}
 
 	//LOG_DEBUG_P("Command: " + to_string(cmd) + ", status: " + to_string(status) + ", length: " + to_string(length));
 
@@ -542,6 +578,7 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 		{
 			// This should never happen.
 			LOG_ERROR_P("We received a response of type CMD_ID_RESET_BOARD??  How is that possible?")
+			LOG_ERROR_P(buffer_to_hex(this->active_table->table[_idx],RESP_HEAD_SIZE + length));
 			this->set_active_table_line_blank(_idx);
 			break;
 		}
@@ -612,7 +649,7 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 
 		case CMD_ID_SET_L2_CAL_VALS:
 		{
-			LOG_ERROR_P("Accepting response to CMD_ID_SET_L2_CAL_VALS is not yet implemented.");
+			//LOG_ERROR_P("Accepting response to CMD_ID_SET_L2_CAL_VALS is not yet implemented.");
 			break;
 		}
 
@@ -635,6 +672,7 @@ void SER_IO_COMM::process_binary_message(size_t _idx)
 		}
 	}
 
+_end:
 	this->set_active_table_line_blank(_idx);
 	return;
 }
@@ -761,6 +799,7 @@ bool SER_IO_COMM::digest_line_table(void)
 		else
 		{
 			LOG_ERROR_P("Line at index " + to_string(i) + " was unrecognized.  Clearing offending line.");
+			LOG_DEBUG_P("\n" + buffer_to_hex(this->active_table->table[i],16));
 			this->set_active_table_line_blank(i);
 		}
 	}
@@ -902,11 +941,15 @@ int SER_IO_COMM::assemble_serial_data(void)
 
 			if(this->buffer_context.buffer_idx + this->buffer_context.bin_msg_start_index >= expected_index)   // make sure we have enough data in the buffer for the standard preamble
 			{
-				uint16_t length = ASSEMBLE_16INT(this->buffer[this->buffer_context.bin_msg_start_index + 3], this->buffer[this->buffer_context.bin_msg_start_index + 4]);
+				uint16_t length = ASSEMBLE_16INT(this->buffer[this->buffer_context.bin_msg_start_index + RESP_HEAD_LEN_LSB_IDX], this->buffer[this->buffer_context.bin_msg_start_index + RESP_HEAD_LEN_MSB_IDX]);
+
+				//LOG_DEBUG_P(buffer_to_hex(this->buffer + this->buffer_context.bin_msg_start_index,8));
+				//LOG_DEBUG_P("Expected message length: " + num_to_str(length));
 
 				if(length >= GC_SERIAL_BUFF_SIZE || length > 32)
 				{
 					LOG_ERROR_P("Weird message size: " + num_to_str(length) + "; nuking context");
+					LOG_DEBUG_P("\n" + buffer_to_hex(this->buffer + this->buffer_context.bin_msg_start_index ,8));
 					this->reset_buffer_context();
 					memset(this->buffer,0x00,GC_SERIAL_BUFF_SIZE);
 					break;
@@ -928,6 +971,8 @@ int SER_IO_COMM::assemble_serial_data(void)
 				{
 					//LOG_DEBUG_P("Message start index: " + num_to_str(this->buffer_context.bin_msg_start_index) + ", message end index: " + num_to_str(expected_index) + ", buffer index: " + num_to_str(this->buffer_context.buffer_idx));
 					//LOG_DEBUG_P("\n" + buffer_to_hex(this->buffer,this->buffer_context.buffer_idx,false));
+
+
 					this->add_to_active_table(this->buffer + this->buffer_context.bin_msg_start_index, length + RESP_HEAD_SIZE);   // the binary record marker, preamble, and data
 					//this->buffer_context.buffer_work_index = this->buffer_context.bin_msg_start_index + length + 4;
 					/*
@@ -962,11 +1007,25 @@ int SER_IO_COMM::assemble_serial_data(void)
 						memmove(dest_ptr,source_ptr,move_length);
 					}
 
-					this->buffer_context.buffer_idx = this->buffer_context.bin_msg_start_index + move_length;
+					//this->buffer_context.buffer_idx = this->buffer_context.bin_msg_start_index + move_length;
+
+					this->buffer_context.buffer_idx = (this->buffer_context.buffer_idx - expected_index);
+
+					//LOG_DEBUG_P("Buffer index after move: " + num_to_str(this->buffer_context.buffer_idx));
+
 					this->buffer_context.buffer_work_index = 0 ;
 					this->buffer_context.in_bin_message = false;
 					this->buffer_context.bin_msg_start_index = 0;
-					//LOG_DEBUG_P( "Binary marker" );
+
+
+					//LOG_DEBUG_P( "**************************************" );
+
+					/*
+					* Abandon loop until next invocation.
+					* This is due to the buffer_work_index getting incremented at next iteration.  We can't prevent it without doing gymnastics
+					*/
+					break;
+
 				}
 				else
 				{
@@ -984,10 +1043,7 @@ int SER_IO_COMM::assemble_serial_data(void)
 				break;
 			}
 
-			/*
-			 * +1 to account for the line terminator
-			 */
-			if(this->buffer_context.buffer_work_index + 1 == this->buffer_context.buffer_idx)
+			if(this->buffer_context.buffer_work_index == this->buffer_context.buffer_idx)
 			{
 				/*
 				 * Whole buffer has been consumed.  Reset all of the indexes.
@@ -1071,8 +1127,10 @@ void SER_IO_COMM::add_to_active_table(const unsigned char* _buffer, size_t _leng
 {
 	this->clear_active_table_current_line();
 	memcpy(this->active_table->table[this->active_table->index], _buffer, _length);
-	std::string b = buffer_to_hex(this->active_table->table[this->active_table->index],_length);
-	//LOG_DEBUG_P("Buffer: " + b);
+
+	//std::string b = buffer_to_hex(this->active_table->table[this->active_table->index],_length);
+	//LOG_DEBUG_P(b);
+
 	this->active_table->index += 1;
 
 	if(this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES)
@@ -1135,7 +1193,7 @@ bool SER_IO_COMM::main_event_loop(void)
 		this->obtain_lock();
 		fds.fd = this->serial_fd;
 		fds.events = POLLIN | POLLPRI | POLLERR | POLLHUP;
-		int fds_ready_num = poll(&fds, 1, 1);
+		int fds_ready_num = poll(&fds, 1, GC_SERIAL_THREAD_POLL_TIMEOUT);
 
 		if(fds_ready_num == 0)
 		{
@@ -1144,30 +1202,33 @@ bool SER_IO_COMM::main_event_loop(void)
 			 */
 			zero_fd_counter += 1;
 
+/*
 			if(this->buffer_context.buffer_idx > 0)
 			{
 				this->assemble_serial_data();
 			}
 
 			this->digest_line_table();
+*/
 
-			if(loop_counter >= 100)
+			if(loop_counter >= GC_SERIAL_THREAD_UPDATE_INTERVAL)
 			{
-				if(loop_counter > 100)
+				if(loop_counter > GC_SERIAL_THREAD_UPDATE_INTERVAL)
 				{
-					LOG_WARNING_P("Delayed state refresh.  Counter: " + num_to_str(loop_counter));
+					//LOG_WARNING_P("Delayed state refresh.  Counter: " + num_to_str(loop_counter));
 				}
 
 				if(this->board_has_reset)
 				{
 					//LOG_DEBUG_P("Refreshing.");
+
 					this->cmd_refresh_analog_inputs();
 					this->cmd_refresh_digital_outputs();
 					this->cmd_refresh_pmic_status();
-					this->cmd_refresh_l1_cal_values();
-					this->cmd_refresh_l2_cal_values();
-					this->cmd_refresh_boot_count();
-					this->cmd_confirm_output_state();
+					//this->cmd_confirm_output_state();
+					//this->cmd_refresh_l1_cal_values();
+					//this->cmd_refresh_l2_cal_values();
+					//this->cmd_refresh_boot_count();
 				}
 				else
 				{
@@ -1195,6 +1256,9 @@ bool SER_IO_COMM::main_event_loop(void)
 			if(fds.revents & POLLIN)
 			{
 				this->drain_serial();
+
+				this->assemble_serial_data();
+				this->digest_line_table();
 			}
 			else
 			{
