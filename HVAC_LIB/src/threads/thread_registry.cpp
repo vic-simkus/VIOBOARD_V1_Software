@@ -229,17 +229,20 @@ void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
 			delete( *i );
 			( *i ) = nullptr;
 
-			if( io_thread )
+			if( !this->in_stop_all )
 			{
-				io_thread = false;
-				/*
-				An IO thread dying is bad, mkay
-				*/
-				LOG_DEBUG_P( "A death of an IO thread was detected." );
-
-				if( THREAD_REGISTRY::io_death_listener )
+				if( io_thread )
 				{
-					THREAD_REGISTRY::io_death_listener( thread_tag );
+					io_thread = false;
+					/*
+					An IO thread dying is bad, mkay
+					*/
+					LOG_DEBUG_P( "A death of an IO thread was detected." );
+
+					if( THREAD_REGISTRY::io_death_listener )
+					{
+						THREAD_REGISTRY::io_death_listener( thread_tag );
+					}
 				}
 			}
 		}

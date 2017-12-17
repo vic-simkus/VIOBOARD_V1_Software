@@ -690,7 +690,7 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 		case CMD_ID_SYS_FAILURE:
 		{
 			LOG_ERROR_P( "Board returned a hard error.  Buffer output bellow:" );
-			LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], 10 ) );
+			LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE) );
 			break;
 		}
 
