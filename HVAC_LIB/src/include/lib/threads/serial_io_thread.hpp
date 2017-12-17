@@ -76,6 +76,10 @@ namespace BBB_HVAC
 			 */
 			virtual bool write_event_loop( void ) = 0;
 
+			/**
+			Returns the tag of this thread.  The tag is used for debugging, log output, etc.
+			\return Thread's tag
+			*/
 			inline const string& get_tag( void ) const {
 				return this->tag;
 			}
@@ -92,20 +96,6 @@ namespace BBB_HVAC
 
 		/**
 		 * Provides communication services between a RS-232 IO board and the world.
-		 * The serial board can send two types types of messages: binary and text.
-		 *
-		 * All binary messages start with 0x10 and contain the following header format:
-		 *
-		 * msg[0] -- Binary message start marker.  Will always be 0x10.
-		 * msg[1] -- Command code that the message is in response to.  For example if the response is output from command 0x10 (get adc values) this command code will also be 0x01
-		 * msg[2] -- Status code of the command.  The value is open to interpretation.  Usually 0 == false or failure.  1 == true or success.  Anything other than that is implementation specific.
-		 * msg[3] -- Payload length; most significant byte.
-		 * msg[4] -- Payload length; lest significant byte.
-		 * msg[5...n] -- Payload.
-		 *
-		 * Anything not recognized as a binary message is assumed to be a text message.  No specific format for text messages is recognized with exception of terminating new line (\n) character.
-		 * Above is a lie.  'PROTOCOL' messages are recognized as special.
-		 *
 		 */
 		class SER_IO_COMM : public IO_COMM_BASE
 		{
@@ -116,6 +106,9 @@ namespace BBB_HVAC
 
 		public:
 
+			/**
+			Call indexes that the board supports.
+			*/
 			enum ENUM_BOARD_COMMANDS : unsigned char
 			{
 				CMD_ID_GET_AI_STATUS = 0x01,	//	0x01
@@ -222,11 +215,22 @@ namespace BBB_HVAC
 			 */
 			bool cmd_set_pmic_status( uint8_t _status );
 
+			/**
+			Sends L1 calibration values to the board.
+			*/
 			bool cmd_set_l1_calibration_values( const CAL_VALUE_ARRAY& _values );
+
+			/**
+			Sends L2 calibration values to the board.
+			*/
 			bool cmd_set_l2_calibration_values( const CAL_VALUE_ARRAY& _values );
 
 		protected:
 
+			/**
+			Sends calibration values to the board.
+			\param _cmd Command (L1 or L2) to utilize when sending to board.
+			*/
 			bool cmd_set_calibration_values( unsigned char _cmd, const CAL_VALUE_ARRAY& _values );
 
 			/**
@@ -234,7 +238,10 @@ namespace BBB_HVAC
 			 */
 			bool cmd_reset_board( void );
 
-
+			/**
+			Puts the board in a 'push' configuration.  After this command is invoked and until the board is reset it will continually output
+			its state in binary message format.
+			*/
 			bool cmd_start_stream( void );
 
 			/**
@@ -246,61 +253,61 @@ namespace BBB_HVAC
 			/**
 			 * Returns the process ID parsed out of the provided file that is the process ID that holds the lock on a serial port.  Used by the instance during locking checks/attempts of the serial port during initialization.
 			 * Should not be invoked casually.
-			 * @param _file The file  that contains the process ID.  This is not the serial port.  This is the lock file that contains the PID.
-			 * @return   ID of the process that supposedly holds the lock.
+			 * \param _file The file  that contains the process ID.  This is not the serial port.  This is the lock file that contains the PID.
+			 * \return   ID of the process that supposedly holds the lock.
 			 */
 			string get_locking_pid( const string& _file );
 
 			/**
 			 * Returns the command line of the supplied process ID.  Used during the lock attempts/checks of the serial port during the initialization of the instance.  Should not be invoked casually.
-			 * @param _pid Process ID
-			 * @return  Command line of the provided process ID
+			 * \param _pid Process ID
+			 * \return  Command line of the provided process ID
 			 */
 			string get_locking_pid_command( const string& _pid );
 
 			/**
 			 * Ascertains the status of the provided process ID.
-			 * @param _pid Process ID
-			 * @return True if the process is alive.  False otherwise.
+			 * \param _pid Process ID
+			 * \return True if the process is alive.  False otherwise.
 			 */
 			bool is_process_alive( const string& _pid );
 
 			/**
 			 * Generates a lock file name for the supplied serial port.
-			 * @param _tty Serial port name.
-			 * @return Name of the lock file.
+			 * \param _tty Serial port name.
+			 * \return Name of the lock file.
 			 */
 			string generate_lock_file_name( const char* _tty );
 
 			/**
 			 * Generates a full device file name for the supplied serial port.
-			 * @param _tty  Serial port name sans the /dev preamble.
-			 * @return  Full device file name.
+			 * \param _tty  Serial port name sans the /dev preamble.
+			 * \return  Full device file name.
 			 */
 			string generate_port_device_file_name( const char* _tty );
 
 			/**
 			 * Tries to lock the serial port that was specified during the instantiation of the class.
-			 * @return True if the lock was obtained, false otherwise.
+			 * \return True if the lock was obtained, false otherwise.
 			 */
 			bool try_lock_serial( void );
 
 			/**
 			 * Sends out all pending messages to the IO board
-			 * @return True if everything went as expected, false if an error was encountered.
+			 * \return True if everything went as expected, false if an error was encountered.
 			 */
 			bool write_buffer( const unsigned char* _buffer, size_t _length );
 
 			/**
 			 * Parses and assembles the data in the input buffer.  The method is invoked whenever there is a lull in the
 			 * receipt of serial data i.e. when the poll call times out.
-			 * @return True if everything went as expected, false if an error was encountered.
+			 * \return True if everything went as expected, false if an error was encountered.
 			 */
 			int assemble_serial_data( void );
 
-			/**bool swat_two_line_table_lines(size_t _target_idx,size_t _source_idx);
+			/**
 			 * Reads all of the available serial data from the port and shoves it into the holding buffer.
-			 * @return True is everything was handled without drama, false otherwise.
+			 * \return True is everything was handled without drama, false otherwise.
 			 */
 			bool drain_serial( void );
 
@@ -316,7 +323,7 @@ namespace BBB_HVAC
 			/**
 			 * Compacts the incoming message line table to ensure that there are no gaps.
 			 * As the lines are processed they are removed from the line table which leaves gaps.  This method removes the gaps and compacts the table.
-			 * @return True if everything went as expected, false otherwise.
+			 * \return True if everything went as expected, false otherwise.
 			 */
 			bool digest_line_table( void );
 
@@ -348,8 +355,14 @@ namespace BBB_HVAC
 			 */
 			bool add_pmic_status( size_t _idx );
 
-			bool add_cache_values( size_t _idx, unsigned char _level );
+			/**
+			Adds calibration values to the state cache.
+			*/
+			bool add_calibration_values( size_t _idx, unsigned char _level );
 
+			/**
+			Adds boot count to the state cache.
+			*/
 			bool add_boot_count( size_t _idx );
 
 
@@ -361,34 +374,103 @@ namespace BBB_HVAC
 			 */
 			void add_to_active_table( const unsigned char* _buffer, size_t _length );
 
+			/**
+			Compacts the line table by purging processed lines.
+			*/
 			void compact_line_table( void );
 
+			/**
+			Returns true if the specified line is blank.
+			\param _idx index of the line to inquire about.
+			*/
 			bool is_line_table_line_blank( size_t _idx ) const;
 
+			/**
+			Returns the index of the next non-blank line.
+			\param _start_index Starting point of the search.
+			*/
 			size_t find_next_nonblank_line_table_line( size_t _start_idx ) const;
 
+			/**
+			Swaps to table lines.
+			*/
 			bool swap_two_line_table_lines( size_t _target_idx, size_t _source_idx );
 
+			/**
+			Marks the current table line as blank.
+			*/
 			void clear_active_table_current_line( void );
+
+			/**
+			Marks the line at index as blank.
+			\param _idx Index of the line to mark as blank.
+			*/
 			void set_active_table_line_blank( size_t _idx );
 
+			/**
+			Processes a line as a binary message.
+			\param _idx Index of the line to process as a binary message.
+			*/
 			void process_binary_message( size_t _idx );
+
+			/**
+			Process a line as a text message.
+			\param _idx Index of the line to process as a text message.
+			*/
 			void process_text_message( size_t _idx );
+
+			/**
+			Processes a line as a protocol text message.
+			\param _idx Index of the line to process as a protocol message.
+			*/
 			void process_protocol_message( size_t _idx );
 
+			/**
+			Tokenizes a line.  The line is expected to be a protocol line.
+			\param _idx Index of the line to tokenize.
+			\return A vector of indexes of token starts in the protocol line.
+			*/
 			token_vector tokenize_protocol_line( size_t _idx );
+
+			/**
+			Turns a a vector of token indexes into a vector of string tokens.
+			\param _vect Token index vector.
+			\param _idx Line index to which to apply the token vector.
+			*/
 			vector<string> create_protocol_line_tokens( const token_vector& _vect, size_t _idx );
 
+			/**
+			Thread entry function for general operations.
+			*/
 			bool thread_func( void );
+
+			/**
+			Thread entry function for write operations
+			*/
 			void writer_thread_func( void );
 
+			/**
+			Closes the serial port associated with the IO thread.  Does not unlock the port.
+			*/
 			void serial_port_close( void );
+
+			/**
+			Opens the serial port associated with the IO thread.  Does try to lock the port and fails if it can not.
+			*/
 			ENUM_ERRORS serial_port_open( void );
+
+			/**
+			Handles a board that is deemed to be locked/wedged.
+			*/
 			void handle_hung_board( void );
 
+			/**
+			Determines if it's ok to send data board.  This should be filed under ugly hacks.
+			It checks to see if outgoing serial port queue is empty and the CTS line is high.  If both of those conditions are true it is determined that it's OK to write data to port.
+			\return 0 - not clear to send data.  1 - clear to send data.  >1 error condition.
+			*/
 			unsigned char clear_to_send( void ) const;
 		private:
-
 
 			/**
 			 * A yet unsent outgoing message
@@ -402,10 +484,15 @@ namespace BBB_HVAC
 			 */
 			unsigned char* buffer;
 
+			/**
+			Serial buffer context.
+			*/
 			ST_SERIAL_BUFFER_CONTEXT buffer_context;
 
+			/**
+			Resets the serial buffer context.
+			*/
 			void reset_buffer_context( void );
-
 
 			/**
 			 * Line table.  Filled by assemble_serial_data with data parsed from buffer.
@@ -458,12 +545,24 @@ namespace BBB_HVAC
 			 */
 			int serial_fd;
 
+			/**
+			Board state cache.
+			*/
 			BOARD_STATE_CACHE state_cache;
 
+			/**
+			Has the board reset.  True if it has, false otherwise.  We use this to make sure that the board is in a known state.
+			*/
 			bool board_has_reset;
 
+			/**
+			Is this board in a debug state.  If it is the board is never reset so as not to screw up the hardware debugger.
+			*/
 			bool in_debug_mode;
 
+			/**
+			Has stream mode started.
+			*/
 			bool stream_started;
 		} ;
 

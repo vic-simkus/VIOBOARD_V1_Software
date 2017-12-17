@@ -582,7 +582,7 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 	{
 		LOG_ERROR_P( "Message failed checksum check: " + num_to_str( chksum ) + ", in message: " + num_to_str( data_ptr[4] ) );
 		LOG_ERROR_P( "Message length: " + num_to_str( length ) );
-		LOG_ERROR_P( buffer_to_hex( this->active_table->table[_idx], 10 ) );
+		LOG_ERROR_P("\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE  ) );
 		goto _end;
 	}
 
@@ -983,10 +983,13 @@ int SER_IO_COMM::assemble_serial_data( void )
 				//LOG_DEBUG_P(buffer_to_hex(this->buffer + this->buffer_context.bin_msg_start_index,8));
 				//LOG_DEBUG_P("Expected message length: " + num_to_str(length));
 
+				/*
+				XXX - There's a weird bug in here somewhere.  The size gets misinterpreted on an unexpected board reset.
+				*/
 				if( length >= GC_SERIAL_BUFF_SIZE || length > 32 )
 				{
 					LOG_ERROR_P( "Weird message size: " + num_to_str( length ) + "; nuking context" );
-					LOG_DEBUG_P( "\n" + buffer_to_hex( this->buffer + this->buffer_context.bin_msg_start_index , 8 ) );
+					//LOG_DEBUG_P( "\n" + buffer_to_hex( this->buffer + this->buffer_context.bin_msg_start_index , 8 ) );
 					this->reset_buffer_context();
 					memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 					break;
