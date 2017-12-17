@@ -23,7 +23,7 @@
 
 using namespace BBB_HVAC;
 
-void HVAC_LOGIC_LOOP::process_logic(void) throw(exception)
+void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 {
 	/*
 	 * We do not touch the mutex here.  The thread loop takes care of that
@@ -33,21 +33,21 @@ void HVAC_LOGIC_LOOP::process_logic(void) throw(exception)
 	return;
 }
 
-void HVAC_LOGIC_LOOP::pre_process(void) throw(exception)
+void HVAC_LOGIC_LOOP::pre_process( void ) throw( exception )
 {
 	return;
 }
 
-void HVAC_LOGIC_LOOP::post_process(void) throw(exception)
+void HVAC_LOGIC_LOOP::post_process( void ) throw( exception )
 {
 	return;
 }
 
-HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP(CONFIGURATOR* _config) :
-	LOGIC_PROCESSOR_BASE(_config)
+HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP( CONFIGURATOR* _config ) :
+	LOGIC_PROCESSOR_BASE( _config )
 {
-	this->logic_status_core.ai_num = static_cast<unsigned int>(A_INPUT_PIN_ENUM::__COUNT);
-	this->logic_status_core.do_num = static_cast<unsigned int>(D_OUTPUT_PIN_ENUM::__COUNT);
+	this->logic_status_core.ai_num = static_cast<unsigned int>( A_INPUT_PIN_ENUM::__COUNT );
+	this->logic_status_core.do_num = static_cast<unsigned int>( D_OUTPUT_PIN_ENUM::__COUNT );
 	this->logic_status_core.sp_num = this->configurator->get_sp_index().size();
 	/*
 	 * How to return labels to the shims in order to implement ???
@@ -58,25 +58,25 @@ HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP(CONFIGURATOR* _config) :
 	{
 		const CONFIG_TYPE_INDEX_TYPE& idx = this->configurator->get_ai_index();
 
-		for(CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i)
+		for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
 		{
-			this->logic_status_fluff.ai_labels.push_back(this->configurator->get_config_entry(*i).get_part_as_string(2));
+			this->logic_status_fluff.ai_labels.push_back( this->configurator->get_config_entry( *i ).get_part_as_string( 2 ) );
 		}
 	}
 	{
 		const CONFIG_TYPE_INDEX_TYPE& idx = this->configurator->get_do_index();
 
-		for(CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i)
+		for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
 		{
-			this->logic_status_fluff.do_labels.push_back(this->configurator->get_config_entry(*i).get_part_as_string(2));
+			this->logic_status_fluff.do_labels.push_back( this->configurator->get_config_entry( *i ).get_part_as_string( 2 ) );
 		}
 	}
 	{
 		const CONFIG_TYPE_INDEX_TYPE& idx = this->configurator->get_sp_index();
 
-		for(CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i)
+		for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
 		{
-			this->logic_status_fluff.sp_labels.push_back(this->configurator->get_config_entry(*i).get_part_as_string(0));
+			this->logic_status_fluff.sp_labels.push_back( this->configurator->get_config_entry( *i ).get_part_as_string( 0 ) );
 		}
 	}
 	return;

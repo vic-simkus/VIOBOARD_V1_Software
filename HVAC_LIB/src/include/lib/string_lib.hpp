@@ -33,21 +33,21 @@
  * \param str Buffer containing the string to be trimmed.  The contents of the buffer will be modified.
  * \return The same pointer as passed in the str parameter.
  */
-char* trim_string(char* str);
+char* trim_string( char* str );
 
 /**
  * Trims the white space from the start of the given buffer.
  * \param str Buffer containing the string to be trimmed.  The contents of the buffer will be modified.
  * \return The same pointer as passed in the str parameter.
  */
-char* trim_string_left(char* str);
+char* trim_string_left( char* str );
 
 /**
  * Trims the white space from the end of a given buffer.
  * \param str Buffer containing the string to be trimmed.  The contents of the buffer will be modified.
  * \return The same pointer as passed in the str parameter.
  */
-char* trim_string_right(char* str);
+char* trim_string_right( char* str );
 
 /**
  * Joins the supplied vector of strings into a single string separating the individual elements using the provided character.
@@ -55,105 +55,105 @@ char* trim_string_right(char* str);
  * \param _char The separator character to be used between the elements of the vector.
  * \return The generated (joined) string.
  */
-std::string join_vector(const std::vector<std::string>& _vect, char _char);
+std::string join_vector( const std::vector<std::string>& _vect, char _char );
 
 /**
  * Converts a number to a string.
  * \param _i Number to be converted
  * \return An std::string instance containing the string representation of the number.
  */
-std::string num_to_str(int _i);
+std::string num_to_str( int _i );
 
 /**
  * \see num_to_str(int)
  */
-std::string num_to_str(unsigned int _i);
+std::string num_to_str( unsigned int _i );
 
 /**
  * \see num_to_str(int)
  */
-std::string num_to_str(long _i);
+std::string num_to_str( long _i );
 
 /**
  * \see num_to_str(int)
  */
-std::string num_to_str(unsigned long _i);
+std::string num_to_str( unsigned long _i );
 
 /**
  * \see num_to_str(int)
  */
-std::string num_to_str(float _i);
+std::string num_to_str( float _i );
 
 /**
  * \see num_to_str(int)
  */
-std::string num_to_str(double _i);
+std::string num_to_str( double _i );
 
 /**
  * Returns the current date and time in ISO format.
  * \return Time and date in ISO format: YYYY-MM-DDTHH:MM:SS
  */
-std::string get_iso_date_time(void);
+std::string get_iso_date_time( void );
 
 /**
  * Trims the whitespace from the left side of the string.  Operation is done in place and supplied string is modified.
  * \param s String to be modified.
  */
-void ltrim(std::string& s);
+void ltrim( std::string& s );
 
 /**
  * Trims the whitespace from the right side of the string  Operation is done in place and supplied string is modified.
  * \param s String to be modified.
  */
-void rtrim(std::string& s);
+void rtrim( std::string& s );
 
 /**
  * Trims the string from the left and the right.  Operation is done in place and supplied string is modified.
  * \param s String to be modified.
  */
-void trim(std::string& s);
+void trim( std::string& s );
 
 /**
  * Trims the whitespace from the left side of the string.  Operation is done on a copy.  The original string is not modified.
  * \param s Original string.
  * \return Output string.
  */
-std::string ltrimmed(std::string s);
+std::string ltrimmed( std::string s );
 
 /**
  * Trims the whitespace from the right side of the string.  Operation is done on a copy.  The original string is not modified.
  * \param s Original string.
  * \return Output string.
  */
-std::string rtrimmed(std::string s);
+std::string rtrimmed( std::string s );
 
 /**
  * Trims the whitespace from both sides of the string.  Operation is done on a copy.  The original string is not modified.
  * \param s Original string.
  * \return Output string.
  */
-std::string trimmed(const std::string s);
+std::string trimmed( const std::string s );
 
 /**
  * Converts a string to uppercase.    Operation is done on a copy.  The original string is not modified.
  * \param _in Original string.
  * \return Output string.
  */
-std::string to_upper_case(const std::string& _in);
+std::string to_upper_case( const std::string& _in );
 
 /**
  * Converts a character to its hex representation.  The output is zero-padded two characters wide.
  * \param _num  Number to convert.
  * \return Output string.
  */
-std::string char_to_hex(const unsigned char _num);
+std::string char_to_hex( const unsigned char _num );
 
 /**
  * Converts an integer to its hex representation.  The output is zer-padded four characters wide.
  * \param _num Number to convert.
  * \return Output string.
  */
-std::string int_to_hex(const uint16_t _num);
+std::string int_to_hex( const uint16_t _num );
 
 /**
  * Converts a buffer (character array) to a string representing each of the characters hex value.  Each value is zero-padded two characters wide, with an 0x prefix, and a : separator.
@@ -161,12 +161,12 @@ std::string int_to_hex(const uint16_t _num);
  * \param _length Number of bytes in the buffer to convert.
  * \return Output string.
  */
-std::string buffer_to_hex(const unsigned char* _buff, const size_t _length,bool _fancy = false);
+std::string buffer_to_hex( const unsigned char* _buff, const size_t _length, bool _fancy = false );
 
 /**
  * Tests the methods in the library.
  */
-bool test_string_lib(void);
+bool test_string_lib( void );
 
 /**
  * \brief Find the last occurrence of a character within a string.
@@ -175,7 +175,7 @@ bool test_string_lib(void);
  * \param _str_len Length of the string to search through.  In other words the upper bound of the search as the parameter can be used to limit the scope of the search.
  * \return Index of the last occurrence of the character or -1 otherwise.
  */
-ssize_t find_last_index_of(const unsigned char* _str, const char _chr, ssize_t _str_len);
+ssize_t find_last_index_of( const unsigned char* _str, const char _chr, ssize_t _str_len );
 
 /**
  * Find the first occurance of a character within a string.
@@ -185,11 +185,11 @@ ssize_t find_last_index_of(const unsigned char* _str, const char _chr, ssize_t _
  * \param _str_len  Length of the string to search through or the upper bound of the search.
  * \return Index of the first occurrence past _start_index of the specified character.  If not found -1 is returned.
  */
-ssize_t find_index_of(const unsigned char* _str, const char _chr, const ssize_t _start_idx, const ssize_t _str_len);
+ssize_t find_index_of( const unsigned char* _str, const char _chr, const ssize_t _start_idx, const ssize_t _str_len );
 
-void convert_vector_to_string(const std::vector<int>& _source,std::vector<std::string>& _dest);
-void convert_vector_to_string(const std::vector<uint16_t>& _source,std::vector<std::string>& _dest);
+void convert_vector_to_string( const std::vector<int>& _source, std::vector<std::string>& _dest );
+void convert_vector_to_string( const std::vector<uint16_t>& _source, std::vector<std::string>& _dest );
 
-uint16_t checksum(const uint16_t * _buffer,size_t _length);
+uint16_t checksum( const uint16_t* _buffer, size_t _length );
 
 #endif /* STRING_LIB_H_ */

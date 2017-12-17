@@ -49,7 +49,7 @@ namespace BBB_HVAC
 			 * Constructor.
 			 * \param _size Size of the queue.
 			 */
-			MESSAGE_QUEUE(unsigned int _size);
+			MESSAGE_QUEUE( unsigned int _size );
 			/**
 			 * Destructor.
 			 */
@@ -62,38 +62,38 @@ namespace BBB_HVAC
 			 * \param _mode Action to take if the queue is full
 			 * \see APPEND_MODE
 			 */
-			void add_message(MESSAGE_PTR& _message, ENUM_APPEND_MODE _mode = ENUM_APPEND_MODE::LOSE_OVERFLOW) throw(exception);
+			void add_message( MESSAGE_PTR& _message, ENUM_APPEND_MODE _mode = ENUM_APPEND_MODE::LOSE_OVERFLOW ) throw( exception );
 
 			/**
 			 * Returns the number of messages in the queue.
 			 * \return Number of messages in the queue.
 			 */
-			size_t get_message_count(void) const;
+			size_t get_message_count( void ) const;
 
 			/**
 			 * Returns true if there are messages in the queue.
 			 * \return True if there are messages in the queue.
 			 */
-			bool has_messages(void) const;
+			bool has_messages( void ) const;
 
 			/**
 			 * Removes and returns the oldest message in the queue.  The message is subsequently deleted from the queue.
 			 * \return The oldest message in the queue.
 			 */
-			MESSAGE_PTR pop_first(void) throw(exception);
+			MESSAGE_PTR pop_first( void ) throw( exception );
 
 			/**
 			 * Returns a message at the specified index in the queue.  The message is NOT deleted.  This behaviour is different than pop_first(void).
 			 * \return The message at the specified index.
 			 */
-			MESSAGE_PTR get_message(unsigned int _idx) throw(exception);
+			MESSAGE_PTR get_message( unsigned int _idx ) throw( exception );
 
 			/**
 			 * Internal message queue instance.
 			 */
 			MESSAGE_VECTOR messages;
 
-			string to_string(void) const;
+			string to_string( void ) const;
 
 		protected:
 
@@ -127,108 +127,108 @@ namespace BBB_HVAC
 		 * \param _buffer Buffer containing the text representation of the message.
 		 * \return Valid message instance if the buffer was parsed successfully.
 		 */
-		MESSAGE_PTR parse_message(const std::string& _buffer) throw(exception);
+		MESSAGE_PTR parse_message( const std::string& _buffer ) throw( exception );
 
 		/**
 		 * Sends a message to the remote endpoint.
 		 * \param _msg Message to send.
 		 * \param _fd File descriptor of the socket to which to write the message.
 		 */
-		void send_message(MESSAGE_PTR& _msg, int _fd) throw(exception);
+		void send_message( MESSAGE_PTR& _msg, int _fd ) throw( exception );
 
 
 		/**
 		 * Creates a message of type HELLO
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_hello_message(void);
+		MESSAGE_PTR create_hello_message( void );
 
 		/**
 		 * Creates a message of type PING
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_ping_message(void);
+		MESSAGE_PTR create_ping_message( void );
 
 		/**
 		 * Creates a message of type PONG
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_pong_message(void);
+		MESSAGE_PTR create_pong_message( void );
 
 		/**
 		 * Creates a message of type GET_MESSAGE
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_get_labels_message_request(ENUM_CONFIG_TYPES _type) throw(exception);
+		MESSAGE_PTR create_get_labels_message_request( ENUM_CONFIG_TYPES _type ) throw( exception );
 
 		/**
 		 * Creates a message of type GET_MESSAGE
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_get_labels_message_response(ENUM_CONFIG_TYPES _type) throw(exception);
+		MESSAGE_PTR create_get_labels_message_response( ENUM_CONFIG_TYPES _type ) throw( exception );
 
 		/**
 		 * Creates a message of type READ_STATUS_RAW_ANALOG
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_get_raw_adc_values(const std::string& _board_tag) throw(exception);
+		MESSAGE_PTR create_get_raw_adc_values( const std::string& _board_tag ) throw( exception );
 
 		/**
 		 * Creates a message of type READ_STATUS
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_get_status(const std::string& _board_tag) throw(exception);
+		MESSAGE_PTR create_get_status( const std::string& _board_tag ) throw( exception );
 
 		/**
 		 * Creates a message of type SET_PMIC_STATUS
 		 * \param _val Bits of the status.  Both PMICs are modified using one byte.
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_set_pmic_status(const std::string& _board_tag,uint8_t _val) throw(exception);
+		MESSAGE_PTR create_set_pmic_status( const std::string& _board_tag, uint8_t _val ) throw( exception );
 
 		/**
 		 * Creates a message of type SET_STATUS
 		 * \param _val Bits of the digital outputs.  All outputs are modified using on byte.
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_set_status(const std::string& _board_tag,uint8_t _val) throw(exception);
+		MESSAGE_PTR create_set_status( const std::string& _board_tag, uint8_t _val ) throw( exception );
 
-		MESSAGE_PTR create_get_l1_cal_vals(const std::string& _board_tag) throw(exception);
-		MESSAGE_PTR create_get_l2_cal_vals(const std::string& _board_tag) throw(exception);
+		MESSAGE_PTR create_get_l1_cal_vals( const std::string& _board_tag ) throw( exception );
+		MESSAGE_PTR create_get_l2_cal_vals( const std::string& _board_tag ) throw( exception );
 
-		MESSAGE_PTR create_set_l1_cal_vals(const std::string& _board_tag,const CAL_VALUE_ARRAY& _vals) throw(exception);
-		MESSAGE_PTR create_set_l2_cal_vals(const std::string& _board_tag,const CAL_VALUE_ARRAY& _vals) throw(exception);
+		MESSAGE_PTR create_set_l1_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals ) throw( exception );
+		MESSAGE_PTR create_set_l2_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals ) throw( exception );
 
-		MESSAGE_PTR create_get_boot_count(const std::string& _board_tag) throw(exception);
+		MESSAGE_PTR create_get_boot_count( const std::string& _board_tag ) throw( exception );
 
-		MESSAGE_PTR create_error(int _code,const std::string& _message) throw(exception);
+		MESSAGE_PTR create_error( int _code, const std::string& _message ) throw( exception );
 
 		/**
 		 * Processes an incoming message of type HELLO
 		 */
-		void process_hello_message(void) throw(exception);
+		void process_hello_message( void ) throw( exception );
 
 		/**
 		 * Gets the latest incoming message of type PONG.  If such a message does not exist a nullptr is returned.
 		 * \note Just because a nullptr is returned does not mean that a message was never received.  It could mean that the message was flushed out of the queue by other incomming messages before this method was called.
 		 * \return Latest incomming PONG message.
 		 */
-		MESSAGE_PTR get_latest_incomming_pong(void);
+		MESSAGE_PTR get_latest_incomming_pong( void );
 
 		/**
 		 * Gets the last outgoing message of type PONG.  If such a message does not exist a nullptr is returned.
 		 * \return Last outgoing PING message.
 		 * \see get_latest_incomming_pong
 		 */
-		MESSAGE_PTR get_latest_outgoing_ping(void);
+		MESSAGE_PTR get_latest_outgoing_ping( void );
 
-		MESSAGE_PTR get_latest_incomming_of_type(ENUM_MESSAGE_TYPE _type);
+		MESSAGE_PTR get_latest_incomming_of_type( ENUM_MESSAGE_TYPE _type );
 
-		inline bool is_protocol_negotiated(void) const {
+		inline bool is_protocol_negotiated( void ) const {
 			return this->protocol_negotiated;
 		}
 
-		string to_string(void) const;
+		string to_string( void ) const;
 
 		/**
 		 * Maximum protocol version that this client library supports.
@@ -257,7 +257,7 @@ namespace BBB_HVAC
 		/**
 		 * Hidden copy constructor
 		 */
-		MESSAGE_PROCESSOR(const MESSAGE_PROCESSOR& _src);
+		MESSAGE_PROCESSOR( const MESSAGE_PROCESSOR& _src );
 
 		LOGGING::LOGGER __logger__;
 

@@ -32,11 +32,11 @@
 
 using namespace BBB_HVAC;
 
-LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE(CONFIGURATOR* _config) :
-	THREAD_BASE("LOGIC_PROCESSOR_BASE")
+LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
+	THREAD_BASE( "LOGIC_PROCESSOR_BASE" )
 {
 	this->configurator = _config;
-	this->logger = new LOGGING::LOGGER("BBB_HVAC::LOGIC_PROCESSOR_BASE");
+	this->logger = new LOGGING::LOGGER( "BBB_HVAC::LOGIC_PROCESSOR_BASE" );
 }
 
 LOGIC_PROCESSOR_BASE::~LOGIC_PROCESSOR_BASE()
@@ -48,33 +48,33 @@ LOGIC_PROCESSOR_BASE::~LOGIC_PROCESSOR_BASE()
 	return;
 }
 
-LOGIC_STATUS_CORE BBB_HVAC::LOGIC_PROCESSOR_BASE::get_logic_status(void)
+LOGIC_STATUS_CORE BBB_HVAC::LOGIC_PROCESSOR_BASE::get_logic_status( void )
 {
-	if(pthread_mutex_trylock(&(this->mutex)) != 0)
+	if( pthread_mutex_trylock( & ( this->mutex ) ) != 0 )
 	{
 		return LOGIC_STATUS_CORE();
 	}
 
-	LOGIC_STATUS_CORE ret(this->logic_status_core);
-	pthread_mutex_unlock(&(this->mutex));
+	LOGIC_STATUS_CORE ret( this->logic_status_core );
+	pthread_mutex_unlock( & ( this->mutex ) );
 	return ret;
 }
 
-LOGIC_STATUS_FLUFF LOGIC_PROCESSOR_BASE::get_logic_status_fluff(void) const
+LOGIC_STATUS_FLUFF LOGIC_PROCESSOR_BASE::get_logic_status_fluff( void ) const
 {
 	return this->logic_status_fluff;
 }
 
-string LOGIC_STATUS_CORE::to_string(void)
+string LOGIC_STATUS_CORE::to_string( void )
 {
 	string ret;
 	ret += "DI[";
 
-	for(unsigned int i = 0; i < this->di_num; i++)
+	for( unsigned int i = 0; i < this->di_num; i++ )
 	{
-		ret += num_to_str(this->di_buffer[i]);
+		ret += num_to_str( this->di_buffer[i] );
 
-		if(i < this->di_num - 1)
+		if( i < this->di_num - 1 )
 		{
 			ret += ":";
 		}
@@ -82,11 +82,11 @@ string LOGIC_STATUS_CORE::to_string(void)
 
 	ret += "] DO [";
 
-	for(unsigned int i = 0; i < this->do_num; i++)
+	for( unsigned int i = 0; i < this->do_num; i++ )
 	{
-		ret += num_to_str(this->do_buffer[i]);
+		ret += num_to_str( this->do_buffer[i] );
 
-		if(i < this->do_num - 1)
+		if( i < this->do_num - 1 )
 		{
 			ret += ":";
 		}
@@ -94,11 +94,11 @@ string LOGIC_STATUS_CORE::to_string(void)
 
 	ret += "] AI [";
 
-	for(unsigned int i = 0; i < this->ai_num; i++)
+	for( unsigned int i = 0; i < this->ai_num; i++ )
 	{
-		ret += num_to_str(this->ai_buffer[i]);
+		ret += num_to_str( this->ai_buffer[i] );
 
-		if(i < this->ai_num - 1)
+		if( i < this->ai_num - 1 )
 		{
 			ret += ":";
 		}
@@ -106,11 +106,11 @@ string LOGIC_STATUS_CORE::to_string(void)
 
 	ret += "] AO [";
 
-	for(unsigned int i = 0; i < this->ao_num; i++)
+	for( unsigned int i = 0; i < this->ao_num; i++ )
 	{
-		ret += num_to_str(this->ao_buffer[i]);
+		ret += num_to_str( this->ao_buffer[i] );
 
-		if(i < this->ao_num - 1)
+		if( i < this->ao_num - 1 )
 		{
 			ret += ":";
 		}
@@ -120,16 +120,16 @@ string LOGIC_STATUS_CORE::to_string(void)
 	return ret;
 }
 
-bool LOGIC_PROCESSOR_BASE::thread_func(void)
+bool LOGIC_PROCESSOR_BASE::thread_func( void )
 {
-	LOG_INFO_P("Starting logic thread.");
+	LOG_INFO_P( "Starting logic thread." );
 	this->obtain_lock();
 	this->pre_process();
 	this->release_lock();
 
-	while(this->abort_thread == false)
+	while( this->abort_thread == false )
 	{
-		this->reset_sleep_timespec(GC_LOGIC_THREAD_SLEEP);
+		this->reset_sleep_timespec( GC_LOGIC_THREAD_SLEEP );
 		this->nsleep();
 		GLOBALS::watchdog->reset_counter();
 		this->obtain_lock();
@@ -142,9 +142,9 @@ bool LOGIC_PROCESSOR_BASE::thread_func(void)
 		{
 			this->process_logic();
 		}
-		catch(...)
+		catch( ... )
 		{
-			LOG_ERROR_P("process_logic() emitted an exception.  Logic thread will abort.");
+			LOG_ERROR_P( "process_logic() emitted an exception.  Logic thread will abort." );
 			this->abort_thread = true;
 		}
 
@@ -163,6 +163,6 @@ bool LOGIC_PROCESSOR_BASE::thread_func(void)
 	 */
 	this->post_process();
 	GLOBALS::global_exit_flag = true;
-	LOG_INFO_P("Logic thread finished.");
+	LOG_INFO_P( "Logic thread finished." );
 	return true;
 }

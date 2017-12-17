@@ -57,9 +57,9 @@ namespace BBB_HVAC
 	 * \param _v ENUM_CONFIG_TYPES instance
 	 * \return Output stream instance
 	 */
-	inline std::ostream& operator<<(std::ostream& os, ENUM_CONFIG_TYPES _v)
+	inline std::ostream& operator<< ( std::ostream& os, ENUM_CONFIG_TYPES _v )
 	{
-		return os << static_cast < unsigned int >(_v);
+		return os << static_cast < unsigned int >( _v );
 	}
 
 	/**
@@ -111,9 +111,9 @@ namespace BBB_HVAC
 		 * \param _v Logging level instance
 		 * \return  Output stream
 		 */
-		inline std::ostream& operator<<(std::ostream& os, ENUM_LOG_LEVEL _v)
+		inline std::ostream& operator<< ( std::ostream& os, ENUM_LOG_LEVEL _v )
 		{
-			return os << static_cast < unsigned int >(_v);
+			return os << static_cast < unsigned int >( _v );
 		}
 	}
 
@@ -192,9 +192,9 @@ namespace BBB_HVAC
 		__MSG_END__					/// Terminator of the enum.  Used in iterating through the enum values.
 	} ;
 
-	inline std::ostream& operator<<(std::ostream& os, ENUM_MESSAGE_TYPE _v)
+	inline std::ostream& operator<< ( std::ostream& os, ENUM_MESSAGE_TYPE _v )
 	{
-		return os << static_cast < unsigned int >(_v);
+		return os << static_cast < unsigned int >( _v );
 	}
 
 	class __MESSAGE_TYPE;

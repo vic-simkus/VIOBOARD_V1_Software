@@ -45,14 +45,14 @@ namespace BBB_HVAC
 		 * \param _type Message type.
 		 * \param _label Human readable label describing the type
 		 */
-		__MESSAGE_TYPE(ENUM_MESSAGE_TYPE _type, const std::string& _label);
+		__MESSAGE_TYPE( ENUM_MESSAGE_TYPE _type, const std::string& _label );
 
 		/**
 		 * Produces a human readable description of the message type.
 		 * Intended to be used for debugging.
 		 * \return A string containing the numerical value and label of the type.  The returned format is not guaranteed to be stable.
 		 */
-		inline std::string to_string(void) const {
+		inline std::string to_string( void ) const {
 			std::stringstream ret;
 			ret << "[" << this->type << "][" << label << "]";
 			return ret.str();
@@ -61,7 +61,7 @@ namespace BBB_HVAC
 		/**
 		 * Helper operator to enable dumping the to_string value to an std::ostream.
 		 */
-		inline std::ostream& operator<<(std::ostream& str) {
+		inline std::ostream& operator<< ( std::ostream& str ) {
 			str << this->to_string();
 			return str;
 		}
@@ -121,28 +121,28 @@ namespace BBB_HVAC
 		 * Gets a the number of message types supported by the system.
 		 * \return Number of message types supported by the system.
 		 */
-		static size_t get_message_type_count(void);
+		static size_t get_message_type_count( void );
 
 		/**
 		 * Maps a label to a type.
 		 * \param _label Type label.
 		 * \return A MESSAGE_TYPE instance for the supplied label.
 		 */
-		static MESSAGE_TYPE get_message_type_by_label(const std::string& _label);
+		static MESSAGE_TYPE get_message_type_by_label( const std::string& _label );
 
 		/**
 		 * Maps an enum to a type.
 		 * \param _enum Type enum.
 		 * \return A MESSAGE_TYPE instance for the supplied enum.
 		 */
-		static MESSAGE_TYPE get_message_type_by_enum(const ENUM_MESSAGE_TYPE& _enum);
+		static MESSAGE_TYPE get_message_type_by_enum( const ENUM_MESSAGE_TYPE& _enum );
 
 		/**
 		 * Dumps a pretty list of supported message types intended for human construction to a stream.
 		 * The format is not guaranteed to to be stable.
 		 * \param out The output stream that the text should be dumped to.
 		 */
-		static void dump_supported_messages(std::ostream& out);
+		static void dump_supported_messages( std::ostream& out );
 
 	private:
 

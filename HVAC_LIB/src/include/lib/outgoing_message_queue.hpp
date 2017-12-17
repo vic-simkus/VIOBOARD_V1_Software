@@ -42,31 +42,31 @@ namespace BBB_HVAC
 		class OUTGOING_MESSAGE_QUEUE : protected TPROTECT_BASE
 		{
 		public:
-			OUTGOING_MESSAGE_QUEUE(const std::string& _tag);
+			OUTGOING_MESSAGE_QUEUE( const std::string& _tag );
 			virtual ~OUTGOING_MESSAGE_QUEUE();
 
-			bool add_message(const OUTGOING_MESSAGE& _msg);
+			bool add_message( const OUTGOING_MESSAGE& _msg );
 
-			bool wait_for_signal(void) throw(LOCK_ERROR);
+			bool wait_for_signal( void ) throw( LOCK_ERROR );
 
-			bool has_more_messages(void) const;
-			OUTGOING_MESSAGE get_message(void);
-			void put_lock(void) throw(LOCK_ERROR);
+			bool has_more_messages( void ) const;
+			OUTGOING_MESSAGE get_message( void );
+			void put_lock( void ) throw( LOCK_ERROR );
 
-			inline void swap_message_queue(std::queue<OUTGOING_MESSAGE>* _destination) {
-				std::swap(this->message_queue, *_destination);
+			inline void swap_message_queue( std::queue<OUTGOING_MESSAGE>* _destination ) {
+				std::swap( this->message_queue, *_destination );
 				return;
 			}
 
-			inline void clear(void) {
-				while(!this->message_queue.empty()) {
+			inline void clear( void ) {
+				while( !this->message_queue.empty() ) {
 					this->message_queue.pop();
 				}
 			}
 		protected:
 
-			void signal(void);
-			void get_lock(void) throw(LOCK_ERROR);
+			void signal( void );
+			void get_lock( void ) throw( LOCK_ERROR );
 
 
 

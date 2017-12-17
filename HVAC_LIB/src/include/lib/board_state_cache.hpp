@@ -41,31 +41,31 @@ namespace BBB_HVAC
 		{
 
 		public:
-			typedef std::function<void(BOARD_STATE_CACHE&, size_t,uint16_t)> CAL_VALUE_ADDER_PTR;
+			typedef std::function<void ( BOARD_STATE_CACHE&, size_t, uint16_t ) > CAL_VALUE_ADDER_PTR;
 
 			BOARD_STATE_CACHE();
 
-			void add_pmic_status(uint8_t _value);
-			void add_do_status(uint8_t _value);
-			void add_adc_value(size_t _x_index, uint16_t _value) throw(logic_error);
+			void add_pmic_status( uint8_t _value );
+			void add_do_status( uint8_t _value );
+			void add_adc_value( size_t _x_index, uint16_t _value ) throw( logic_error );
 
-			void add_l1_cal_value(size_t _x_index, uint16_t _value) throw(logic_error);
-			void add_l2_cal_value(size_t _x_index, uint16_t _value) throw(logic_error);
+			void add_l1_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error );
+			void add_l2_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error );
 
-			void set_boot_count(uint16_t _value);
+			void set_boot_count( uint16_t _value );
 
-			void get_adc_cache(ADC_CACHE_ENTRY(&_dest)[GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT]);
-			void get_do_cache(DO_CACHE_ENTRY(& _dest)[GC_IO_STATE_BUFFER_DEPTH]);
-			void get_pmic_cache(PMIC_CACHE_ENTRY(& _dest)[GC_IO_STATE_BUFFER_DEPTH]);
+			void get_adc_cache( ADC_CACHE_ENTRY( &_dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] );
+			void get_do_cache( DO_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] );
+			void get_pmic_cache( PMIC_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] );
 
-			uint16_t get_boot_count(void) const;
+			uint16_t get_boot_count( void ) const;
 
-			void get_latest_adc_values(ADC_CACHE_ENTRY(& _dest)[GC_IO_AI_COUNT]);
-			void get_latest_do_status(DO_CACHE_ENTRY& _dest);
-			void get_latest_pmic_status(PMIC_CACHE_ENTRY& _dest);
+			void get_latest_adc_values( ADC_CACHE_ENTRY( & _dest ) [GC_IO_AI_COUNT] );
+			void get_latest_do_status( DO_CACHE_ENTRY& _dest );
+			void get_latest_pmic_status( PMIC_CACHE_ENTRY& _dest );
 
-			void get_latest_l1_cal_values(CAL_VALUE_ENTRY(& _dest)[GC_IO_AI_COUNT]) const;
-			void get_latest_l2_cal_values(CAL_VALUE_ENTRY(& _dest)[GC_IO_AI_COUNT]) const;
+			void get_latest_l1_cal_values( CAL_VALUE_ENTRY( & _dest ) [GC_IO_AI_COUNT] ) const;
+			void get_latest_l2_cal_values( CAL_VALUE_ENTRY( & _dest ) [GC_IO_AI_COUNT] ) const;
 
 		protected:
 
@@ -107,7 +107,7 @@ namespace BBB_HVAC
 			size_t adc_cache_index;
 
 		private:
-			void add_cal_value(size_t _x_index, uint16_t _value,size_t& _idx,CAL_VALUE_ENTRY(& _dest)[GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT]) throw(logic_error);
+			void add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] ) throw( logic_error );
 		};
 	}
 }

@@ -53,21 +53,21 @@ using namespace BBB_HVAC::SERVER;
 using namespace BBB_HVAC::EXCEPTIONS;
 
 CLIENT_CONTEXT::CLIENT_CONTEXT() :
-	BASE_CONTEXT("CLIENT_CONTEXT")
+	BASE_CONTEXT( "CLIENT_CONTEXT" )
 {
-	INIT_LOGGER("BBB_HVAC::CLIENT_CONTEXT");
+	INIT_LOGGER( "BBB_HVAC::CLIENT_CONTEXT" );
 	this->is_in_client_mode = true;
-	pthread_cond_init(&(this->incomming_message_cond), NULL);
+	pthread_cond_init( & ( this->incomming_message_cond ), NULL );
 }
 
-ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message) throw(exception)
+ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception )
 {
 	/*
 	 * This method will only be called by comm_thread.  At time of calling the mutex will have been obtained by the thread.
 	 */
 	ENUM_MESSAGE_CALLBACK_RESULT ret = ENUM_MESSAGE_CALLBACK_RESULT::IGNORED;
 
-	if((ret = BASE_CONTEXT::process_message(_direction, _ctx, _message)) != ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED)
+	if( ( ret = BASE_CONTEXT::process_message( _direction, _ctx, _message ) ) != ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED )
 	{
 		/*
 		 * So here's how this goes.
@@ -79,7 +79,7 @@ ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIRECT
 		 * This applies only to messages not processed and accepted by the BASE_CONTEXT.
 		 *
 		 */
-		pthread_cond_signal(&(this->incomming_message_cond));
+		pthread_cond_signal( & ( this->incomming_message_cond ) );
 		ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 	}
 
@@ -88,52 +88,52 @@ ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIRECT
 
 CLIENT_CONTEXT::~CLIENT_CONTEXT()
 {
-	LOG_DEBUG("Destroying CLIENT_CONTEXT");
+	LOG_DEBUG( "Destroying CLIENT_CONTEXT" );
 	this->abort_thread = true;
-	pthread_cond_destroy(&(this->incomming_message_cond));
+	pthread_cond_destroy( & ( this->incomming_message_cond ) );
 }
 
-void CLIENT_CONTEXT::connect(void) throw(BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR)
+void CLIENT_CONTEXT::connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR )
 {
-	if(::connect(this->remote_socket, (sockaddr*)(&this->socket_struct), sizeof(struct sockaddr_un)) == -1)
+	if( ::connect( this->remote_socket, ( sockaddr* )( &this->socket_struct ), sizeof( struct sockaddr_un ) ) == -1 )
 	{
-		throw CONNECTION_ERROR(create_perror_string("Failed to connect to server: "));
+		throw CONNECTION_ERROR( create_perror_string( "Failed to connect to server: " ) );
 	}
 
 	this->start_thread();
 	//pthread_create(&this->thread_ctx, nullptr, (void* (*)(void*))comm_thread_func, this);
 	timespec t;
-	memset(&t, 0, sizeof(struct timespec));
+	memset( &t, 0, sizeof( struct timespec ) );
 
-	while(this->message_processor->is_protocol_negotiated() == false)
+	while( this->message_processor->is_protocol_negotiated() == false )
 	{
 		t.tv_nsec = GC_NSEC_TIMEOUT;
-		this->nsleep(&t);
+		this->nsleep( &t );
 	}
 
-	LOG_DEBUG("Connected to remote LOGIC_CORE");
+	LOG_DEBUG( "Connected to remote LOGIC_CORE" );
 	return;
 }
 
-bool CLIENT_CONTEXT::send_message(MESSAGE_PTR& _message) throw(exception)
+bool CLIENT_CONTEXT::send_message( MESSAGE_PTR& _message ) throw( exception )
 {
 	this->obtain_lock();
 
 	try
 	{
-		this->message_processor->send_message(_message, this->remote_socket);
+		this->message_processor->send_message( _message, this->remote_socket );
 	}
-	catch(const exception& _e)
+	catch( const exception& _e )
 	{
 		this->release_lock();
-		throw runtime_error(string("Failed to send message: ") + _e.what());
+		throw runtime_error( string( "Failed to send message: " ) + _e.what() );
 	}
 
 	this->release_lock();
 	return true;
 }
 
-MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait(MESSAGE_PTR& _message) throw(exception)
+MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message ) throw( exception )
 {
 	MESSAGE_PTR ret;
 	ENUM_MESSAGE_TYPE msg_type = _message->get_message_type()->type;
@@ -141,47 +141,47 @@ MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait(MESSAGE_PTR& _message) throw(e
 
 	try
 	{
-		this->message_processor->send_message(_message, this->remote_socket);
+		this->message_processor->send_message( _message, this->remote_socket );
 	}
-	catch(const exception& _e)
+	catch( const exception& _e )
 	{
 		this->release_lock();
-		throw runtime_error(string("Failed to send message: ") + _e.what());
+		throw runtime_error( string( "Failed to send message: " ) + _e.what() );
 	}
 
 	timespec timeout_time;
-	memset(&timeout_time, 0, sizeof(struct timespec));
+	memset( &timeout_time, 0, sizeof( struct timespec ) );
 	/*
 	 * We wait for two seconds for the reply to the message to get back to us before aborting the thread and bringing the whole application down.
 	 * XXX - need to figure out a better, less brutal way of dealing with error conditions in wait states.
 	 */
-	timeout_time.tv_sec = time(nullptr) + 2;
-	int rc = pthread_cond_timedwait(&(this->incomming_message_cond), &(this->mutex), &timeout_time);
+	timeout_time.tv_sec = time( nullptr ) + 2;
+	int rc = pthread_cond_timedwait( & ( this->incomming_message_cond ), & ( this->mutex ), &timeout_time );
 
-	if(rc != 0)
+	if( rc != 0 )
 	{
 		this->abort_thread = true;
 
-		if(rc == ETIMEDOUT)
+		if( rc == ETIMEDOUT )
 		{
-			LOG_ERROR("Timed out waiting on a conditional.  Suspect something hinky.  Aborting.");
-			THROW_EXCEPTION(runtime_error, "Time out on a conditional.");
+			LOG_ERROR( "Timed out waiting on a conditional.  Suspect something hinky.  Aborting." );
+			THROW_EXCEPTION( runtime_error, "Time out on a conditional." );
 		}
 		else
 		{
-			LOG_ERROR("Failed to wait on a conditional: " + num_to_str(rc));
-			THROW_EXCEPTION(runtime_error, "Failed to wait on a conditional: " + num_to_str(rc));
+			LOG_ERROR( "Failed to wait on a conditional: " + num_to_str( rc ) );
+			THROW_EXCEPTION( runtime_error, "Failed to wait on a conditional: " + num_to_str( rc ) );
 		}
 	}
 
-	ret = this->message_processor->get_latest_incomming_of_type(msg_type);
+	ret = this->message_processor->get_latest_incomming_of_type( msg_type );
 	this->release_lock();
 	return ret;
 }
 
-void CLIENT_CONTEXT::disconnect(void) throw(EXCEPTIONS::PROTOCOL_ERROR)
+void CLIENT_CONTEXT::disconnect( void ) throw( EXCEPTIONS::PROTOCOL_ERROR )
 {
 	this->abort_thread = true;
-	pthread_join(this->thread_ctx, nullptr);
+	pthread_join( this->thread_ctx, nullptr );
 	return;
 }

@@ -28,34 +28,34 @@
 
 using namespace BBB_HVAC;
 
-TPROTECT_BASE::TPROTECT_BASE(const string& _tag)
+TPROTECT_BASE::TPROTECT_BASE( const string& _tag )
 {
 	this->tag = _tag;
-	this->rand_seed = (unsigned int) time(nullptr);
+	this->rand_seed = ( unsigned int ) time( nullptr );
 	pthread_mutexattr_t mutex_attr;
 
-	if(pthread_mutexattr_init(&mutex_attr) != 0)
+	if( pthread_mutexattr_init( &mutex_attr ) != 0 )
 	{
-		throw runtime_error(create_perror_string(this->tag + ": Failed to initialize mutex attribute."));
+		throw runtime_error( create_perror_string( this->tag + ": Failed to initialize mutex attribute." ) );
 	}
 
-	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
+	pthread_mutexattr_settype( &mutex_attr, PTHREAD_MUTEX_ERRORCHECK );
 
-	if(pthread_mutex_init(&(this->mutex), &mutex_attr) != 0)
+	if( pthread_mutex_init( & ( this->mutex ), &mutex_attr ) != 0 )
 	{
-		throw runtime_error(create_perror_string(this->tag + ": Failed to initialize mutex."));
+		throw runtime_error( create_perror_string( this->tag + ": Failed to initialize mutex." ) );
 	}
 
 	this->reset_sleep_timespec();
-	this->logger = new LOGGING::LOGGER("BBB_HVAC::TPROTECT_BASE[" + this->tag + "]");
+	this->logger = new LOGGING::LOGGER( "BBB_HVAC::TPROTECT_BASE[" + this->tag + "]" );
 	return;
 }
 
-void TPROTECT_BASE::reset_sleep_timespec(__syscall_slong_t _time)
+void TPROTECT_BASE::reset_sleep_timespec( __syscall_slong_t _time )
 {
-	memset(&(this->thread_sleep), 0, sizeof(struct timespec));
+	memset( & ( this->thread_sleep ), 0, sizeof( struct timespec ) );
 
-	if(_time > 0)
+	if( _time > 0 )
 	{
 		this->thread_sleep.tv_nsec = _time;
 	}
@@ -65,7 +65,7 @@ void TPROTECT_BASE::reset_sleep_timespec(__syscall_slong_t _time)
 
 TPROTECT_BASE::~TPROTECT_BASE()
 {
-	if(pthread_mutex_destroy(&(this->mutex)) != 0)
+	if( pthread_mutex_destroy( & ( this->mutex ) ) != 0 )
 	{
 		//LOG_ERROR_P( create_perror_string( this->tag + ": Failed to destroy mutex" ) );
 		//XXX - Can't use the logger anymore?
@@ -77,72 +77,72 @@ TPROTECT_BASE::~TPROTECT_BASE()
 	return;
 }
 
-void TPROTECT_BASE::nsleep(timespec* _time) const throw(runtime_error)
+void TPROTECT_BASE::nsleep( timespec* _time ) const throw( runtime_error )
 {
 	timespec sleep_time;
 	timespec thread_sleep_rem;
 
-	if(_time == nullptr)
+	if( _time == nullptr )
 	{
-		memcpy(&sleep_time, &this->thread_sleep, sizeof(struct timespec));
+		memcpy( &sleep_time, &this->thread_sleep, sizeof( struct timespec ) );
 	}
 	else
 	{
-		memcpy(&sleep_time, _time, sizeof(struct timespec));
+		memcpy( &sleep_time, _time, sizeof( struct timespec ) );
 	}
 
-	int rc = nanosleep(&sleep_time, &thread_sleep_rem);
+	int rc = nanosleep( &sleep_time, &thread_sleep_rem );
 
-	if(rc != 0)
+	if( rc != 0 )
 	{
 		/*
 		 * Some man pages state that EINTR will be returned in case of interruption.
 		 * Other man pages state that -1 will be returned and errno will be set to EINTR.
 		 * Who the fuck knows.
 		 */
-		if(rc == EINTR || (rc == -1 && errno == EINTR))
+		if( rc == EINTR || ( rc == -1 && errno == EINTR ) )
 		{
 			/*
 			 * Sleep was interrupted.  Go back to sleep for remaining time.
 			 */
-			nanosleep(&thread_sleep_rem, nullptr);
+			nanosleep( &thread_sleep_rem, nullptr );
 		}
-		else if(rc == -1)
+		else if( rc == -1 )
 		{
-			THROW_EXCEPTION(runtime_error, create_perror_string(this->tag + ": NANOSLEEP failed with code -1: "));
+			THROW_EXCEPTION( runtime_error, create_perror_string( this->tag + ": NANOSLEEP failed with code -1: " ) );
 		}
 		else
 		{
-			THROW_EXCEPTION(runtime_error, this->tag + ": NANOSLEEP failed with code: " + num_to_str(rc));
+			THROW_EXCEPTION( runtime_error, this->tag + ": NANOSLEEP failed with code: " + num_to_str( rc ) );
 		}
 	}
 
 	return;
 }
 
-bool TPROTECT_BASE::obtain_lock_ex(void)  throw(LOCK_ERROR)
+bool TPROTECT_BASE::obtain_lock_ex( void )  throw( LOCK_ERROR )
 {
 	bool cond = false;
-	return this->obtain_lock_ex(&cond);
+	return this->obtain_lock_ex( &cond );
 }
 
-bool TPROTECT_BASE::obtain_lock_ex(const bool* _cond) throw(LOCK_ERROR)
+bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR )
 {
 	int mutex_lock_result = 0;
 	unsigned int mutex_lock_attempts = 0;
 	timespec sleep_tv;
 
-	while(*_cond == false)
+	while( *_cond == false )
 	{
-		if(mutex_lock_attempts > 0)
+		if( mutex_lock_attempts > 0 )
 		{
 			/*
 			 * If we're spinning waiting for a mutex add jitter to the sleep amount so that we don't accidentally synchronize with some other thread.
 			 */
-			memset(&sleep_tv, 0, sizeof(struct timespec));
-			sleep_tv.tv_nsec += rand_r(&this->rand_seed);
+			memset( &sleep_tv, 0, sizeof( struct timespec ) );
+			sleep_tv.tv_nsec += rand_r( &this->rand_seed );
 
-			if(sleep_tv.tv_nsec == 0)
+			if( sleep_tv.tv_nsec == 0 )
 			{
 				sleep_tv.tv_nsec = 10000; // 10 uSec
 			}
@@ -155,19 +155,19 @@ bool TPROTECT_BASE::obtain_lock_ex(const bool* _cond) throw(LOCK_ERROR)
 			 * But we don't want to go over 1 millisecond
 			 */
 			sleep_tv.tv_nsec = sleep_tv.tv_nsec & 0xF4240;
-			this->nsleep(&sleep_tv);
+			this->nsleep( &sleep_tv );
 		}
 
-		mutex_lock_result = pthread_mutex_trylock(&this->mutex);
+		mutex_lock_result = pthread_mutex_trylock( &this->mutex );
 
-		if(mutex_lock_result != 0)
+		if( mutex_lock_result != 0 )
 		{
-			if(mutex_lock_result == EBUSY)
+			if( mutex_lock_result == EBUSY )
 			{
 				/*
 				 * Failed to acquire a the main mutex.
 				 */
-				if(mutex_lock_attempts == GC_MUTEX_LOCK_ATTEMPT)
+				if( mutex_lock_attempts == GC_MUTEX_LOCK_ATTEMPT )
 				{
 					/*
 					 * If we've tried a number of times to obtain the mutex and failed bail
@@ -176,7 +176,7 @@ bool TPROTECT_BASE::obtain_lock_ex(const bool* _cond) throw(LOCK_ERROR)
 					 * TODO - need to handle this better.  One misbehaving client can take the whole LOGIC_CORE down by hogging a mutex lock.
 					 * If we fail to obtain a lock in a LOGIC_CORE thread we need to start shedding client connections before aborting the whole process.
 					 */
-					THROW_EXCEPTION(LOCK_ERROR, this->tag + ": Failed to obtain mutex lock.");
+					THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to obtain mutex lock." );
 				}
 				else
 				{
@@ -189,7 +189,7 @@ bool TPROTECT_BASE::obtain_lock_ex(const bool* _cond) throw(LOCK_ERROR)
 			}
 			else
 			{
-				THROW_EXCEPTION(LOCK_ERROR, this->tag + ": Unexpected value returned from pthread_mutex_trylock: " + num_to_str(mutex_lock_result) + ".");
+				THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Unexpected value returned from pthread_mutex_trylock: " + num_to_str( mutex_lock_result ) + "." );
 			}
 		}
 		else
@@ -197,20 +197,20 @@ bool TPROTECT_BASE::obtain_lock_ex(const bool* _cond) throw(LOCK_ERROR)
 			/*
 			 * We obtained the mutex.
 			 */
-			return (true);
+			return ( true );
 		}
 	}
 
-	THROW_EXCEPTION(LOCK_ERROR,this->tag + ": Lock acquisition loop aborted on condition.  Lock may or may not be held.");
+	THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Lock acquisition loop aborted on condition.  Lock may or may not be held." );
 }
 
-bool TPROTECT_BASE::release_lock() throw(LOCK_ERROR)
+bool TPROTECT_BASE::release_lock() throw( LOCK_ERROR )
 {
 	int rc = 0;
 
-	if((rc = pthread_mutex_unlock(&(this->mutex))) != 0)
+	if( ( rc = pthread_mutex_unlock( & ( this->mutex ) ) ) != 0 )
 	{
-		THROW_EXCEPTION(LOCK_ERROR, this->tag + ": Failed to release lock.");
+		THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to release lock." );
 	}
 
 	return true;

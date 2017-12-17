@@ -45,18 +45,18 @@ namespace BBB_HVAC
 	public:
 		DEF_LOGGER;
 
-		friend void BBB_HVAC::comm_thread_func(void*);
+		friend void BBB_HVAC::comm_thread_func( void* );
 
 		/**
 		 * Invoked by the comm_thread every time a new message comes in.  The base implementation handles the HELLO, PING, and PONG messages.  It ignores all other
 		 * types of messages.  The subclasses are expected to call the method in the base class and handle any messages that are not ignored any way they see fit.
 		 */
-		ENUM_MESSAGE_CALLBACK_RESULT process_message(ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message) throw(exception);
+		ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
 
 		/**
 		 * Constructor
 		 */
-		BASE_CONTEXT(const string& _tag);
+		BASE_CONTEXT( const string& _tag );
 
 		/**
 		 * Destructor
@@ -97,10 +97,10 @@ namespace BBB_HVAC
 		timespec curr_time;
 
 	protected:
-		bool select_timeout_happened(void) throw(exception);
-		bool send_initial_ping(void) throw(exception);
+		bool select_timeout_happened( void ) throw( exception );
+		bool send_initial_ping( void ) throw( exception );
 
-		bool thread_func(void);
+		bool thread_func( void );
 
 		LOGGING::LOGGER* logger;
 
@@ -142,7 +142,7 @@ namespace BBB_HVAC
 			 * Constructor
 			 * \param _client_socket Client file descriptor returned by the 'accept' call.
 			 */
-			HS_CLIENT_CONTEXT(int _client_socket);
+			HS_CLIENT_CONTEXT( int _client_socket );
 
 			/**
 			 * Destructor.
@@ -152,7 +152,7 @@ namespace BBB_HVAC
 			/**
 			 * Processes all incomming messages.  Message is first offered to BASE_CONTEXT implementation of the method.  If that method ignores it then this method will handle the message.
 			 */
-			virtual ENUM_MESSAGE_CALLBACK_RESULT process_message(ENUM_MESSAGE_DIRECTION _direction,BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message) throw(exception);
+			virtual ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
 
 		};
 	}
@@ -178,25 +178,25 @@ namespace BBB_HVAC
 			/**
 			 * Connets to the server process.
 			 */
-			void connect(void) throw(BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR);
+			void connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR );
 
 			/**
 			 * Disconnects from the server process.
 			 */
-			void disconnect(void) throw(EXCEPTIONS::PROTOCOL_ERROR);
+			void disconnect( void ) throw( EXCEPTIONS::PROTOCOL_ERROR );
 
 			/**
 			 * Sends a message to the remote peer and waits for a response.
 			 * \return An instance of the reply message
 			 */
-			MESSAGE_PTR send_message_and_wait(MESSAGE_PTR& _message) throw(exception);
+			MESSAGE_PTR send_message_and_wait( MESSAGE_PTR& _message ) throw( exception );
 
-			bool send_message(MESSAGE_PTR& _message) throw(exception);
+			bool send_message( MESSAGE_PTR& _message ) throw( exception );
 
 
-			ENUM_MESSAGE_CALLBACK_RESULT process_message(ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message) throw(exception);
+			ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
 
-			inline static CLIENT_CONTEXT* create_instance(void) {
+			inline static CLIENT_CONTEXT* create_instance( void ) {
 				return new CLIENT_CONTEXT();
 			}
 

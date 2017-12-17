@@ -27,14 +27,14 @@
 
 using namespace BBB_HVAC;
 
-THREAD_BASE::THREAD_BASE(const string& _tag) : TPROTECT_BASE(_tag)
+THREAD_BASE::THREAD_BASE( const string& _tag ) : TPROTECT_BASE( _tag )
 {
 	this->abort_thread = false;
 	this->is_running = false;
 	this->thread_tag = _tag;
 	this->do_not_self_delete = false;
 	this->is_io_thread = false;
-	this->logger = new LOGGING::LOGGER("BBB_HVAC::THREAD_BASE[" + this->thread_tag + "]");
+	this->logger = new LOGGING::LOGGER( "BBB_HVAC::THREAD_BASE[" + this->thread_tag + "]" );
 }
 
 THREAD_BASE::~THREAD_BASE()
@@ -44,40 +44,40 @@ THREAD_BASE::~THREAD_BASE()
 	return;
 }
 
-TPROTECT_BASE* THREAD_BASE::obtain_lock(void) throw(LOCK_ERROR)
+TPROTECT_BASE* THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
 {
 	try
 	{
-		this->obtain_lock_ex(&this->abort_thread);
+		this->obtain_lock_ex( &this->abort_thread );
 	}
-	catch(const LOCK_ERROR& _ex)
+	catch( const LOCK_ERROR& _ex )
 	{
-		LOG_ERROR_P("Failed to obtain lock: " + string(_ex.what()));
+		LOG_ERROR_P( "Failed to obtain lock: " + string( _ex.what() ) );
 		this->abort_thread = true;
-		THROW_EXCEPTION(LOCK_ERROR, "Failed to obtain lock in thread [" + this->thread_tag + "]");
+		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in thread [" + this->thread_tag + "]" );
 	}
 
 	return this;
 }
 
-void THREAD_BASE::pthread_func(void)
+void THREAD_BASE::pthread_func( void )
 {
-	LOG_DEBUG_P("Thread started.")
-	pthread_detach(pthread_self());
+	LOG_DEBUG_P( "Thread started." )
+	pthread_detach( pthread_self() );
 	this->is_running = true;
 
-	if(this->is_io_thread)
+	if( this->is_io_thread )
 	{
-		THREAD_REGISTRY::register_thread(this,THREAD_TYPES_ENUM::IO_THREAD);
+		THREAD_REGISTRY::register_thread( this, THREAD_TYPES_ENUM::IO_THREAD );
 	}
 	else
 	{
-		THREAD_REGISTRY::register_thread(this);
+		THREAD_REGISTRY::register_thread( this );
 	}
 
 	try
 	{
-		if(!this->thread_func())
+		if( !this->thread_func() )
 		{
 			//LOG_ERROR_P( "thread_func for [" + this->thread_tag + "] returned false." );
 		}
@@ -86,41 +86,41 @@ void THREAD_BASE::pthread_func(void)
 			//OG_DEBUG_P( "thread_func for [" + this->thread_tag + "] returned true." );
 		}
 	}
-	catch(const exception& _e)
+	catch( const exception& _e )
 	{
-		LOG_ERROR_P("Caught an unhandled exception: " + string(_e.what()));
-		LOG_ERROR_P("Aborting.");
+		LOG_ERROR_P( "Caught an unhandled exception: " + string( _e.what() ) );
+		LOG_ERROR_P( "Aborting." );
 	}
 
-	if(!this->do_not_self_delete)
+	if( !this->do_not_self_delete )
 	{
-		THREAD_REGISTRY::delete_thread(this);
+		THREAD_REGISTRY::delete_thread( this );
 	}
 
 	this->is_running = false;
-	LOG_DEBUG_P("Thread stopped.")
-	pthread_exit(nullptr);
+	LOG_DEBUG_P( "Thread stopped." )
+	pthread_exit( nullptr );
 	return;
 }
 
-void THREAD_BASE::start_thread(void)
+void THREAD_BASE::start_thread( void )
 {
-	pthread_create(&this->root_tid, nullptr, (void* (*)(void*))thread_base_shim_func, this);
+	pthread_create( &this->root_tid, nullptr, ( void* ( * )( void* ) ) thread_base_shim_func, this );
 	return;
 }
 
-string THREAD_BASE::get_thread_tag(void) const
+string THREAD_BASE::get_thread_tag( void ) const
 {
 	return this->thread_tag;
 }
 
-void THREAD_BASE::stop_thread(bool _self_delete)
+void THREAD_BASE::stop_thread( bool _self_delete )
 {
-	LOG_DEBUG_P("Attempting to stop");
+	LOG_DEBUG_P( "Attempting to stop" );
 
-	if(this->is_running == false)
+	if( this->is_running == false )
 	{
-		LOG_DEBUG_P("Thread is already dead.");
+		LOG_DEBUG_P( "Thread is already dead." );
 		return;
 	}
 
@@ -128,18 +128,18 @@ void THREAD_BASE::stop_thread(bool _self_delete)
 	this->abort_thread = true;
 	timespec st;
 
-	while(this->is_running)
+	while( this->is_running )
 	{
 		st.tv_sec = 0;
 		st.tv_nsec = 10000000; //1 milisecond
-		nsleep(&st);
+		nsleep( &st );
 	}
 
-	if(_self_delete)
+	if( _self_delete )
 	{
-		THREAD_REGISTRY::delete_thread(this);
+		THREAD_REGISTRY::delete_thread( this );
 	}
 
-	LOG_DEBUG_P("Has been stopped.");
+	LOG_DEBUG_P( "Has been stopped." );
 	return;
 }

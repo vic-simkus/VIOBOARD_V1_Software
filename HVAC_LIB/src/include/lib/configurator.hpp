@@ -38,33 +38,33 @@ namespace BBB_HVAC
 	class CONFIG_ENTRY
 	{
 	public:
-		CONFIG_ENTRY(ENUM_CONFIG_TYPES _type, const CONFIG_PARTS_TYPE& _parts);
+		CONFIG_ENTRY( ENUM_CONFIG_TYPES _type, const CONFIG_PARTS_TYPE& _parts );
 		~CONFIG_ENTRY();
 
-		int get_part_as_int(size_t _idx) const throw(exception);
-		double get_part_as_double(size_t _idx) const throw(exception);
-		string get_part_as_string(size_t _idx) const throw(exception);
+		int get_part_as_int( size_t _idx ) const throw( exception );
+		double get_part_as_double( size_t _idx ) const throw( exception );
+		string get_part_as_string( size_t _idx ) const throw( exception );
 
 		/**
 		 * Sets a specified part to the supplied value.
 		 * \note The record type is not included in the part count.  For example, an SP record has two parts - label and value.  The 'SP' is not included in the part count.
 		 */
-		void set_part(size_t _idx, int _val) throw(exception);
-		void set_part(size_t _idx, double _val) throw(exception);
-		void set_part(size_t _idx, const string& _val) throw(exception);
+		void set_part( size_t _idx, int _val ) throw( exception );
+		void set_part( size_t _idx, double _val ) throw( exception );
+		void set_part( size_t _idx, const string& _val ) throw( exception );
 
-		ENUM_CONFIG_TYPES get_type(void) const;
-		bool get_is_dirty(void) const;
+		ENUM_CONFIG_TYPES get_type( void ) const;
+		bool get_is_dirty( void ) const;
 
-		string get_id(void) const;
-		string get_id_for_human(void) const;
+		string get_id( void ) const;
+		string get_id_for_human( void ) const;
 
-		string write_self_to_file(void) const throw(exception);
+		string write_self_to_file( void ) const throw( exception );
 
-		size_t get_part_count(void) const;
+		size_t get_part_count( void ) const;
 
-		static string type_to_string(ENUM_CONFIG_TYPES _type) throw(exception);
-		static ENUM_CONFIG_TYPES string_to_type(const string& _type) throw(exception);
+		static string type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception );
+		static ENUM_CONFIG_TYPES string_to_type( const string& _type ) throw( exception );
 
 	protected:
 		ENUM_CONFIG_TYPES type;
@@ -78,19 +78,19 @@ namespace BBB_HVAC
 	{
 	public:
 		LOGGING::LOGGER __logger__;
-		CONFIGURATOR(const string& _file);
+		CONFIGURATOR( const string& _file );
 		~CONFIGURATOR();
-		void read_file(void) throw(exception);
-		void write_file(void) const throw(exception);
+		void read_file( void ) throw( exception );
+		void write_file( void ) const throw( exception );
 
-		const CONFIG_TYPE_INDEX_TYPE& get_do_index(void) const;
-		const CONFIG_TYPE_INDEX_TYPE& get_ai_index(void) const;
-		const CONFIG_TYPE_INDEX_TYPE& get_sp_index(void) const;
-		const CONFIG_TYPE_INDEX_TYPE& get_board_index(void) const;
+		const CONFIG_TYPE_INDEX_TYPE& get_do_index( void ) const;
+		const CONFIG_TYPE_INDEX_TYPE& get_ai_index( void ) const;
+		const CONFIG_TYPE_INDEX_TYPE& get_sp_index( void ) const;
+		const CONFIG_TYPE_INDEX_TYPE& get_board_index( void ) const;
 
-		CONFIG_ENTRY& get_config_entry(size_t _idx)  throw(exception);
+		CONFIG_ENTRY& get_config_entry( size_t _idx )  throw( exception );
 
-		const CONFIG_ENTRY& get_type_by_id(ENUM_CONFIG_TYPES _type,const string& _id)  throw(exception);
+		const CONFIG_ENTRY& get_type_by_id( ENUM_CONFIG_TYPES _type, const string& _id )  throw( exception );
 
 	protected:
 		string file_name;
@@ -99,10 +99,10 @@ namespace BBB_HVAC
 
 	private:
 
-		void normalize_file_names(void) throw(exception);
-		void check_file_permissions(void) throw(exception);
-		void process_file(void) throw(exception);
-		void process_line(size_t _line_idx) throw(exception);
+		void normalize_file_names( void ) throw( exception );
+		void check_file_permissions( void ) throw( exception );
+		void process_file( void ) throw( exception );
+		void process_line( size_t _line_idx ) throw( exception );
 
 		char* buffer;
 

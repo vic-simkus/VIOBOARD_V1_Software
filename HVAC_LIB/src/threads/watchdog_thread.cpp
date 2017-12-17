@@ -33,15 +33,15 @@ using namespace BBB_HVAC;
 namespace BBB_HVAC
 {
 
-	WATCHDOG::WATCHDOG() : THREAD_BASE("WATCHDOG")
+	WATCHDOG::WATCHDOG() : THREAD_BASE( "WATCHDOG" )
 	{
 		this->logger = new LOGGING::LOGGER();
-		INIT_LOGGER_P("BBB_HVAC::WATCHDOG_THREAD");
+		INIT_LOGGER_P( "BBB_HVAC::WATCHDOG_THREAD" );
 		this->counter = 0;
 		return;
 	}
 
-	void WATCHDOG::reset_counter(void)
+	void WATCHDOG::reset_counter( void )
 	{
 		this->counter = 0;
 	}
@@ -53,19 +53,19 @@ namespace BBB_HVAC
 		return;
 	}
 
-	bool WATCHDOG::thread_func(void)
+	bool WATCHDOG::thread_func( void )
 	{
-		this->reset_sleep_timespec(GC_WATCHDOG_SLEEP_NSEC);
+		this->reset_sleep_timespec( GC_WATCHDOG_SLEEP_NSEC );
 
-		while(this->abort_thread == false)
+		while( this->abort_thread == false )
 		{
 			this->nsleep();
 			THREAD_REGISTRY::init_cleanup();
 
-			if(this->counter >= GC_WATCHDOG_ATTEMPTS)
+			if( this->counter >= GC_WATCHDOG_ATTEMPTS )
 			{
-				LOG_ERROR_P("Watchdog thread terminating program.");
-				kill(0,SIGTERM);
+				LOG_ERROR_P( "Watchdog thread terminating program." );
+				kill( 0, SIGTERM );
 				return false;
 			}
 

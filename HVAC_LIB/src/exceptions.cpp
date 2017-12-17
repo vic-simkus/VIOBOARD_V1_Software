@@ -24,9 +24,9 @@
 #include <string.h>
 
 #include <sstream>
-std::string BBB_HVAC::create_perror_string(const string& _msg)
+std::string BBB_HVAC::create_perror_string( const string& _msg )
 {
 	std::stringstream ret;
-	ret << _msg << "; system error; errno:" << errno << ", message: " << strerror(errno);
+	ret << _msg << "; system error; errno:" << errno << ", message: " << strerror( errno );
 	return ret.str();
 }

@@ -40,13 +40,13 @@ namespace BBB_HVAC
 		 *
 		 ************************************************************************/
 
-		OUTGOING_MESSAGE_QUEUE::OUTGOING_MESSAGE_QUEUE(const std::string& _tag) : TPROTECT_BASE(_tag)
+		OUTGOING_MESSAGE_QUEUE::OUTGOING_MESSAGE_QUEUE( const std::string& _tag ) : TPROTECT_BASE( _tag )
 		{
-			this->logger = new LOGGING::LOGGER("BBB_HVAC::IOCOMM::OUTGOING_MESSAGE_QUEUE[" + this->tag + "]");
+			this->logger = new LOGGING::LOGGER( "BBB_HVAC::IOCOMM::OUTGOING_MESSAGE_QUEUE[" + this->tag + "]" );
 
-			if(pthread_cond_init(&this->conditional, nullptr) != 0)
+			if( pthread_cond_init( &this->conditional, nullptr ) != 0 )
 			{
-				LOG_ERROR_P("Failed to initializer conditional.");
+				LOG_ERROR_P( "Failed to initializer conditional." );
 			}
 
 			this->id_seq = 0;
@@ -55,12 +55,12 @@ namespace BBB_HVAC
 
 		OUTGOING_MESSAGE_QUEUE::~OUTGOING_MESSAGE_QUEUE()
 		{
-			if(pthread_cond_destroy(&this->conditional) != 0)
+			if( pthread_cond_destroy( &this->conditional ) != 0 )
 			{
-				LOG_ERROR_P("Failed to destroy conditional.");
+				LOG_ERROR_P( "Failed to destroy conditional." );
 			}
 
-			while(!this->message_queue.empty())
+			while( !this->message_queue.empty() )
 			{
 				this->message_queue.pop();
 			}
@@ -70,83 +70,83 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void OUTGOING_MESSAGE_QUEUE::signal(void)
+		void OUTGOING_MESSAGE_QUEUE::signal( void )
 		{
 			/*
 			 * We're assuming that we hold the lock right now.
 			 */
-			if(pthread_cond_signal(&this->conditional) != 0)
+			if( pthread_cond_signal( &this->conditional ) != 0 )
 			{
-				LOG_ERROR_P("Failed to signal conditional.");
+				LOG_ERROR_P( "Failed to signal conditional." );
 			}
 
 			this->release_lock();
 			return;
 		}
 
-		bool OUTGOING_MESSAGE_QUEUE::add_message(const OUTGOING_MESSAGE& _msg)
+		bool OUTGOING_MESSAGE_QUEUE::add_message( const OUTGOING_MESSAGE& _msg )
 		{
 			bool ret = true;
 			this->obtain_lock_ex();
 
-			if(this->message_queue.size() > 8)
+			if( this->message_queue.size() >= GC_OUTGOING_MESSAGE_QUEUE_SIZE )
 			{
 				this->release_lock();
 				ret = false;
-				LOG_ERROR_P("Outgoing message queue is full.");
+				LOG_ERROR_P( "Outgoing message queue is full." );
 			}
 			else
 			{
 				OUTGOING_MESSAGE msg = _msg;
 				msg.id = this->id_seq;
 				this->id_seq += 1;
-				this->message_queue.push(_msg);
+				this->message_queue.push( _msg );
 				this->signal();
 			}
 
 			return ret;
 		}
 
-		bool OUTGOING_MESSAGE_QUEUE::has_more_messages(void) const
+		bool OUTGOING_MESSAGE_QUEUE::has_more_messages( void ) const
 		{
 			return !this->message_queue.empty();
 		}
 
-		OUTGOING_MESSAGE OUTGOING_MESSAGE_QUEUE::get_message(void)
+		OUTGOING_MESSAGE OUTGOING_MESSAGE_QUEUE::get_message( void )
 		{
 			OUTGOING_MESSAGE ret = this->message_queue.front();
 			this->message_queue.pop();
 			return ret;
 		}
 
-		void OUTGOING_MESSAGE_QUEUE::get_lock(void) throw(LOCK_ERROR)
+		void OUTGOING_MESSAGE_QUEUE::get_lock( void ) throw( LOCK_ERROR )
 		{
 			this->obtain_lock_ex();
 			return;
 		}
 
-		void OUTGOING_MESSAGE_QUEUE::put_lock(void) throw(LOCK_ERROR)
+		void OUTGOING_MESSAGE_QUEUE::put_lock( void ) throw( LOCK_ERROR )
 		{
-			if(this->release_lock() == false)
+			if( this->release_lock() == false )
 			{
-				THROW_EXCEPTION(LOCK_ERROR, "Failed to release lock.  Check logs.");
+				THROW_EXCEPTION( LOCK_ERROR, "Failed to release lock.  Check logs." );
 			}
 
 			return;
 		}
 
-		bool OUTGOING_MESSAGE_QUEUE::wait_for_signal(void) throw(LOCK_ERROR)
+		bool OUTGOING_MESSAGE_QUEUE::wait_for_signal( void ) throw( LOCK_ERROR )
 		{
 			this->get_lock();
 			timespec timeout_time;
 			timeout_time.tv_nsec = 0;
 			timeout_time.tv_sec = 0;
-			timeout_time.tv_sec = time(nullptr) + 2;
-			int rc = pthread_cond_timedwait(&(this->conditional), &(this->mutex), &timeout_time);
+			timeout_time.tv_sec = time( nullptr ) + 2;
+			int rc = pthread_cond_timedwait( & ( this->conditional ), & ( this->mutex ), &timeout_time );
 
-			if(rc != 0)
+			if( rc != 0 )
 			{
-				if(rc == ETIMEDOUT)
+				if( rc == ETIMEDOUT )
 				{
 					/*
 					 * Apparently even when a wait for a conditional times out the mutex is still acquired by us.
@@ -156,7 +156,7 @@ namespace BBB_HVAC
 				}
 				else
 				{
-					THROW_EXCEPTION(LOCK_ERROR, "Failed to obtain lock for reasons other than timeout.");
+					THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock for reasons other than timeout." );
 				}
 			}
 			else
@@ -173,11 +173,11 @@ namespace BBB_HVAC
 
 		CACHE_ENTRY_BASE::CACHE_ENTRY_BASE()
 		{
-			clock_gettime(CLOCK_MONOTONIC, &this->time_spec);
+			clock_gettime( CLOCK_MONOTONIC, &this->time_spec );
 			return;
 		}
 
-		CACHE_ENTRY_BASE::CACHE_ENTRY_BASE(const CACHE_ENTRY_BASE& _src)
+		CACHE_ENTRY_BASE::CACHE_ENTRY_BASE( const CACHE_ENTRY_BASE& _src )
 		{
 			this->time_spec = _src.time_spec;
 			return;
@@ -190,7 +190,7 @@ namespace BBB_HVAC
 			return;
 		}
 
-		CACHE_ENTRY_BASE::CACHE_ENTRY_BASE(const std::string& _source)
+		CACHE_ENTRY_BASE::CACHE_ENTRY_BASE( const std::string& _source )
 		{
 			/*
 			 * Basically the data we will be getting supplied is in the format of:
@@ -200,25 +200,25 @@ namespace BBB_HVAC
 			 */
 			unsigned char buffer_left[MAX_BUFF_SIZE];
 			unsigned char buffer_right[MAX_BUFF_SIZE];
-			memset(buffer_left, 0, MAX_BUFF_SIZE);
-			memset(buffer_right, 0, MAX_BUFF_SIZE);
-			unsigned char* work_buffer = (unsigned char*)(&buffer_left);
+			memset( buffer_left, 0, MAX_BUFF_SIZE );
+			memset( buffer_right, 0, MAX_BUFF_SIZE );
+			unsigned char* work_buffer = ( unsigned char* )( &buffer_left );
 			const char* source_buffer = _source.data();
 			size_t buffer_index = 0;
 
-			for(size_t i = 0; i < _source.length(); i++)
+			for( size_t i = 0; i < _source.length(); i++ )
 			{
-				if(source_buffer[i] == '.')
+				if( source_buffer[i] == '.' )
 				{
-					work_buffer = (unsigned char*)(&buffer_right);
+					work_buffer = ( unsigned char* )( &buffer_right );
 					buffer_index = 0;
 				}
-				else if(source_buffer[i] >= 48 && source_buffer[i] <= 57)   // 0 ... 9
+				else if( source_buffer[i] >= 48 && source_buffer[i] <= 57 ) // 0 ... 9
 				{
 					work_buffer[buffer_index] = source_buffer[i];
 					buffer_index += 1;
 
-					if(buffer_index == MAX_BUFF_SIZE)
+					if( buffer_index == MAX_BUFF_SIZE )
 					{
 						/*
 						 * Overflow.  Some dickhead passed bad data to us.
@@ -232,36 +232,36 @@ namespace BBB_HVAC
 					 * A character is neither a number or a period.
 					 * If we have found a first number already break out of the loop
 					 */
-					if(buffer_index > 0)
+					if( buffer_index > 0 )
 					{
 						break;
 					}
 				}
 			} //main loop
 
-			this->time_spec.tv_sec = strtol((const char*) buffer_left, nullptr, 10);
-			this->time_spec.tv_nsec = strtol((const char*) buffer_right, nullptr, 10);
+			this->time_spec.tv_sec = strtol( ( const char* ) buffer_left, nullptr, 10 );
+			this->time_spec.tv_nsec = strtol( ( const char* ) buffer_right, nullptr, 10 );
 			return;
 		}
 
-		std::string CACHE_ENTRY_BASE::to_string(void) const
+		std::string CACHE_ENTRY_BASE::to_string( void ) const
 		{
 			std::stringstream out;
 			out << "[" << this->time_spec.tv_sec << "." << this->time_spec.tv_nsec << ":" << this->value_to_string() << "]";
 			return out.str();
 		}
 
-		void CACHE_ENTRY_BASE::from_string(const std::string& _source)
+		void CACHE_ENTRY_BASE::from_string( const std::string& _source )
 		{
-			size_t col_sep_idx = _source.find_last_of(':');
-			size_t brac_sep_idx = _source.find_last_of(']');
+			size_t col_sep_idx = _source.find_last_of( ':' );
+			size_t brac_sep_idx = _source.find_last_of( ']' );
 
-			if(brac_sep_idx <= col_sep_idx)
+			if( brac_sep_idx <= col_sep_idx )
 			{
 				return;
 			}
 
-			this->value_from_string(_source.substr(col_sep_idx + 1, brac_sep_idx - (col_sep_idx + 1)));
+			this->value_from_string( _source.substr( col_sep_idx + 1, brac_sep_idx - ( col_sep_idx + 1 ) ) );
 		}
 
 		/************************************************************************
@@ -284,31 +284,31 @@ namespace BBB_HVAC
 			return;
 		}
 
-		CACHE_ENTRY_16BIT::CACHE_ENTRY_16BIT(uint16_t _val) : CACHE_ENTRY_BASE()
+		CACHE_ENTRY_16BIT::CACHE_ENTRY_16BIT( uint16_t _val ) : CACHE_ENTRY_BASE()
 		{
 			this->value = _val;
 			return;
 		}
 
-		CACHE_ENTRY_16BIT::CACHE_ENTRY_16BIT(const std::string& _source) : CACHE_ENTRY_BASE(_source)
+		CACHE_ENTRY_16BIT::CACHE_ENTRY_16BIT( const std::string& _source ) : CACHE_ENTRY_BASE( _source )
 		{
-			this->from_string(_source);
+			this->from_string( _source );
 			return;
 		}
 
-		uint16_t CACHE_ENTRY_16BIT::get_value(void) const
+		uint16_t CACHE_ENTRY_16BIT::get_value( void ) const
 		{
 			return this->value;
 		}
 
-		std::string CACHE_ENTRY_16BIT::value_to_string(void) const
+		std::string CACHE_ENTRY_16BIT::value_to_string( void ) const
 		{
-			return num_to_str(this->value);
+			return num_to_str( this->value );
 		}
 
-		void CACHE_ENTRY_16BIT::value_from_string(const std::string& _str)
+		void CACHE_ENTRY_16BIT::value_from_string( const std::string& _str )
 		{
-			this->value = (uint16_t) stoul(_str);
+			this->value = ( uint16_t ) stoul( _str );
 		}
 
 		/************************************************************************
@@ -331,31 +331,31 @@ namespace BBB_HVAC
 			this->value = UINT8_MAX;
 		}
 
-		CACHE_ENTRY_8BIT::CACHE_ENTRY_8BIT(uint8_t _val) : CACHE_ENTRY_BASE()
+		CACHE_ENTRY_8BIT::CACHE_ENTRY_8BIT( uint8_t _val ) : CACHE_ENTRY_BASE()
 		{
 			this->value = _val;
 			return;
 		}
 
-		CACHE_ENTRY_8BIT::CACHE_ENTRY_8BIT(const std::string& _source) : CACHE_ENTRY_BASE(_source)
+		CACHE_ENTRY_8BIT::CACHE_ENTRY_8BIT( const std::string& _source ) : CACHE_ENTRY_BASE( _source )
 		{
-			this->from_string(_source);
+			this->from_string( _source );
 			return;
 		}
 
-		uint8_t CACHE_ENTRY_8BIT::get_value(void) const
+		uint8_t CACHE_ENTRY_8BIT::get_value( void ) const
 		{
 			return this->value;
 		}
 
-		std::string CACHE_ENTRY_8BIT::value_to_string(void) const
+		std::string CACHE_ENTRY_8BIT::value_to_string( void ) const
 		{
-			return num_to_str(this->value);
+			return num_to_str( this->value );
 		}
 
-		void CACHE_ENTRY_8BIT::value_from_string(const std::string& _str)
+		void CACHE_ENTRY_8BIT::value_from_string( const std::string& _str )
 		{
-			this->value = (uint8_t) stoul(_str);
+			this->value = ( uint8_t ) stoul( _str );
 		}
 
 		/************************************************************************
@@ -369,12 +369,12 @@ namespace BBB_HVAC
 			return;
 		}
 
-		ADC_CACHE_ENTRY::ADC_CACHE_ENTRY(const std::string& _source) : CACHE_ENTRY_16BIT(_source)
+		ADC_CACHE_ENTRY::ADC_CACHE_ENTRY( const std::string& _source ) : CACHE_ENTRY_16BIT( _source )
 		{
 			return;
 		}
 
-		ADC_CACHE_ENTRY::ADC_CACHE_ENTRY(uint16_t _val) : CACHE_ENTRY_16BIT(_val)
+		ADC_CACHE_ENTRY::ADC_CACHE_ENTRY( uint16_t _val ) : CACHE_ENTRY_16BIT( _val )
 		{
 			return;
 		}
@@ -390,12 +390,12 @@ namespace BBB_HVAC
 			return;
 		}
 
-		DO_CACHE_ENTRY::DO_CACHE_ENTRY(uint8_t _value) : CACHE_ENTRY_8BIT(_value)
+		DO_CACHE_ENTRY::DO_CACHE_ENTRY( uint8_t _value ) : CACHE_ENTRY_8BIT( _value )
 		{
 			return;
 		}
 
-		DO_CACHE_ENTRY::DO_CACHE_ENTRY(const std::string& _source) : CACHE_ENTRY_8BIT(_source)
+		DO_CACHE_ENTRY::DO_CACHE_ENTRY( const std::string& _source ) : CACHE_ENTRY_8BIT( _source )
 		{
 			return;
 		}
@@ -412,12 +412,12 @@ namespace BBB_HVAC
 			return;
 		}
 
-		PMIC_CACHE_ENTRY::PMIC_CACHE_ENTRY(uint8_t _value) : CACHE_ENTRY_8BIT(_value)
+		PMIC_CACHE_ENTRY::PMIC_CACHE_ENTRY( uint8_t _value ) : CACHE_ENTRY_8BIT( _value )
 		{
 			return;
 		}
 
-		PMIC_CACHE_ENTRY::PMIC_CACHE_ENTRY(const std::string& _source) : CACHE_ENTRY_8BIT(_source)
+		PMIC_CACHE_ENTRY::PMIC_CACHE_ENTRY( const std::string& _source ) : CACHE_ENTRY_8BIT( _source )
 		{
 			return;
 		}
@@ -432,11 +432,11 @@ namespace BBB_HVAC
 		{
 			return;
 		}
-		CAL_VALUE_ENTRY::CAL_VALUE_ENTRY(uint16_t _val) : CACHE_ENTRY_16BIT(_val)
+		CAL_VALUE_ENTRY::CAL_VALUE_ENTRY( uint16_t _val ) : CACHE_ENTRY_16BIT( _val )
 		{
 			return;
 		}
-		CAL_VALUE_ENTRY::CAL_VALUE_ENTRY(const std::string& _source) : CACHE_ENTRY_16BIT(_source)
+		CAL_VALUE_ENTRY::CAL_VALUE_ENTRY( const std::string& _source ) : CACHE_ENTRY_16BIT( _source )
 		{
 			return;
 		}
@@ -457,12 +457,12 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::add_pmic_status(uint8_t _value)
+		void BOARD_STATE_CACHE::add_pmic_status( uint8_t _value )
 		{
-			this->pmic_cache[this->pmic_cache_index] = PMIC_CACHE_ENTRY(_value);
+			this->pmic_cache[this->pmic_cache_index] = PMIC_CACHE_ENTRY( _value );
 			this->pmic_cache_index += 1;
 
-			if(this->pmic_cache_index == GC_IO_STATE_BUFFER_DEPTH)
+			if( this->pmic_cache_index == GC_IO_STATE_BUFFER_DEPTH )
 			{
 				this->pmic_cache_index = 0;
 			}
@@ -470,12 +470,12 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::add_do_status(uint8_t _value)
+		void BOARD_STATE_CACHE::add_do_status( uint8_t _value )
 		{
-			this->do_cache[this->do_cache_index] = DO_CACHE_ENTRY(_value);
+			this->do_cache[this->do_cache_index] = DO_CACHE_ENTRY( _value );
 			this->do_cache_index += 1;
 
-			if(this->do_cache_index == GC_IO_STATE_BUFFER_DEPTH)
+			if( this->do_cache_index == GC_IO_STATE_BUFFER_DEPTH )
 			{
 				this->do_cache_index = 0;
 			}
@@ -483,21 +483,21 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::add_adc_value(size_t _x_index, uint16_t _value) throw(logic_error)
+		void BOARD_STATE_CACHE::add_adc_value( size_t _x_index, uint16_t _value ) throw( logic_error )
 		{
-			if(_x_index >= GC_IO_AI_COUNT)
+			if( _x_index >= GC_IO_AI_COUNT )
 			{
-				throw out_of_range("Supplied x_index " + num_to_str(_x_index) + " is greater than number of defined analog inputs.  See GC_IO_AI_COUNT.");
+				throw out_of_range( "Supplied x_index " + num_to_str( _x_index ) + " is greater than number of defined analog inputs.  See GC_IO_AI_COUNT." );
 			}
 
-			this->adc_cache[this->adc_cache_index][_x_index] = ADC_CACHE_ENTRY(_value);
+			this->adc_cache[this->adc_cache_index][_x_index] = ADC_CACHE_ENTRY( _value );
 
-			if(_x_index == GC_IO_AI_COUNT - 1)
+			if( _x_index == GC_IO_AI_COUNT - 1 )
 			{
 				this->adc_cache_index += 1;
 			}
 
-			if(this->adc_cache_index == GC_IO_STATE_BUFFER_DEPTH)
+			if( this->adc_cache_index == GC_IO_STATE_BUFFER_DEPTH )
 			{
 				this->adc_cache_index = 0;
 			}
@@ -505,30 +505,30 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::add_l1_cal_value(size_t _x_index, uint16_t _value) throw(logic_error)
+		void BOARD_STATE_CACHE::add_l1_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error )
 		{
-			this->add_cal_value(_x_index,_value,this->l1_cal_cache_index,(this->cal_l1_cache));
+			this->add_cal_value( _x_index, _value, this->l1_cal_cache_index, ( this->cal_l1_cache ) );
 		}
-		void BOARD_STATE_CACHE::add_l2_cal_value(size_t _x_index, uint16_t _value) throw(logic_error)
+		void BOARD_STATE_CACHE::add_l2_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error )
 		{
-			this->add_cal_value(_x_index,_value,this->l1_cal_cache_index,(this->cal_l2_cache));
+			this->add_cal_value( _x_index, _value, this->l1_cal_cache_index, ( this->cal_l2_cache ) );
 		}
 
-		void BOARD_STATE_CACHE::add_cal_value(size_t _x_index, uint16_t _value,size_t& _idx,CAL_VALUE_ENTRY(& _dest)[GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT]) throw(logic_error)
+		void BOARD_STATE_CACHE::add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] ) throw( logic_error )
 		{
-			if(_x_index >= GC_IO_AI_COUNT)
+			if( _x_index >= GC_IO_AI_COUNT )
 			{
-				throw out_of_range("Supplied x_index is greater than number of defined analog inputs.  See GC_IO_AI_COUNT.");
+				throw out_of_range( "Supplied x_index is greater than number of defined analog inputs.  See GC_IO_AI_COUNT." );
 			}
 
-			_dest[_idx][_x_index] = CAL_VALUE_ENTRY(_value);
+			_dest[_idx][_x_index] = CAL_VALUE_ENTRY( _value );
 
-			if(_x_index == GC_IO_AI_COUNT - 1)
+			if( _x_index == GC_IO_AI_COUNT - 1 )
 			{
 				_idx += 1;
 			}
 
-			if(_idx == GC_IO_STATE_BUFFER_DEPTH)
+			if( _idx == GC_IO_STATE_BUFFER_DEPTH )
 			{
 				_idx = 0;
 			}
@@ -536,38 +536,38 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::get_adc_cache(ADC_CACHE_ENTRY(&_dest)[GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT])
+		void BOARD_STATE_CACHE::get_adc_cache( ADC_CACHE_ENTRY( &_dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] )
 		{
-			for(int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++)
+			for( int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
 			{
-				for(int i2 = 0; i2 < GC_IO_AI_COUNT; i2++)
+				for( int i2 = 0; i2 < GC_IO_AI_COUNT; i2++ )
 				{
 					_dest[i][i2] = this->adc_cache[i][i2];
 				}
 			}
 		}
 
-		void BOARD_STATE_CACHE::get_do_cache(DO_CACHE_ENTRY(& _dest)[GC_IO_STATE_BUFFER_DEPTH])
+		void BOARD_STATE_CACHE::get_do_cache( DO_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
 		{
-			for(int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++)
+			for( int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
 			{
 				_dest[i] = this->do_cache[i];
 			}
 		}
 
-		void BOARD_STATE_CACHE::get_pmic_cache(PMIC_CACHE_ENTRY(& _dest)[GC_IO_STATE_BUFFER_DEPTH])
+		void BOARD_STATE_CACHE::get_pmic_cache( PMIC_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
 		{
-			for(int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++)
+			for( int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
 			{
 				_dest[i] = this->pmic_cache[i];
 			}
 		}
 
-		void BOARD_STATE_CACHE::get_latest_adc_values(ADC_CACHE_ENTRY(& _dest)[GC_IO_AI_COUNT])
+		void BOARD_STATE_CACHE::get_latest_adc_values( ADC_CACHE_ENTRY( & _dest ) [GC_IO_AI_COUNT] )
 		{
 			size_t index = 0;
 
-			if(this->adc_cache_index == 0)
+			if( this->adc_cache_index == 0 )
 			{
 				index = GC_IO_STATE_BUFFER_DEPTH - 1;
 			}
@@ -576,7 +576,7 @@ namespace BBB_HVAC
 				index = 0;
 			}
 
-			for(size_t i = 0; i < GC_IO_AI_COUNT; i++)
+			for( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 			{
 				_dest[i] = this->adc_cache[index][i];
 			}
@@ -584,9 +584,9 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::get_latest_do_status(DO_CACHE_ENTRY& _dest)
+		void BOARD_STATE_CACHE::get_latest_do_status( DO_CACHE_ENTRY& _dest )
 		{
-			if(this->do_cache_index == 0)
+			if( this->do_cache_index == 0 )
 			{
 				_dest = this->do_cache[GC_IO_STATE_BUFFER_DEPTH - 1 ];
 			}
@@ -598,9 +598,9 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::get_latest_pmic_status(PMIC_CACHE_ENTRY& _dest)
+		void BOARD_STATE_CACHE::get_latest_pmic_status( PMIC_CACHE_ENTRY& _dest )
 		{
-			if(this->pmic_cache_index == 0)
+			if( this->pmic_cache_index == 0 )
 			{
 				_dest = this->pmic_cache[GC_IO_STATE_BUFFER_DEPTH - 1 ];
 			}
@@ -612,21 +612,21 @@ namespace BBB_HVAC
 			return;
 		}
 
-		uint16_t BOARD_STATE_CACHE::get_boot_count(void) const
+		uint16_t BOARD_STATE_CACHE::get_boot_count( void ) const
 		{
 			return this->boot_count;
 		}
 
-		void BOARD_STATE_CACHE::set_boot_count(uint16_t _value)
+		void BOARD_STATE_CACHE::set_boot_count( uint16_t _value )
 		{
 			this->boot_count = _value;
 		}
 
-		void BOARD_STATE_CACHE::get_latest_l1_cal_values(CAL_VALUE_ENTRY(& _dest)[GC_IO_AI_COUNT]) const
+		void BOARD_STATE_CACHE::get_latest_l1_cal_values( CAL_VALUE_ENTRY( & _dest ) [GC_IO_AI_COUNT] ) const
 		{
 			size_t index = 0;
 
-			if(this->l1_cal_cache_index == 0)
+			if( this->l1_cal_cache_index == 0 )
 			{
 				index = GC_IO_STATE_BUFFER_DEPTH - 1;
 			}
@@ -635,16 +635,16 @@ namespace BBB_HVAC
 				index = 0;
 			}
 
-			for(size_t i = 0; i < GC_IO_AI_COUNT; i++)
+			for( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 			{
 				_dest[i] = this->cal_l1_cache[index][i];
 			}
 		}
-		void BOARD_STATE_CACHE::get_latest_l2_cal_values(CAL_VALUE_ENTRY(& _dest)[GC_IO_AI_COUNT]) const
+		void BOARD_STATE_CACHE::get_latest_l2_cal_values( CAL_VALUE_ENTRY( & _dest ) [GC_IO_AI_COUNT] ) const
 		{
 			size_t index = 0;
 
-			if(this->l2_cal_cache_index == 0)
+			if( this->l2_cal_cache_index == 0 )
 			{
 				index = GC_IO_STATE_BUFFER_DEPTH - 1;
 			}
@@ -653,7 +653,7 @@ namespace BBB_HVAC
 				index = 0;
 			}
 
-			for(size_t i = 0; i < GC_IO_AI_COUNT; i++)
+			for( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 			{
 				_dest[i] = this->cal_l2_cache[index][i];
 			}
@@ -674,7 +674,7 @@ namespace BBB_HVAC
 			return;
 		}
 
-		OUTGOING_MESSAGE::OUTGOING_MESSAGE(const unsigned char* _buffer, const size_t _length)
+		OUTGOING_MESSAGE::OUTGOING_MESSAGE( const unsigned char* _buffer, const size_t _length )
 		{
 			/*
 			 * This is fucking brain dead
@@ -686,14 +686,14 @@ namespace BBB_HVAC
 			} );
 
 			 */
-			this->message.reset(new unsigned char [_length], deleter_char_array);
+			this->message.reset( new unsigned char [_length], deleter_char_array );
 			this->message_length = _length;
-			memcpy(this->message.get(), _buffer, _length);
+			memcpy( this->message.get(), _buffer, _length );
 			this->is_new = true;
 			return;
 		}
 
-		OUTGOING_MESSAGE::OUTGOING_MESSAGE(const OUTGOING_MESSAGE& _src)
+		OUTGOING_MESSAGE::OUTGOING_MESSAGE( const OUTGOING_MESSAGE& _src )
 		{
 			this->message = _src.message;
 			this->is_new = _src.is_new;

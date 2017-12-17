@@ -65,15 +65,15 @@ namespace BBB_HVAC
 		class LOG_CONFIGURATOR : public TPROTECT_BASE
 		{
 		public:
-			LOG_CONFIGURATOR(ENUM_LOG_LEVEL _level);
+			LOG_CONFIGURATOR( ENUM_LOG_LEVEL _level );
 			~LOG_CONFIGURATOR();
 
-			ENUM_LOG_LEVEL get_level(void) const;
+			ENUM_LOG_LEVEL get_level( void ) const;
 
-			static LOG_CONFIGURATOR* get_root_configurator(void);
-			static void destroy_root_configurator(void);
+			static LOG_CONFIGURATOR* get_root_configurator( void );
+			static void destroy_root_configurator( void );
 
-			void log(const string& _log_name,const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function);
+			void log( const string& _log_name, const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function );
 
 		protected:
 			ENUM_LOG_LEVEL level;
@@ -86,15 +86,15 @@ namespace BBB_HVAC
 		{
 		public:
 			LOGGER();
-			LOGGER(const string& _name);
-			void log_trace(const string& _msg, const string& _file, int _line, const string& _function);
-			void log_debug(const string& _msg, const string& _file, int _line, const string& _function);
-			void log_info(const string& _msg, const string& _file, int _line, const string& _function);
-			void log_warning(const string& _msg, const string& _file, int _line, const string& _function);
-			void log_error(const string& _msg, const string& _file, int _line, const string& _function);
+			LOGGER( const string& _name );
+			void log_trace( const string& _msg, const string& _file, int _line, const string& _function );
+			void log_debug( const string& _msg, const string& _file, int _line, const string& _function );
+			void log_info( const string& _msg, const string& _file, int _line, const string& _function );
+			void log_warning( const string& _msg, const string& _file, int _line, const string& _function );
+			void log_error( const string& _msg, const string& _file, int _line, const string& _function );
 
-			void log(const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function);
-			void configure(const string& _name, const ENUM_LOG_LEVEL& _level = ENUM_LOG_LEVEL::INVALID);
+			void log( const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function );
+			void configure( const string& _name, const ENUM_LOG_LEVEL& _level = ENUM_LOG_LEVEL::INVALID );
 
 		protected:
 			string name;

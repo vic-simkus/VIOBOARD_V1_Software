@@ -27,10 +27,10 @@ using namespace BBB_HVAC;
 
 THREAD_REGISTRY* THREAD_REGISTRY::global_instance = nullptr;
 
-THREAD_REGISTRY::THREAD_REGISTRY(const string& _tag) : TPROTECT_BASE(_tag)
+THREAD_REGISTRY::THREAD_REGISTRY( const string& _tag ) : TPROTECT_BASE( _tag )
 {
 	this->logger = new LOGGING::LOGGER();
-	INIT_LOGGER_P("BBB_HVAC::THREAD_REGISTRY [" + _tag + + "]");
+	INIT_LOGGER_P( "BBB_HVAC::THREAD_REGISTRY [" + _tag + + "]" );
 	this->in_stop_all = false;
 	return;
 }
@@ -41,41 +41,41 @@ THREAD_REGISTRY::~THREAD_REGISTRY()
 	this->logger = nullptr;
 }
 
-void THREAD_REGISTRY::register_thread(THREAD_BASE* _thread,THREAD_TYPES_ENUM _type) throw(runtime_error)
+void THREAD_REGISTRY::register_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type ) throw( runtime_error )
 {
-	get_instance()->reg_thread(_thread,_type);
+	get_instance()->reg_thread( _thread, _type );
 }
 
-void THREAD_REGISTRY::delete_thread(THREAD_BASE* _thread) throw(runtime_error)
+void THREAD_REGISTRY::delete_thread( THREAD_BASE* _thread ) throw( runtime_error )
 {
-	get_instance()->del_thread(_thread, true);
+	get_instance()->del_thread( _thread, true );
 }
 
-void THREAD_REGISTRY::stop_all(void) throw(runtime_error)
+void THREAD_REGISTRY::stop_all( void ) throw( runtime_error )
 {
 	get_instance()->stop_all_threads();
 }
 
-void THREAD_REGISTRY::init_cleanup(void) throw(runtime_error)
+void THREAD_REGISTRY::init_cleanup( void ) throw( runtime_error )
 {
-	get_instance()->cleanup(true);
+	get_instance()->cleanup( true );
 }
 
-THREAD_REGISTRY* THREAD_REGISTRY::get_instance(void)
+THREAD_REGISTRY* THREAD_REGISTRY::get_instance( void )
 {
-	if(THREAD_REGISTRY::global_instance == nullptr)
+	if( THREAD_REGISTRY::global_instance == nullptr )
 	{
-		THREAD_REGISTRY::global_instance = new THREAD_REGISTRY("THREAD_REGISTRY");
+		THREAD_REGISTRY::global_instance = new THREAD_REGISTRY( "THREAD_REGISTRY" );
 	}
 
 	return THREAD_REGISTRY::global_instance;
 }
 
-bool THREAD_REGISTRY::is_thread_active(const THREAD_BASE* _ptr) const
+bool THREAD_REGISTRY::is_thread_active( const THREAD_BASE* _ptr ) const
 {
-	for(vector<THREAD_BASE*>::const_iterator i = this->active_threads.begin(); i != this->active_threads.end(); ++i)
+	for( vector<THREAD_BASE*>::const_iterator i = this->active_threads.begin(); i != this->active_threads.end(); ++i )
 	{
-		if((*i) == _ptr)
+		if( ( *i ) == _ptr )
 		{
 			return true;
 		}
@@ -84,73 +84,73 @@ bool THREAD_REGISTRY::is_thread_active(const THREAD_BASE* _ptr) const
 	return false;
 }
 
-void THREAD_REGISTRY::reg_thread(THREAD_BASE* _thread, THREAD_TYPES_ENUM _type) throw(runtime_error)
+void THREAD_REGISTRY::reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type ) throw( runtime_error )
 {
-	if(this->in_stop_all)
+	if( this->in_stop_all )
 	{
-		LOG_ERROR_P("Tried to register thread while in stop-all mode.");
+		LOG_ERROR_P( "Tried to register thread while in stop-all mode." );
 		return;
 	}
 
 	this->obtain_lock_ex();
 
-	if(this->is_thread_active(_thread))
+	if( this->is_thread_active( _thread ) )
 	{
 		this->release_lock();
-		THROW_EXCEPTION(runtime_error, "Tried to register more than once a thread with the same instance pointer.");
+		THROW_EXCEPTION( runtime_error, "Tried to register more than once a thread with the same instance pointer." );
 	}
 
-	this->active_threads.push_back(_thread);
+	this->active_threads.push_back( _thread );
 
-	if(_type == THREAD_TYPES_ENUM::IO_THREAD)
+	if( _type == THREAD_TYPES_ENUM::IO_THREAD )
 	{
-		this->io_threads.push_back(_thread);
+		this->io_threads.push_back( _thread );
 	}
 
 	this->release_lock();
 	return;
 }
 
-void THREAD_REGISTRY::del_thread(THREAD_BASE* _thread, bool _lock) throw(runtime_error)
+void THREAD_REGISTRY::del_thread( THREAD_BASE* _thread, bool _lock ) throw( runtime_error )
 {
-	if(this->in_stop_all)
+	if( this->in_stop_all )
 	{
 		return;
 	}
 
-	LOG_DEBUG_P("Deleting thread");
+	LOG_DEBUG_P( "Deleting thread" );
 
-	if(_lock)
+	if( _lock )
 	{
 		this->obtain_lock_ex();
 	}
 
-	auto i  = std::find(std::begin(this->active_threads), std::end(this->active_threads), _thread);
+	auto i  = std::find( std::begin( this->active_threads ), std::end( this->active_threads ), _thread );
 
-	if(i == std::end(this->active_threads))
+	if( i == std::end( this->active_threads ) )
 	{
-		if(_lock)
+		if( _lock )
 		{
 			this->release_lock();
 		}
 
-		THROW_EXCEPTION(runtime_error, "Tried to delete a thread instance that is not registered.");
+		THROW_EXCEPTION( runtime_error, "Tried to delete a thread instance that is not registered." );
 	}
 
 	/*
 	 * Apparently in lala land that is the C++ standard library move does not mean move.  It means copy.
 	 * Copy probably means move.
 	 */
-	std::move(i, i + 1, std::back_inserter(this->dead_threads));
-	this->active_threads.erase(i);
-	i  = std::find(std::begin(this->io_threads), std::end(this->io_threads), _thread);
+	std::move( i, i + 1, std::back_inserter( this->dead_threads ) );
+	this->active_threads.erase( i );
+	i  = std::find( std::begin( this->io_threads ), std::end( this->io_threads ), _thread );
 
-	if(i != std::end(this->io_threads))
+	if( i != std::end( this->io_threads ) )
 	{
-		this->io_threads.erase(i);
+		this->io_threads.erase( i );
 	}
 
-	if(_lock)
+	if( _lock )
 	{
 		this->release_lock();
 	}
@@ -158,30 +158,30 @@ void THREAD_REGISTRY::del_thread(THREAD_BASE* _thread, bool _lock) throw(runtime
 	return;
 }
 
-void THREAD_REGISTRY::stop_all_threads(void) throw(runtime_error)
+void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 {
-	if(this->in_stop_all)
+	if( this->in_stop_all )
 	{
 		return;
 	}
 
 	this->obtain_lock_ex();
 	this->in_stop_all = true;
-	LOG_DEBUG_P("Stopping all threads.");
+	LOG_DEBUG_P( "Stopping all threads." );
 
 	/*
 	 * First loop through all the threads and flag them for stoppage.
 	 * This will give them a chance to iterate through their event loops and cleanup.
 	 */
-	for(auto i = this->active_threads.begin(); i != this->active_threads.end(); ++i)
+	for( auto i = this->active_threads.begin(); i != this->active_threads.end(); ++i )
 	{
-		if(*i != nullptr)
+		if( *i != nullptr )
 		{
-			(*i)->flag_for_stop();
+			( *i )->flag_for_stop();
 		}
 		else
 		{
-			LOG_ERROR_P("NULLPTR in registry.");
+			LOG_ERROR_P( "NULLPTR in registry." );
 		}
 	}
 
@@ -189,58 +189,58 @@ void THREAD_REGISTRY::stop_all_threads(void) throw(runtime_error)
 	 * Here we make sure that each thread has indeed stopped.
 	 * None of the threads will be moved to the dead thread queue because we set in_stop_app.
 	 */
-	for(auto i = this->active_threads.begin(); i != this->active_threads.end(); ++i)
+	for( auto i = this->active_threads.begin(); i != this->active_threads.end(); ++i )
 	{
-		if(*i != nullptr)
+		if( *i != nullptr )
 		{
-			(*i)->stop_thread(false);
+			( *i )->stop_thread( false );
 		}
 		else
 		{
-			LOG_ERROR_P("NULLPTR in registry.");
+			LOG_ERROR_P( "NULLPTR in registry." );
 		}
 	}
 
-	std::move(std::begin(this->active_threads), std::end(this->active_threads), std::back_inserter(this->dead_threads));
+	std::move( std::begin( this->active_threads ), std::end( this->active_threads ), std::back_inserter( this->dead_threads ) );
 	this->active_threads.clear();
 	this->__cleanup();
 	this->in_stop_all = false;
 	this->release_lock();
 }
 
-void THREAD_REGISTRY::__cleanup(void) throw(runtime_error)
+void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
 {
-	for(auto i = this->dead_threads.begin(); i != this->dead_threads.end(); ++i)
+	for( auto i = this->dead_threads.begin(); i != this->dead_threads.end(); ++i )
 	{
-		if(*i != nullptr)
+		if( *i != nullptr )
 		{
-			delete(*i);
-			(*i) = nullptr;
+			delete( *i );
+			( *i ) = nullptr;
 		}
 		else
 		{
-			LOG_ERROR_P("NULLPTR in registry.");
+			LOG_ERROR_P( "NULLPTR in registry." );
 		}
 	}
 
 	this->dead_threads.clear();
 }
 
-void THREAD_REGISTRY::cleanup(bool _lock) throw(runtime_error)
+void THREAD_REGISTRY::cleanup( bool _lock ) throw( runtime_error )
 {
-	if(this->in_stop_all)
+	if( this->in_stop_all )
 	{
 		return;
 	}
 
-	if(_lock)
+	if( _lock )
 	{
 		this->obtain_lock_ex();
 	}
 
 	this->__cleanup();
 
-	if(_lock)
+	if( _lock )
 	{
 		this->release_lock();
 	}
@@ -248,9 +248,9 @@ void THREAD_REGISTRY::cleanup(bool _lock) throw(runtime_error)
 	return;
 }
 
-void THREAD_REGISTRY::destroy_global(void)
+void THREAD_REGISTRY::destroy_global( void )
 {
-	if(THREAD_REGISTRY::global_instance != nullptr)
+	if( THREAD_REGISTRY::global_instance != nullptr )
 	{
 		delete THREAD_REGISTRY::global_instance;
 		THREAD_REGISTRY::global_instance = nullptr;
@@ -258,7 +258,7 @@ void THREAD_REGISTRY::destroy_global(void)
 }
 
 
-const vector<THREAD_BASE*>* THREAD_REGISTRY::get_io_threads(void)  throw(runtime_error)
+const vector<THREAD_BASE*>* THREAD_REGISTRY::get_io_threads( void )  throw( runtime_error )
 {
 	/*
 	XXX
@@ -270,23 +270,23 @@ const vector<THREAD_BASE*>* THREAD_REGISTRY::get_io_threads(void)  throw(runtime
 	return &THREAD_REGISTRY::global_instance->io_threads;
 }
 
-IOCOMM::SER_IO_COMM* THREAD_REGISTRY::get_serial_io_thread(const std::string& _tag)  throw(runtime_error)
+IOCOMM::SER_IO_COMM* THREAD_REGISTRY::get_serial_io_thread( const std::string& _tag )  throw( runtime_error )
 {
-	for(size_t i=0; i<THREAD_REGISTRY::global_instance->io_threads.size(); i++)
+	for( size_t i = 0; i < THREAD_REGISTRY::global_instance->io_threads.size(); i++ )
 	{
 		THREAD_BASE* tb = THREAD_REGISTRY::global_instance->io_threads[i];
-		IOCOMM::SER_IO_COMM* st = dynamic_cast<IOCOMM::SER_IO_COMM*>(tb);
+		IOCOMM::SER_IO_COMM* st = dynamic_cast<IOCOMM::SER_IO_COMM*>( tb );
 
-		if(st == nullptr)
+		if( st == nullptr )
 		{
-			THROW_EXCEPTION(runtime_error, "Failed to cast pointer to SER_IO_COMM");
+			THROW_EXCEPTION( runtime_error, "Failed to cast pointer to SER_IO_COMM" );
 		}
 
-		if(st->get_tag() == _tag)
+		if( st->get_tag() == _tag )
 		{
 			return st;
 		}
 	}
 
-	THROW_EXCEPTION(runtime_error,"Failed to find serial IO thread instance with tag: " + _tag);
+	THROW_EXCEPTION( runtime_error, "Failed to find serial IO thread instance with tag: " + _tag );
 }

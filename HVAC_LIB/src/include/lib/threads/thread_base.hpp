@@ -41,25 +41,25 @@ namespace BBB_HVAC
 	class THREAD_BASE : public TPROTECT_BASE
 	{
 	public:
-		friend void thread_base_shim_func(void*);
+		friend void thread_base_shim_func( void* );
 
-		THREAD_BASE(const string& _tag);
+		THREAD_BASE( const string& _tag );
 		~THREAD_BASE();
 
-		void start_thread(void);
-		void stop_thread(bool _self_delete = false);
+		void start_thread( void );
+		void stop_thread( bool _self_delete = false );
 
-		inline void flag_for_stop(void) {
+		inline void flag_for_stop( void ) {
 			this->abort_thread = true;
 		}
 
-		string get_thread_tag(void) const;
+		string get_thread_tag( void ) const;
 
-		TPROTECT_BASE* obtain_lock(void) throw(LOCK_ERROR);
+		TPROTECT_BASE* obtain_lock( void ) throw( LOCK_ERROR );
 	protected:
 
-		void pthread_func(void);
-		virtual bool thread_func(void) = 0;
+		void pthread_func( void );
+		virtual bool thread_func( void ) = 0;
 		string thread_tag;
 
 
@@ -79,9 +79,9 @@ namespace BBB_HVAC
 
 	} ;
 
-	inline void thread_base_shim_func(void* _parm)
+	inline void thread_base_shim_func( void* _parm )
 	{
-		((THREAD_BASE*) _parm)->pthread_func();
+		( ( THREAD_BASE* ) _parm )->pthread_func();
 	}
 }
 

@@ -32,46 +32,46 @@ using namespace BBB_HVAC;
 
 SOCKET_READER::SOCKET_READER()
 {
-	this->read_buffer = (char*)malloc(GC_BUFFER_SIZE);
-	memset(this->read_buffer, 0, GC_BUFFER_SIZE);
+	this->read_buffer = ( char* ) malloc( GC_BUFFER_SIZE );
+	memset( this->read_buffer, 0, GC_BUFFER_SIZE );
 	return;
 }
 SOCKET_READER::~SOCKET_READER()
 {
-	memset(this->read_buffer, 0, GC_BUFFER_SIZE);
-	free(this->read_buffer);
+	memset( this->read_buffer, 0, GC_BUFFER_SIZE );
+	free( this->read_buffer );
 	this->read_buffer = nullptr;
 }
 
-size_t SOCKET_READER::read(int _fd) throw(exception)
+size_t SOCKET_READER::read( int _fd ) throw( exception )
 {
-	ssize_t rc = recv(_fd, this->read_buffer, GC_BUFFER_SIZE, MSG_DONTWAIT);
+	ssize_t rc = recv( _fd, this->read_buffer, GC_BUFFER_SIZE, MSG_DONTWAIT );
 
-	if(rc == -1)
+	if( rc == -1 )
 	{
-		throw(EXCEPTIONS::CONNECTION_ERROR(create_perror_string("Failed to read from client:")));
+		throw( EXCEPTIONS::CONNECTION_ERROR( create_perror_string( "Failed to read from client:" ) ) );
 	}
 
-	if(rc == 0)
+	if( rc == 0 )
 	{
 		/*
 		 * Client has disconnected
 		 */
-		throw(EXCEPTIONS::CONNECTION_ERROR("Client connection closed."));
+		throw( EXCEPTIONS::CONNECTION_ERROR( "Client connection closed." ) );
 	}
 
 	size_t start = 0;
 	size_t nl_idx = 0;
 	size_t last_nl = 0;
 
-	while((nl_idx = this->find_nl_in_buffer(start,rc)) != (size_t)-1)
+	while( ( nl_idx = this->find_nl_in_buffer( start, rc ) ) != ( size_t ) - 1 )
 	{
-		this->line_vector.push_back(string(this->read_buffer,start,(nl_idx - start) + 1));
+		this->line_vector.push_back( string( this->read_buffer, start, ( nl_idx - start ) + 1 ) );
 		last_nl = nl_idx;
 		start = nl_idx + 1;
 	}
 
-	if(last_nl < (size_t)(rc-1))
+	if( last_nl < ( size_t )( rc - 1 ) )
 	{
 		cerr << "Failed to find last NL in read buffer (" << last_nl << "|" << rc << ")" << endl;
 	}
@@ -79,27 +79,27 @@ size_t SOCKET_READER::read(int _fd) throw(exception)
 	return this->line_vector.size();
 }
 
-size_t SOCKET_READER::get_line_count(void) const
+size_t SOCKET_READER::get_line_count( void ) const
 {
 	return this->line_vector.size();
 }
-string SOCKET_READER::pop_first_line(void)
+string SOCKET_READER::pop_first_line( void )
 {
-	if(this->get_line_count() < 1)
+	if( this->get_line_count() < 1 )
 	{
-		throw(runtime_error("Line vector is empty."));
+		throw( runtime_error( "Line vector is empty." ) );
 	}
 
 	string ret = this->line_vector[0];
-	this->line_vector.erase(this->line_vector.begin());
+	this->line_vector.erase( this->line_vector.begin() );
 	return ret;
 }
 
-size_t SOCKET_READER::find_nl_in_buffer(size_t _start,size_t _end)
+size_t SOCKET_READER::find_nl_in_buffer( size_t _start, size_t _end )
 {
-	for(size_t i=_start; i<_end; i++)
+	for( size_t i = _start; i < _end; i++ )
 	{
-		if(read_buffer[i] == '\n')
+		if( read_buffer[i] == '\n' )
 		{
 			return i;
 		}

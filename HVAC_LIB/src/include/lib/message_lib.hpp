@@ -46,7 +46,7 @@ namespace BBB_HVAC
 		 * \param _type Message type
 		 * \param _payload A vector of strings of the parts/payload of the message
 		 */
-		MESSAGE(const MESSAGE_TYPE& _type, const vector<string>& _payload = vector<string>());
+		MESSAGE( const MESSAGE_TYPE& _type, const vector<string>& _payload = vector<string>() );
 
 		/**
 		 * Destructor
@@ -57,79 +57,79 @@ namespace BBB_HVAC
 		 * Returns the message type
 		 * \return Message type
 		 */
-		MESSAGE_TYPE get_message_type(void) const;
+		MESSAGE_TYPE get_message_type( void ) const;
 
 		/**
 		 * Returns the message payload length as it will be sent or was received.
 		 * \return Total message length including the terminating new line
 		 */
-		size_t get_length(void) const;
+		size_t get_length( void ) const;
 
-		size_t get_part_count(void) const;
+		size_t get_part_count( void ) const;
 
 		/**
 		 * Returns the message payload as it will be sent or was received.
 		 * \return Payload including the terminating new line.
 		 */
-		const string& get_payload(void) const;
+		const string& get_payload( void ) const;
 
 		/**
 		 * Returns the parsed message parts/payload.
 		 * \return Message parts/payload as a vector of strings.
 		 */
-		const vector<string>& get_parts(void) const;
+		const vector<string>& get_parts( void ) const;
 
 		/**
 		 * Tags the message as being received.  Calling this method more than once will raise a runtime_exception
 		 */
-		void tag_received(void) throw(runtime_error);
+		void tag_received( void ) throw( runtime_error );
 
 		/**
 		 * Tags the message as being sent.  Calling this method more than once will raise a runtime_exception
 		 */
-		void tag_sent(void) throw(runtime_error);
+		void tag_sent( void ) throw( runtime_error );
 
 		/**
 		 * Generates a string that is intended to be used for human consumption for debugging purposes.  The format is not guaranteed to be stable.
 		 * \return A string containing debuging information intended for human consumption.
 		 */
-		string to_string(void) const;
+		string to_string( void ) const;
 
 		/**
 		 * Gets a message part as an unsigned integer.
 		 * \param _part Index of the part to convert to a number.
 		 * \return Value of the part as an unsigned integer.  Throws an exception if the part payload can not be parsed into a numerical form.
 		 */
-		uint16_t get_part_as_ui(unsigned int _part) throw(exception);
+		uint16_t get_part_as_ui( unsigned int _part ) throw( exception );
 		/**
 		 * Gets a message part as a signed integer.
 		 * \see get_par_as_ui(_part)
 		 */
-		int16_t get_part_as_si(unsigned int _part) throw(exception);
+		int16_t get_part_as_si( unsigned int _part ) throw( exception );
 
 		/**
 		 * Gets a message part as a string
 		 * \return Part as a string.
 		 */
-		string get_part_as_s(unsigned int_part) throw(exception);
+		string get_part_as_s( unsigned int_part ) throw( exception );
 
 		/**
 		 * Gets the timestamp of when this message instance was sent to remote.
 		 * \return Timestamp of the event.
 		 */
-		const timespec* get_message_sent_timestamp(void) const;
+		const timespec* get_message_sent_timestamp( void ) const;
 
 		/**
 		 * Gets the timestamp of when this message instance was created.
 		 * \return Timestamp of the event.
 		 */
-		const timespec* get_message_created_timestamp(void) const;
+		const timespec* get_message_created_timestamp( void ) const;
 
 		/**
 		 * Gets the timestamp of when this message was received.
 		 * \return Timestamp of the event.
 		 */
-		const timespec* get_message_received_timestamp(void) const;
+		const timespec* get_message_received_timestamp( void ) const;
 
 		//void trim_message( void );
 
@@ -143,17 +143,17 @@ namespace BBB_HVAC
 		 * Checks to see if the supplied part index is valid (is in range)
 		 * \param _part Part index.
 		 */
-		void check_part_index(unsigned int _part) throw(exception);
+		void check_part_index( unsigned int _part ) throw( exception );
 
 		/**
 		 * Protected initializer.  Zeros out and resets all of the classe's properties.
 		 */
-		void init(void);
+		void init( void );
 
 		/**
 		 * Builds the messages payload.
 		 */
-		void build_message(void);
+		void build_message( void );
 
 		/**
 		 * Message type.
@@ -194,7 +194,7 @@ namespace BBB_HVAC
 		 * Gets the current timestamp and places the supplied buffer.
 		 * \param _tm Destination buffer.
 		 */
-		static void get_timestamp(timespec* _tm) throw(runtime_error);
+		static void get_timestamp( timespec* _tm ) throw( runtime_error );
 	};
 }
 

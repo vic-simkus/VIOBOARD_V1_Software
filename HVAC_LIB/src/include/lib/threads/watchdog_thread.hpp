@@ -31,9 +31,9 @@ namespace BBB_HVAC
 	public:
 		WATCHDOG();
 		virtual ~WATCHDOG();
-		void reset_counter(void);
+		void reset_counter( void );
 	protected:
-		bool thread_func(void);
+		bool thread_func( void );
 	private:
 		unsigned int counter;
 		LOGGING::LOGGER* logger;

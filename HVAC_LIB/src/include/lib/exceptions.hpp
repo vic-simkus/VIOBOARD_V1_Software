@@ -38,7 +38,7 @@ namespace BBB_HVAC
 	 * \param _msg Message to prepend to the error string.
 	 * \return A string instance describing the last errno error.
 	 */
-	extern std::string create_perror_string(const string& _msg);
+	extern std::string create_perror_string( const string& _msg );
 
 	/**
 	 * Exceptions used by the application
@@ -57,8 +57,8 @@ namespace BBB_HVAC
 			 * Constructor.
 			 * \param _what Description of the error.
 			 */
-			inline NETWORK_ERROR(const string& _what) :
-				runtime_error(_what) {
+			inline NETWORK_ERROR( const string& _what ) :
+				runtime_error( _what ) {
 				return;
 			}
 		};
@@ -74,8 +74,8 @@ namespace BBB_HVAC
 			 * Constructor.
 			 * \param _what Description of the error.
 			 */
-			inline CONNECTION_ERROR(const string& _what) :
-				NETWORK_ERROR(_what) {
+			inline CONNECTION_ERROR( const string& _what ) :
+				NETWORK_ERROR( _what ) {
 				return;
 			}
 		};
@@ -91,8 +91,8 @@ namespace BBB_HVAC
 			 * Constructor.
 			 * \param _what Description of the error.
 			 */
-			inline PROTOCOL_ERROR(const string& _what) :
-				NETWORK_ERROR(_what) {
+			inline PROTOCOL_ERROR( const string& _what ) :
+				NETWORK_ERROR( _what ) {
 				return;
 			}
 		};
@@ -101,8 +101,8 @@ namespace BBB_HVAC
 		{
 		public:
 
-			inline MESSAGE_ERROR(const string& _what) :
-				runtime_error(_what) {
+			inline MESSAGE_ERROR( const string& _what ) :
+				runtime_error( _what ) {
 				return;
 			}
 		};
@@ -111,8 +111,8 @@ namespace BBB_HVAC
 		{
 		public:
 
-			inline MESSAGE_OVERFLOW(const string& _what) :
-				MESSAGE_ERROR(_what) {
+			inline MESSAGE_OVERFLOW( const string& _what ) :
+				MESSAGE_ERROR( _what ) {
 				return;
 			}
 		};
@@ -121,8 +121,8 @@ namespace BBB_HVAC
 		{
 		public:
 
-			inline MESSAGE_UNDERFLOW(const string& _what) :
-				MESSAGE_ERROR(_what) {
+			inline MESSAGE_UNDERFLOW( const string& _what ) :
+				MESSAGE_ERROR( _what ) {
 				return;
 			}
 		};
@@ -131,7 +131,7 @@ namespace BBB_HVAC
 		{
 		public:
 
-			inline LOCK_ERROR(const string& _what) : runtime_error(_what) {
+			inline LOCK_ERROR( const string& _what ) : runtime_error( _what ) {
 				return;
 			}
 		};

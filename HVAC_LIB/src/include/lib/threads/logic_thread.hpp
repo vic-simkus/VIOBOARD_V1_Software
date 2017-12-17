@@ -120,18 +120,18 @@ namespace BBB_HVAC
 		/**
 		 * Copy constructor.
 		 */
-		inline LOGIC_STATUS_CORE(const LOGIC_STATUS_CORE& _src) {
+		inline LOGIC_STATUS_CORE( const LOGIC_STATUS_CORE& _src ) {
 			this->di_buffer = nullptr;
 			this->do_buffer = nullptr;
 			this->ai_buffer = nullptr;
 			this->ao_buffer = nullptr;
 			this->sp_buffer = nullptr;
 			this->init();
-			memcpy(this->di_buffer, _src.di_buffer, sizeof(DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS]));
-			memcpy(this->do_buffer, _src.do_buffer, sizeof(DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS]));
-			memcpy(this->ai_buffer, _src.ai_buffer, sizeof(ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS]));
-			memcpy(this->ao_buffer, _src.ao_buffer, sizeof(ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS]));
-			memcpy(this->sp_buffer, _src.sp_buffer, sizeof(ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2]));
+			memcpy( this->di_buffer, _src.di_buffer, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS] ) );
+			memcpy( this->do_buffer, _src.do_buffer, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS] ) );
+			memcpy( this->ai_buffer, _src.ai_buffer, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS] ) );
+			memcpy( this->ao_buffer, _src.ao_buffer, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS] ) );
+			memcpy( this->sp_buffer, _src.sp_buffer, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2] ) );
 			this->di_num = _src.di_num;
 			this->do_num = _src.do_num;
 			this->ai_num = _src.ai_num;
@@ -161,23 +161,23 @@ namespace BBB_HVAC
 		/**
 		 * Returns string representation of the instance intended for human consumption.  Used for debugging purposes.
 		 */
-		string to_string(void);
+		string to_string( void );
 
 	protected:
 		/**
 		 * Init method.
 		 */
-		inline void init(void) {
+		inline void init( void ) {
 			this->di_buffer = new DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS];
 			this->do_buffer = new DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS];
 			this->ai_buffer = new ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS];
 			this->ao_buffer = new ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS];
 			this->sp_buffer = new ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2];
-			memset(this->di_buffer, 0, sizeof(DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS]));
-			memset(this->do_buffer, 0, sizeof(DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS]));
-			memset(this->ai_buffer, 0, sizeof(ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS]));
-			memset(this->ao_buffer, 0, sizeof(ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS]));
-			memset(this->sp_buffer, 0, sizeof(ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2]));
+			memset( this->di_buffer, 0, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS] ) );
+			memset( this->do_buffer, 0, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS] ) );
+			memset( this->ai_buffer, 0, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS] ) );
+			memset( this->ao_buffer, 0, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS] ) );
+			memset( this->sp_buffer, 0, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2] ) );
 		}
 
 	};
@@ -189,7 +189,7 @@ namespace BBB_HVAC
 			return;
 		}
 
-		inline LOGIC_STATUS_FLUFF(const LOGIC_STATUS_FLUFF& _src) {
+		inline LOGIC_STATUS_FLUFF( const LOGIC_STATUS_FLUFF& _src ) {
 			this->di_labels = _src.di_labels;
 			this->do_labels = _src.do_labels;
 			this->ai_labels = _src.ai_labels;
@@ -226,7 +226,7 @@ namespace BBB_HVAC
 		/**
 		 * Constructor.
 		 */
-		LOGIC_PROCESSOR_BASE(CONFIGURATOR* _config);
+		LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config );
 
 		/**
 		 * Destructor.
@@ -236,29 +236,29 @@ namespace BBB_HVAC
 		/**
 		 * Pure virtual method that is invoked by the owning thread.  Within this method is where the in-time logic processing is done.  This method will be called repeatedly by the owning thread.
 		 */
-		virtual void process_logic(void) throw(exception) = 0;
+		virtual void process_logic( void ) throw( exception ) = 0;
 
 		/**
 		 * Pure virtual method that is invoked by the owning thread.  This method will be exactly called once, by the owning thread, before process_logic.
 		 */
-		virtual void pre_process(void) throw(exception) = 0;
+		virtual void pre_process( void ) throw( exception ) = 0;
 
 		/**
 		 * Pure virtual method that is invoked by the owning thread.  This method will be called exactly once, by the owning thread, after process_logic.
 		 */
-		virtual void post_process(void) throw(exception) = 0;
+		virtual void post_process( void ) throw( exception ) = 0;
 
 		/**
 		 * Returns a copy of the in-time status of the logic core.
 		 * \return A copy of the logic core status.
 		 */
-		LOGIC_STATUS_CORE get_logic_status(void);
+		LOGIC_STATUS_CORE get_logic_status( void );
 
-		LOGIC_STATUS_FLUFF get_logic_status_fluff(void) const;
+		LOGIC_STATUS_FLUFF get_logic_status_fluff( void ) const;
 
 	protected:
 
-		bool thread_func(void);
+		bool thread_func( void );
 
 
 		/**

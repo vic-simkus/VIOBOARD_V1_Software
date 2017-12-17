@@ -56,10 +56,10 @@ using namespace BBB_HVAC::EXCEPTIONS;
  *
  *************************************/
 
-HS_CLIENT_CONTEXT::HS_CLIENT_CONTEXT(int _client_socket) :
-	BASE_CONTEXT("HS_CLIENT_CONTEXT")
+HS_CLIENT_CONTEXT::HS_CLIENT_CONTEXT( int _client_socket ) :
+	BASE_CONTEXT( "HS_CLIENT_CONTEXT" )
 {
-	INIT_LOGGER("BBB_HVAC::HS_CLIENT_CONTEXT");
+	INIT_LOGGER( "BBB_HVAC::HS_CLIENT_CONTEXT" );
 	this->remote_socket = _client_socket;
 	return;
 }
@@ -69,11 +69,11 @@ HS_CLIENT_CONTEXT::~HS_CLIENT_CONTEXT()
 	return;
 }
 
-ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message) throw(exception)
+ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception )
 {
 	ENUM_MESSAGE_CALLBACK_RESULT ret;
 
-	if(BASE_CONTEXT::process_message(_direction, _ctx, _message) == ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED)
+	if( BASE_CONTEXT::process_message( _direction, _ctx, _message ) == ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED )
 	{
 		ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 	}
@@ -81,48 +81,48 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIR
 	{
 		ENUM_MESSAGE_TYPE t = _message->get_message_type()->type;
 
-		if(t == ENUM_MESSAGE_TYPE::GET_LABELS)
+		if( t == ENUM_MESSAGE_TYPE::GET_LABELS )
 		{
-			MESSAGE_PTR m = this->message_processor->create_get_labels_message_response(CONFIG_ENTRY::string_to_type(_message->get_part_as_s(0)));
-			this->message_processor->send_message(m, this->remote_socket);
+			MESSAGE_PTR m = this->message_processor->create_get_labels_message_response( CONFIG_ENTRY::string_to_type( _message->get_part_as_s( 0 ) ) );
+			this->message_processor->send_message( m, this->remote_socket );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if(t == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG)
+		else if( t == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG )
 		{
-			std::string board_tag = _message->get_part_as_s(0);
-			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			std::string board_tag = _message->get_part_as_s( 0 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			IOCOMM::ADC_CACHE_ENTRY dac_cache[GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT];
-			comm_thread->get_dac_cache(dac_cache);
+			comm_thread->get_dac_cache( dac_cache );
 			vector<string> parts;
 
-			for(unsigned int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++)
+			for( unsigned int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
 			{
-				for(unsigned int j = 0; j < GC_IO_AI_COUNT; j++)
+				for( unsigned int j = 0; j < GC_IO_AI_COUNT; j++ )
 				{
-					parts.push_back(dac_cache[i][j].to_string());
+					parts.push_back( dac_cache[i][j].to_string() );
 				}
 			}
 
-			MESSAGE_PTR m(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG), parts));
-			this->message_processor->send_message(m, this->remote_socket);
+			MESSAGE_PTR m( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG ), parts ) );
+			this->message_processor->send_message( m, this->remote_socket );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if(t == ENUM_MESSAGE_TYPE::READ_STATUS)
+		else if( t == ENUM_MESSAGE_TYPE::READ_STATUS )
 		{
 			IOCOMM::DO_CACHE_ENTRY do_cache;
 			IOCOMM::PMIC_CACHE_ENTRY pmic_cache;
 			IOCOMM::ADC_CACHE_ENTRY dac_cache[GC_IO_AI_COUNT];
 			IOCOMM::CAL_VALUE_ENTRY l1_cal_cache[GC_IO_AI_COUNT];
 			IOCOMM::CAL_VALUE_ENTRY l2_cal_cache[GC_IO_AI_COUNT];
-			std::string board_tag = _message->get_part_as_s(0);
-			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			std::string board_tag = _message->get_part_as_s( 0 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			IOCOMM::BOARD_STATE_CACHE state_cache;
-			comm_thread->get_latest_state_values(state_cache);
-			state_cache.get_latest_adc_values(dac_cache);
-			state_cache.get_latest_do_status(do_cache);
-			state_cache.get_latest_pmic_status(pmic_cache);
-			state_cache.get_latest_l1_cal_values(l1_cal_cache);
-			state_cache.get_latest_l2_cal_values(l2_cal_cache);
+			comm_thread->get_latest_state_values( state_cache );
+			state_cache.get_latest_adc_values( dac_cache );
+			state_cache.get_latest_do_status( do_cache );
+			state_cache.get_latest_pmic_status( pmic_cache );
+			state_cache.get_latest_l1_cal_values( l1_cal_cache );
+			state_cache.get_latest_l2_cal_values( l2_cal_cache );
 			/*
 			Response message parts
 			*/
@@ -131,9 +131,9 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIR
 			/*
 			Put the ADC values into the response.
 			*/
-			for(size_t j = 0; j < GC_IO_AI_COUNT; j++)
+			for( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
 			{
-				parts.push_back(dac_cache[j].to_string());
+				parts.push_back( dac_cache[j].to_string() );
 			}
 
 			/*
@@ -141,86 +141,86 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIR
 			We do them kind of weird in the middle of arrays in order to maintain backwards compatibility with existing stuffs.
 			Not that it matters since the other stuffs will be rewritten shortly.  Either way, it doesn't really matter.
 			*/
-			parts.push_back(do_cache.to_string());
-			parts.push_back(pmic_cache.to_string());
+			parts.push_back( do_cache.to_string() );
+			parts.push_back( pmic_cache.to_string() );
 
 			/*
 			Put the L1 cal values into the response.
 			*/
-			for(size_t j = 0; j < GC_IO_AI_COUNT; j++)
+			for( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
 			{
-				parts.push_back(l1_cal_cache[j].to_string());
+				parts.push_back( l1_cal_cache[j].to_string() );
 			}
 
 			/*
 			Put the L2 cal values into the response.
 			*/
-			for(size_t j = 0; j < GC_IO_AI_COUNT; j++)
+			for( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
 			{
-				parts.push_back(l2_cal_cache[j].to_string());
+				parts.push_back( l2_cal_cache[j].to_string() );
 			}
 
 			/*
 			Finally put out the boot count.
 			We wrap it into a cache entry in order to keep the format consistent.
 			*/
-			parts.push_back(IOCOMM::CACHE_ENTRY_16BIT(state_cache.get_boot_count()).to_string());
-			MESSAGE_PTR m(new MESSAGE(MESSAGE_TYPE_MAPPER::get_message_type_by_enum(ENUM_MESSAGE_TYPE::READ_STATUS), parts));
-			this->message_processor->send_message(m, this->remote_socket);
+			parts.push_back( IOCOMM::CACHE_ENTRY_16BIT( state_cache.get_boot_count() ).to_string() );
+			MESSAGE_PTR m( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::READ_STATUS ), parts ) );
+			this->message_processor->send_message( m, this->remote_socket );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if(t == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS)
+		else if( t == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS )
 		{
 			/*
 			 * Set PMIC Status
 			 */
-			std::string board_tag = _message->get_part_as_s(0);
-			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
-			comm_thread->cmd_set_pmic_status((uint8_t) _message->get_part_as_ui(1));
+			std::string board_tag = _message->get_part_as_s( 0 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
+			comm_thread->cmd_set_pmic_status( ( uint8_t ) _message->get_part_as_ui( 1 ) );
 		}
-		else if(t == ENUM_MESSAGE_TYPE::SET_STATUS)
+		else if( t == ENUM_MESSAGE_TYPE::SET_STATUS )
 		{
 			/*
 			 * Set DO Status
 			 */
-			std::string board_tag = _message->get_part_as_s(0);
-			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
-			comm_thread->cmd_set_do_status((uint8_t) _message->get_part_as_ui(1));
+			std::string board_tag = _message->get_part_as_s( 0 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
+			comm_thread->cmd_set_do_status( ( uint8_t ) _message->get_part_as_ui( 1 ) );
 		}
-		else if(t == ENUM_MESSAGE_TYPE::ERROR)
+		else if( t == ENUM_MESSAGE_TYPE::ERROR )
 		{
 			/*
 			Why is the client sending error messages to us.  Does it really thing we care.
 			*/
-			LOG_WARNING("Client sent us an error message for some unknown reason.  Message: " + _message->to_string());
+			LOG_WARNING( "Client sent us an error message for some unknown reason.  Message: " + _message->to_string() );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if(t == ENUM_MESSAGE_TYPE::SET_L1_CAL_VALS)
+		else if( t == ENUM_MESSAGE_TYPE::SET_L1_CAL_VALS )
 		{
-			std::string board_tag = _message->get_part_as_s(0);
-			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			std::string board_tag = _message->get_part_as_s( 0 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			CAL_VALUE_ARRAY cal_values;
 
-			for(unsigned int i=1; i<_message->get_part_count(); i++)
+			for( unsigned int i = 1; i < _message->get_part_count(); i++ )
 			{
-				cal_values.push_back(_message->get_part_as_ui(i));
+				cal_values.push_back( _message->get_part_as_ui( i ) );
 			}
 
-			comm_thread->cmd_set_l1_calibration_values(cal_values);
+			comm_thread->cmd_set_l1_calibration_values( cal_values );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if(t == ENUM_MESSAGE_TYPE::SET_L2_CAL_VALS)
+		else if( t == ENUM_MESSAGE_TYPE::SET_L2_CAL_VALS )
 		{
-			std::string board_tag = _message->get_part_as_s(0);
-			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread(board_tag);
+			std::string board_tag = _message->get_part_as_s( 0 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			CAL_VALUE_ARRAY cal_values;
 
-			for(unsigned int i=1; i<_message->get_part_count(); i++)
+			for( unsigned int i = 1; i < _message->get_part_count(); i++ )
 			{
-				cal_values.push_back(_message->get_part_as_ui(i));
+				cal_values.push_back( _message->get_part_as_ui( i ) );
 			}
 
-			comm_thread->cmd_set_l2_calibration_values(cal_values);
+			comm_thread->cmd_set_l2_calibration_values( cal_values );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
 		else
@@ -240,15 +240,15 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message(ENUM_MESSAGE_DIR
  *************************************/
 
 HS_SERVER_CONTEXT::HS_SERVER_CONTEXT() :
-	BASE_CONTEXT("HS_SERVER_CONTEXT")
+	BASE_CONTEXT( "HS_SERVER_CONTEXT" )
 {
-	INIT_LOGGER("BBB_HVAC::HS_SERVER_CONTEXT");
+	INIT_LOGGER( "BBB_HVAC::HS_SERVER_CONTEXT" );
 	return;
 }
 
 HS_SERVER_CONTEXT::~HS_SERVER_CONTEXT()
 {
-	unlink(GC_LOCAL_COMMAND_SOCKET);
+	unlink( GC_LOCAL_COMMAND_SOCKET );
 	return;
 }
 

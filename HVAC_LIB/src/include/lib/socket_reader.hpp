@@ -51,19 +51,19 @@ namespace BBB_HVAC
 		 * \param _fd File descriptor to read from.
 		 * \return Number of lines available for processing.  Note:  This does not mean how many lines were read during this method invocation.  The returned number of lines may include number of lines stored in the internal buffer that have not yet been consumed.
 		 */
-		size_t read(int _fd) throw(exception);
+		size_t read( int _fd ) throw( exception );
 
 		/**
 		 * Gets the number of lines in the internal buffer that are available for processing.
 		 * \return Number of lines in the internal buffer.
 		 */
-		size_t get_line_count(void) const;
+		size_t get_line_count( void ) const;
 
 		/**
 		 * Returns the first (oldest) line from the internal buffer.  The line is then deleted from the buffer.
 		 * \return Line to be processed.
 		 */
-		string pop_first_line(void);
+		string pop_first_line( void );
 
 	protected:
 		/**
@@ -74,7 +74,7 @@ namespace BBB_HVAC
 		/**
 		 * Finds the next occurrence of a new line character in the read_buffer.
 		 */
-		size_t find_nl_in_buffer(size_t _start, size_t _end);
+		size_t find_nl_in_buffer( size_t _start, size_t _end );
 
 		/**
 		 * Line buffer.  Lines read, but not yet processed.

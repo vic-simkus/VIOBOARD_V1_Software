@@ -39,7 +39,7 @@ namespace BBB_HVAC
 	namespace LOGGING
 	{
 		class LOG_CONFIGURATOR;
-		enum class ENUM_LOG_LEVEL: unsigned int;
+		enum class ENUM_LOG_LEVEL : unsigned int;
 		}
 
 		/**
@@ -67,12 +67,12 @@ namespace BBB_HVAC
 
 		extern LOGGING::LOG_CONFIGURATOR* root_log_configurator;
 
-		extern void configure_logging(const LOGGING::ENUM_LOG_LEVEL&  _level);
+		extern void configure_logging( const LOGGING::ENUM_LOG_LEVEL&  _level );
 
 		extern void configure_watchdog();
 		extern void destroy_watchdog();
 
-		extern void configure_signals(void);
+		extern void configure_signals( void );
 	}
 }
 

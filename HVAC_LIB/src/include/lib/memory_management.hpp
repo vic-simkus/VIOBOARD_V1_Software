@@ -21,7 +21,7 @@
 #ifndef MEMORY_MANAGEMENT_HPP
 #define MEMORY_MANAGEMENT_HPP
 
-inline void deleter_char_array(unsigned char* p)
+inline void deleter_char_array( unsigned char* p )
 {
 	delete [] p;
 }

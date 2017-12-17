@@ -40,7 +40,7 @@ namespace BBB_HVAC
 		 * \param pair Source pair.
 		 * \return A reference to the supplied output stream.
 		 */
-		inline std::ostream& operator<<(std::ostream& os, const token& pair)
+		inline std::ostream& operator<< ( std::ostream& os, const token& pair )
 		{
 			return os << "(" << pair.first << "," << pair.second << ")";
 		}
@@ -51,9 +51,9 @@ namespace BBB_HVAC
 		 * \param pair Thing right of the operator.
 		 * \return A string concatenation.
 		 */
-		inline std::string operator+(const char* _left, const token& pair)
+		inline std::string operator+ ( const char* _left, const token& pair )
 		{
-			return std::string(_left) + "(" + std::to_string(pair.first) + "," + std::to_string(pair.second) + ")";
+			return std::string( _left ) + "(" + std::to_string( pair.first ) + "," + std::to_string( pair.second ) + ")";
 		}
 
 		/**
@@ -62,7 +62,7 @@ namespace BBB_HVAC
 		 * \param _cab Cache entry
 		 * \return A reference to the same output stream.
 		 */
-		inline std::ostream& operator<<(std::ostream& os, const CACHE_ENTRY_BASE& _cab)
+		inline std::ostream& operator<< ( std::ostream& os, const CACHE_ENTRY_BASE& _cab )
 		{
 			return os << _cab.to_string();
 		}
@@ -73,9 +73,9 @@ namespace BBB_HVAC
 		 * \param _cab  Thing right of the operator.
 		 * \return A string concatenation.
 		 */
-		inline std::string operator+(const char* _left, const CACHE_ENTRY_BASE& _cab)
+		inline std::string operator+ ( const char* _left, const CACHE_ENTRY_BASE& _cab )
 		{
-			return std::string(_left) + _cab.to_string();
+			return std::string( _left ) + _cab.to_string();
 		}
 	}
 }

@@ -73,7 +73,7 @@ namespace BBB_HVAC
 		/**
 		 * Constructor
 		 */
-		HVAC_LOGIC_LOOP(CONFIGURATOR* _config);
+		HVAC_LOGIC_LOOP( CONFIGURATOR* _config );
 
 		/**
 		 * Destructor
@@ -83,11 +83,11 @@ namespace BBB_HVAC
 		/**
 		 * Method that is called to perform in-time processing.
 		 */
-		void process_logic(void) throw(exception);
+		void process_logic( void ) throw( exception );
 
-		void pre_process(void) throw(exception);
+		void pre_process( void ) throw( exception );
 
-		void post_process(void) throw(exception);
+		void post_process( void ) throw( exception );
 
 
 	protected:

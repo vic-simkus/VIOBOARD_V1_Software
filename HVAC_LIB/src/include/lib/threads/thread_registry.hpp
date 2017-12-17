@@ -48,29 +48,29 @@ namespace BBB_HVAC
 	public:
 		~THREAD_REGISTRY();
 
-		static void register_thread(THREAD_BASE* _thread, THREAD_TYPES_ENUM _type = THREAD_TYPES_ENUM::NONE) throw(runtime_error);
-		static void delete_thread(THREAD_BASE* _thread) throw(runtime_error);
-		static void stop_all(void) throw(runtime_error);
-		static void init_cleanup(void) throw(runtime_error);
-		static void destroy_global(void);
+		static void register_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type = THREAD_TYPES_ENUM::NONE ) throw( runtime_error );
+		static void delete_thread( THREAD_BASE* _thread ) throw( runtime_error );
+		static void stop_all( void ) throw( runtime_error );
+		static void init_cleanup( void ) throw( runtime_error );
+		static void destroy_global( void );
 
-		static const vector<THREAD_BASE*>* get_io_threads(void) throw(runtime_error);
-		static IOCOMM::SER_IO_COMM* get_serial_io_thread(const std::string& _tag) throw(runtime_error);
+		static const vector<THREAD_BASE*>* get_io_threads( void ) throw( runtime_error );
+		static IOCOMM::SER_IO_COMM* get_serial_io_thread( const std::string& _tag ) throw( runtime_error );
 
 	protected:
-		THREAD_REGISTRY(const string& _tag);
-		static THREAD_REGISTRY* get_instance(void);
+		THREAD_REGISTRY( const string& _tag );
+		static THREAD_REGISTRY* get_instance( void );
 
-		void reg_thread(THREAD_BASE* _thread,THREAD_TYPES_ENUM _type = THREAD_TYPES_ENUM::NONE) throw(runtime_error);
-		void del_thread(THREAD_BASE* _thread, bool _lockl) throw(runtime_error);
-		void stop_all_threads(void) throw(runtime_error);
-		void cleanup(bool _lock = true) throw(runtime_error);
+		void reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type = THREAD_TYPES_ENUM::NONE ) throw( runtime_error );
+		void del_thread( THREAD_BASE* _thread, bool _lockl ) throw( runtime_error );
+		void stop_all_threads( void ) throw( runtime_error );
+		void cleanup( bool _lock = true ) throw( runtime_error );
 
-		bool is_thread_active(const THREAD_BASE* _ptr) const;
+		bool is_thread_active( const THREAD_BASE* _ptr ) const;
 
 	private:
 
-		void __cleanup(void) throw(runtime_error);
+		void __cleanup( void ) throw( runtime_error );
 
 		LOGGING::LOGGER* logger;
 

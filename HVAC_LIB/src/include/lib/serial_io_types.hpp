@@ -66,7 +66,7 @@ namespace BBB_HVAC
 			 * Copy constructor.
 			 * \param _src Source of the copy.
 			 */
-			inline CACHE_ENTRY_BASE(const CACHE_ENTRY_BASE& _src);
+			inline CACHE_ENTRY_BASE( const CACHE_ENTRY_BASE& _src );
 
 			/**
 			 * Destructor.
@@ -78,25 +78,25 @@ namespace BBB_HVAC
 			 * To put it in Java terms - deserialises an instance.
 			 * @param _source String representation of the object.
 			 */
-			explicit CACHE_ENTRY_BASE(const std::string& _source);
+			explicit CACHE_ENTRY_BASE( const std::string& _source );
 
 			/**
 			 * Converts the instance to a human readable string.  Used for debugging purposes and for serializing to the shims.
 			 */
-			std::string to_string(void) const;
+			std::string to_string( void ) const;
 
 			/**
 			 * Provides a mechanism for the derived class to provide its value in string form.  Used for serializing and deserializing.
 			 * @return
 			 */
-			virtual std::string value_to_string(void) const = 0;
+			virtual std::string value_to_string( void ) const = 0;
 
 			/**
 			 * Provides a mechanism for the derived class to populate its value from a string representation.
 			 * This method is invoked by from_string with a cleaned up value portion of the serialized string representation.
 			 * \param _str String value
 			 */
-			virtual void value_from_string(const std::string& _str) = 0;
+			virtual void value_from_string( const std::string& _str ) = 0;
 
 		protected:
 			/**
@@ -108,7 +108,7 @@ namespace BBB_HVAC
 			 * Bit of a hack to get around the fact that you can't call pure virtual functions from a constructor.
 			 * Derived classes should call this from from their string constructor to complete the deserialization process.
 			 */
-			void from_string(const std::string& _source);
+			void from_string( const std::string& _source );
 
 		};
 
@@ -127,13 +127,13 @@ namespace BBB_HVAC
 			 * Constructor.
 			 * @param _val Value of the entry.
 			 */
-			CACHE_ENTRY_16BIT(uint16_t _val);
+			CACHE_ENTRY_16BIT( uint16_t _val );
 
 			/**
 			 * Constructor.
 			 * \param _source String representation of an instance.  The class will be desrialized from the string representation.
 			 */
-			CACHE_ENTRY_16BIT(const std::string& _source);
+			CACHE_ENTRY_16BIT( const std::string& _source );
 
 			/**
 			 * Destructor.
@@ -144,19 +144,19 @@ namespace BBB_HVAC
 			 * Returns the instances value.
 			 * \return Instances value.
 			 */
-			uint16_t get_value(void) const;
+			uint16_t get_value( void ) const;
 
 			/**
 			 * Converts the instances value to a string.  Used for serialization.
 			 * @return Instances value as a string.
 			 */
-			virtual std::string value_to_string(void) const;
+			virtual std::string value_to_string( void ) const;
 
 			/**
 			 * Converts the supplied string to classes value.
 			 * @param _str String representation of the instance.  Used for deserialization.
 			 */
-			virtual void value_from_string(const std::string& _str);
+			virtual void value_from_string( const std::string& _str );
 
 		protected:
 			/**
@@ -180,13 +180,13 @@ namespace BBB_HVAC
 			 * Constructor.
 			 * @param _val Instances value.
 			 */
-			CACHE_ENTRY_8BIT(uint8_t _val);
+			CACHE_ENTRY_8BIT( uint8_t _val );
 
 			/**
 			 * Constructor.
 			 * @param _source String representation of the class.  Used in deserialization.
 			 */
-			CACHE_ENTRY_8BIT(const std::string& _source);
+			CACHE_ENTRY_8BIT( const std::string& _source );
 
 			/**
 			 * Destructor.
@@ -197,19 +197,19 @@ namespace BBB_HVAC
 			 * Gets the value associated with the instance.
 			 * @return Instances value.
 			 */
-			uint8_t get_value(void) const;
+			uint8_t get_value( void ) const;
 
 			/**
 			 * Converts the instances value to a string.
 			 * @return String representation of the value.
 			 */
-			virtual std::string value_to_string(void) const;
+			virtual std::string value_to_string( void ) const;
 
 			/**
 			 * Converts a string into a value suitable for the instance.
 			 * @param _str String representation of the value.
 			 */
-			virtual void value_from_string(const std::string& _str);
+			virtual void value_from_string( const std::string& _str );
 
 		protected:
 
@@ -228,8 +228,8 @@ namespace BBB_HVAC
 		{
 		public:
 			DO_CACHE_ENTRY();
-			DO_CACHE_ENTRY(uint8_t _value);
-			DO_CACHE_ENTRY(const std::string& _source);
+			DO_CACHE_ENTRY( uint8_t _value );
+			DO_CACHE_ENTRY( const std::string& _source );
 		};
 
 		/**
@@ -241,8 +241,8 @@ namespace BBB_HVAC
 		{
 		public:
 			PMIC_CACHE_ENTRY();
-			PMIC_CACHE_ENTRY(uint8_t _value);
-			PMIC_CACHE_ENTRY(const std::string& _source);
+			PMIC_CACHE_ENTRY( uint8_t _value );
+			PMIC_CACHE_ENTRY( const std::string& _source );
 		};
 
 		/*
@@ -263,13 +263,13 @@ namespace BBB_HVAC
 			 * The format is expected to be: [Xsec.Xnsec:Val]
 			 * @param _source
 			 */
-			explicit ADC_CACHE_ENTRY(const std::string& _source);
+			explicit ADC_CACHE_ENTRY( const std::string& _source );
 
 			/**
 			 * The real constructor.  Initializes the value to the supplied parameter.
 			 * \param _val ADC value
 			 */
-			ADC_CACHE_ENTRY(uint16_t _val);
+			ADC_CACHE_ENTRY( uint16_t _val );
 		};
 
 		/**
@@ -279,8 +279,8 @@ namespace BBB_HVAC
 		{
 		public:
 			CAL_VALUE_ENTRY();
-			CAL_VALUE_ENTRY(uint16_t _val);
-			explicit CAL_VALUE_ENTRY(const std::string& _source);
+			CAL_VALUE_ENTRY( uint16_t _val );
+			explicit CAL_VALUE_ENTRY( const std::string& _source );
 		};
 
 
@@ -293,8 +293,8 @@ namespace BBB_HVAC
 		public:
 
 			OUTGOING_MESSAGE();
-			OUTGOING_MESSAGE(const unsigned char* _buffer, const size_t _length);
-			OUTGOING_MESSAGE(const OUTGOING_MESSAGE& _src);
+			OUTGOING_MESSAGE( const unsigned char* _buffer, const size_t _length );
+			OUTGOING_MESSAGE( const OUTGOING_MESSAGE& _src );
 			~OUTGOING_MESSAGE();
 
 			/**
@@ -343,11 +343,11 @@ namespace BBB_HVAC
 			 * \brief Constructor.
 			 */
 			inline LINE_TABLE() {
-				this->table = (unsigned char**) malloc(sizeof(unsigned char*) * GC_SERIAL_LINE_TABLE_ENTRIES);
+				this->table = ( unsigned char** ) malloc( sizeof( unsigned char* ) * GC_SERIAL_LINE_TABLE_ENTRIES );
 
-				for(int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++) {
-					this->table[i] = (unsigned char*) malloc(GC_SERIAL_BUFF_SIZE * sizeof(unsigned char));
-					memset(this->table[i], 0xFF, GC_SERIAL_BUFF_SIZE * sizeof(unsigned char));
+				for( int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ ) {
+					this->table[i] = ( unsigned char* ) malloc( GC_SERIAL_BUFF_SIZE * sizeof( unsigned char ) );
+					memset( this->table[i], 0xFF, GC_SERIAL_BUFF_SIZE * sizeof( unsigned char ) );
 				}
 
 				this->index = 0;
@@ -357,12 +357,12 @@ namespace BBB_HVAC
 			 * \brief Destructor.
 			 */
 			inline ~LINE_TABLE() {
-				for(int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++) {
-					free(this->table[i]);
+				for( int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ ) {
+					free( this->table[i] );
 					this->table[i] = nullptr;
 				}
 
-				free(this->table);
+				free( this->table );
 				this->table = nullptr;
 			}
 

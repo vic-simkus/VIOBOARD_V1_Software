@@ -37,9 +37,9 @@ namespace BBB_HVAC
 		SHIM_LISTENER();
 		~SHIM_LISTENER();
 
-		void init(void) throw(exception);
+		void init( void ) throw( exception );
 	protected:
-		bool thread_func(void);
+		bool thread_func( void );
 
 	private:
 		SERVER::HS_SERVER_CONTEXT* server_ctx;
