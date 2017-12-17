@@ -26,6 +26,7 @@
 using namespace BBB_HVAC;
 
 THREAD_REGISTRY* THREAD_REGISTRY::global_instance = nullptr;
+void ( * BBB_HVAC::THREAD_REGISTRY::io_death_listener )( const std::string& ) = nullptr;
 
 THREAD_REGISTRY::THREAD_REGISTRY( const string& _tag ) : TPROTECT_BASE( _tag )
 {
@@ -210,12 +211,37 @@ void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 
 void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
 {
+	bool io_thread = false;
+	std::string thread_tag;
+
 	for( auto i = this->dead_threads.begin(); i != this->dead_threads.end(); ++i )
 	{
 		if( *i != nullptr )
 		{
+			LOG_DEBUG_P( "Purging thread: " + ( *i )->get_thread_tag() );
+			io_thread = ( *i )->get_is_io_thread();
+
+			if( io_thread )
+			{
+				thread_tag = ( *i )->get_thread_tag();
+			}
+
 			delete( *i );
 			( *i ) = nullptr;
+
+			if( io_thread )
+			{
+				io_thread = false;
+				/*
+				An IO thread dying is bad, mkay
+				*/
+				LOG_DEBUG_P( "A death of an IO thread was detected." );
+
+				if( THREAD_REGISTRY::io_death_listener )
+				{
+					THREAD_REGISTRY::io_death_listener( thread_tag );
+				}
+			}
 		}
 		else
 		{

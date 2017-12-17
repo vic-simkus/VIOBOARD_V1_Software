@@ -386,7 +386,7 @@ namespace BBB_HVAC
 			ENUM_ERRORS serial_port_open( void );
 			void handle_hung_board( void );
 
-			bool clear_to_send( void ) const;
+			unsigned char clear_to_send( void ) const;
 		private:
 
 

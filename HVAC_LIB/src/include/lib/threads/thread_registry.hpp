@@ -54,8 +54,16 @@ namespace BBB_HVAC
 		static void init_cleanup( void ) throw( runtime_error );
 		static void destroy_global( void );
 
+		static inline void register_io_death_listener( void ( *_ptr )( const std::string& ) ) {
+			THREAD_REGISTRY::io_death_listener = _ptr;
+			return;
+		}
+
 		static const vector<THREAD_BASE*>* get_io_threads( void ) throw( runtime_error );
 		static IOCOMM::SER_IO_COMM* get_serial_io_thread( const std::string& _tag ) throw( runtime_error );
+		static inline void global_cleanup( void ) {
+			THREAD_REGISTRY::global_instance->cleanup();
+		}
 
 	protected:
 		THREAD_REGISTRY( const string& _tag );
@@ -72,6 +80,7 @@ namespace BBB_HVAC
 
 		void __cleanup( void ) throw( runtime_error );
 
+		static void ( *io_death_listener )( const std::string& );
 		LOGGING::LOGGER* logger;
 
 		vector<THREAD_BASE*> io_threads;

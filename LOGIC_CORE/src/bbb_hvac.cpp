@@ -64,6 +64,8 @@ using namespace BBB_HVAC::SERVER;
 
 DEF_LOGGER_STAT( "BBB_HVAC(MAIN)" );
 
+static CONFIGURATOR* config = nullptr;
+
 /**
  * Checks to see if privileges need to be dropped.
  * \return 1 if the process has a GID or UID of 0
@@ -143,7 +145,33 @@ void drop_privs( void )
 
 	return;
 }
+bool start_board_io_thread( const CONFIG_ENTRY& _board_config )
+{
+	const string board_name = _board_config.get_part_as_string( 0 );
+	const string board_dev = _board_config.get_part_as_string( 1 );
+	bool debug = false;
 
+	if( _board_config.get_part_count() == 3 )
+	{
+		if( _board_config.get_part_as_string( 2 ) == "DEBUG" )
+		{
+			LOG_INFO_STAT( "Starting board " + board_name + " in debug mode." );
+			debug = true;
+		}
+	}
+
+	LOG_DEBUG_STAT( "Starting thread for board: " + board_name );
+	IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM( board_dev.data(), board_name, debug );
+
+	if( ser_comm->init() != IOCOMM::ENUM_ERRORS::ERR_NONE )
+	{
+		LOG_ERROR_STAT( "Failed to initialized serial IO for board:" + board_name );
+		return false;
+	}
+
+	ser_comm->start_thread();
+	return true;
+}
 bool start_io_threads( CONFIGURATOR* config )
 {
 	const CONFIG_TYPE_INDEX_TYPE& board_config = config->get_board_index();
@@ -151,55 +179,13 @@ bool start_io_threads( CONFIGURATOR* config )
 	for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
 	{
 		const CONFIG_ENTRY& bc = config->get_config_entry( *i );
-		const string board_name = bc.get_part_as_string( 0 );
-		const string board_dev = bc.get_part_as_string( 1 );
-		bool debug = false;
 
-		if( bc.get_part_count() == 3 )
+		if( !start_board_io_thread( bc ) )
 		{
-			if( bc.get_part_as_string( 2 ) == "DEBUG" )
-			{
-				LOG_INFO_STAT( "Starting board " + board_name + " in debug mode." );
-				debug = true;
-			}
-		}
-
-		LOG_DEBUG_STAT( "Starting thread for board: " + board_name );
-		IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM( board_dev.data(), board_name, debug );
-
-		if( ser_comm->init() != IOCOMM::ENUM_ERRORS::ERR_NONE )
-		{
-			LOG_ERROR_STAT( "Failed to initialized serial IO for board:" + board_name );
 			return false;
 		}
-
-		ser_comm->start_thread();
 	}
 
-	/*
-		IOCOMM::SER_IO_COMM * ser_comm_a = new IOCOMM::SER_IO_COMM( GC_SERIAL_PORT_A, "SERIAL_PORT1_IO" );
-		IOCOMM::SER_IO_COMM * ser_comm_b = new IOCOMM::SER_IO_COMM( GC_SERIAL_PORT_B, "SERIAL_PORT2_IO" );
-
-		GLOBALS::io_instance = ser_comm_a;
-
-		if ( ser_comm_a->init( ) != IOCOMM::ENUM_ERRORS::ERR_NONE )
-		{
-			LOG_ERROR_STAT( "Failed to initialized serial IO" );
-			return false;
-		}
-
-		if ( ser_comm_b->init( ) != IOCOMM::ENUM_ERRORS::ERR_NONE )
-		{
-			LOG_ERROR_STAT( "Failed to initialized serial IO" );
-			return false;
-		}
-
-		GLOBALS::io_instance->start_thread( );
-
-		sleep(1);
-
-		ser_comm_b->start_thread();
-	*/
 	return true;
 }
 
@@ -257,13 +243,35 @@ bool start_threads( CONFIGURATOR* config )
 	return true;
 }
 
+void io_death_listener( const std::string& _tag )
+{
+	LOG_DEBUG_STAT( "IO thread [" + _tag + "] death sensed." );
+	const CONFIG_TYPE_INDEX_TYPE& board_config = config->get_board_index();
+
+	for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
+	{
+		const CONFIG_ENTRY& bc = config->get_config_entry( *i );
+		const string board_name = bc.get_part_as_string( 0 );
+
+		if( board_name == _tag )
+		{
+			if( !start_board_io_thread( bc ) )
+			{
+				LOG_ERROR_STAT( "Failed to re-start IO board thread.  Aborting." );
+				GLOBALS::global_exit_flag = true;
+			}
+		}
+	}
+
+	return;
+}
 int main( void )
 {
 	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	LOG_INFO_STAT( "Starting up BBB HVAC server." );
 	GLOBALS::configure_signals();
 	drop_privs();
-	CONFIGURATOR* config = new CONFIGURATOR( "configuration.cfg" );
+	config = new CONFIGURATOR( "configuration.cfg" );
 	config->read_file();
 	//start_io_threads(config);
 
@@ -275,9 +283,12 @@ int main( void )
 	}
 	else
 	{
+		THREAD_REGISTRY::register_io_death_listener( io_death_listener );
+
 		while( GLOBALS::global_exit_flag == false )
 		{
 			sleep( 1 );
+			THREAD_REGISTRY::global_cleanup();
 		}
 	}
 

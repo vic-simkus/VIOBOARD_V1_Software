@@ -86,12 +86,11 @@ void SER_IO_COMM::serial_port_close( void )
 
 SER_IO_COMM::~SER_IO_COMM()
 {
-	if( this->serial_fd == 0 )
+	if( this->serial_fd != 0 )
 	{
-		return;
+		this->serial_port_close();
 	}
 
-	this->serial_port_close();
 	unlink( this->lock_file.data() );
 	free( this->buffer );
 	this->buffer = nullptr;
@@ -304,33 +303,31 @@ bool SER_IO_COMM::drain_serial( void )
 	return rc;
 }
 
-bool SER_IO_COMM::clear_to_send( void ) const
+unsigned char SER_IO_COMM::clear_to_send( void ) const
 {
 	unsigned int flow_ctrl_status;
 	unsigned int output_queue;
 
 	if( ioctl( this->serial_fd, TIOCOUTQ, &output_queue ) != 0 )
 	{
-		LOG_ERROR_P( create_perror_string( "Failed get IOCTL port status" ) );
-		return false;
+		LOG_ERROR_P( create_perror_string( "Failed get IOCTL port queue" ) );
+		return 2;
 	}
 
 	if( ioctl( this->serial_fd, TIOCMGET, &flow_ctrl_status ) != 0 )
 	{
 		LOG_ERROR_P( create_perror_string( "Failed get IOCTL port status" ) );
-		return false;
+		return 3;
+	}
+
+	if( output_queue == 0 && ( flow_ctrl_status & TIOCM_CTS ) )
+		//if(flow_ctrl_status & TIOCM_CTS)
+	{
+		return 1;
 	}
 	else
 	{
-		if( output_queue == 0 && ( flow_ctrl_status & TIOCM_CTS ) )
-			//if(flow_ctrl_status & TIOCM_CTS)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return 0;
 	}
 }
 ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
@@ -428,12 +425,28 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 {
 	ssize_t bytes_written = 0;
 	ssize_t rc;
+	unsigned char cts_res = 0;
 
 	while( this->abort_thread == false )
 	{
-		if( !this->clear_to_send() )
+		cts_res = this->clear_to_send();
+
+		if( cts_res == 0 )
 		{
 			continue;
+		}
+		else if( cts_res == 1 )
+		{
+			/*
+			Normal clear to continue
+			*/
+		}
+		else
+		{
+			/*
+			Error condition.
+			*/
+			return false;
 		}
 
 		rc = write( this->serial_fd, _buffer + bytes_written, _length - bytes_written );
@@ -823,7 +836,7 @@ bool SER_IO_COMM::digest_line_table( void )
 		else
 		{
 			LOG_ERROR_P( "Line at index " + to_string( i ) + " was unrecognized.  Clearing offending line." );
-			LOG_DEBUG_P( "\n" + buffer_to_hex( this->active_table->table[i], 16 ) );
+			//LOG_DEBUG_P( "\n" + buffer_to_hex( this->active_table->table[i], 16 ) );
 			this->set_active_table_line_blank( i );
 		}
 	}
@@ -1161,6 +1174,7 @@ void SER_IO_COMM::handle_hung_board()
 	this->board_has_reset = false;
 	this->stream_started = false;
 	this->reset_buffer_context();
+	this->outgoing_messages->clear();
 	this->serial_port_close();
 	/*
 	timespec ts;
@@ -1169,6 +1183,28 @@ void SER_IO_COMM::handle_hung_board()
 	this->nsleep(&ts);
 	 */
 	this->serial_port_open();
+	unsigned int port_status;
+	timespec sleep_time;
+
+	while( !this->abort_thread )
+	{
+		if( ioctl( this->serial_fd, TIOCMGET, &port_status ) == 0 )
+		{
+			/*
+			Port successfully reset.
+			*/
+			LOG_DEBUG_P( "Port is available." );
+			break;
+		}
+		else
+		{
+			LOG_DEBUG_P( "Waiting for port to become available." );
+		}
+
+		sleep_time.tv_nsec = 100000000;	//100 miliseconds
+		this->nsleep( &sleep_time );
+	}
+
 	this->cmd_reset_board();
 	return;
 }
@@ -1214,7 +1250,7 @@ bool SER_IO_COMM::main_event_loop( void )
 	{
 		this->obtain_lock();
 		fds.fd = this->serial_fd;
-		fds.events = POLLIN | POLLPRI | POLLERR | POLLHUP;
+		fds.events = POLLIN;
 		int fds_ready_num = poll( &fds, 1, GC_SERIAL_THREAD_POLL_TIMEOUT );
 
 		if( fds_ready_num == 0 )
@@ -1269,6 +1305,21 @@ bool SER_IO_COMM::main_event_loop( void )
 				 * We don't know how to handle anything other than incomming data.
 				 */
 				LOG_ERROR_P( "Don't know what to do when poll.revents is not POLLIN" );
+			}
+
+			if( fds.events & POLLERR )
+			{
+				LOG_ERROR_P( "POLLERR flag is set." );
+			}
+
+			if( fds.events & POLLHUP )
+			{
+				LOG_ERROR_P( "POLLHUP flag is set." );
+			}
+
+			if( fds.events & POLLNVAL )
+			{
+				LOG_ERROR_P( "POLLNVAL flag is set." );
 			}
 		}
 
@@ -1331,6 +1382,9 @@ bool SER_IO_COMM::write_event_loop( void ) throw( LOCK_ERROR )
 
 			if( !this->write_buffer( msg.message.get(), msg.message_length ) )
 			{
+				/*
+				XXX - Do not kill thread
+				*/
 				LOG_ERROR_P( "Failed to write whole message." );
 				this->abort_thread = true;
 				break;
