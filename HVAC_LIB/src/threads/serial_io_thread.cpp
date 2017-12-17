@@ -768,10 +768,18 @@ void SER_IO_COMM::process_protocol_message( size_t _idx )
 	 */
 	vector<string> tokens = this->create_protocol_line_tokens( token_indexes, _idx );
 
-	if( tokens[0] == "F IC" && tokens[1] == "IC UP" )
+	if( ( tokens[0] == "F CC" && tokens[1] == "CC UP" ) )
 	{
-		LOG_DEBUG_P( "Board reset sensed." );
+		LOG_DEBUG_P( "Incomplete board reset sensed." );
+		this->board_has_reset = false;
+		this->stream_started = false;
+	}
+
+	if( ( tokens[0] == "F IC" && tokens[1] == "IC UP" ) )
+	{
+		LOG_DEBUG_P( "Complete board reset sensed." );
 		this->board_has_reset = true;
+		this->stream_started = false;
 	}
 
 	return;
