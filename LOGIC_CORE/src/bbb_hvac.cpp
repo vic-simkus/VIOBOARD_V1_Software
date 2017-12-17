@@ -62,18 +62,18 @@
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::SERVER;
 
-DEF_LOGGER_STAT("BBB_HVAC(MAIN)");
+DEF_LOGGER_STAT( "BBB_HVAC(MAIN)" );
 
 /**
  * Checks to see if privileges need to be dropped.
  * \return 1 if the process has a GID or UID of 0
  */
-int check_privs(void)
+int check_privs( void )
 {
 	uid_t uid = getuid();
 	gid_t gid = getgid();
 
-	if(uid == 0 || gid == 0)
+	if( uid == 0 || gid == 0 )
 	{
 		return 1;
 	}
@@ -86,9 +86,9 @@ int check_privs(void)
 /**
  * Drops the privileges of the process.  The user and group IDs used are defined in lib/config.hpp
  */
-void drop_privs(void)
+void drop_privs( void )
 {
-	if(check_privs() == 0)
+	if( check_privs() == 0 )
 	{
 		return;
 	}
@@ -97,79 +97,79 @@ void drop_privs(void)
 	struct passwd* pwd = 0;
 	struct group* grp = 0;
 	errno = 0;
-	pwd = getpwnam(GC_PROC_USER);
+	pwd = getpwnam( GC_PROC_USER );
 
-	if(pwd == 0)
+	if( pwd == 0 )
 	{
-		perror("Failed to get process user pwd entry.  Aborting.");
-		exit(-1);
+		perror( "Failed to get process user pwd entry.  Aborting." );
+		exit( -1 );
 	}
 
 	errno = 0;
-	grp = getgrnam(GC_PROC_GROUP);
+	grp = getgrnam( GC_PROC_GROUP );
 
-	if(grp == 0)
+	if( grp == 0 )
 	{
-		perror("Failed to get process group grp entry.  Aborting.");
-		exit(-2);
+		perror( "Failed to get process group grp entry.  Aborting." );
+		exit( -2 );
 	}
 
 	uid_t uid = pwd->pw_uid;
 	gid_t gid = grp->gr_gid;
 
-	if(getgid() != gid)
+	if( getgid() != gid )
 	{
 		errno = 0;
-		rc = setgid(gid);
+		rc = setgid( gid );
 
-		if(rc != 0)
+		if( rc != 0 )
 		{
-			perror("Failed to drop group privileges.  Aborting.");
-			exit(-4);
+			perror( "Failed to drop group privileges.  Aborting." );
+			exit( -4 );
 		}
 	}
 
-	if(getuid() != uid)
+	if( getuid() != uid )
 	{
 		errno = 0;
-		rc = setuid(uid);
+		rc = setuid( uid );
 
-		if(rc != 0)
+		if( rc != 0 )
 		{
-			perror("Failed to drop user privileges.  Aborting.");
-			exit(-4);
+			perror( "Failed to drop user privileges.  Aborting." );
+			exit( -4 );
 		}
 	}
 
 	return;
 }
 
-bool start_io_threads(CONFIGURATOR* config)
+bool start_io_threads( CONFIGURATOR* config )
 {
 	const CONFIG_TYPE_INDEX_TYPE& board_config = config->get_board_index();
 
-	for(CONFIG_TYPE_INDEX_TYPE::const_iterator i=board_config.begin(); i!=board_config.end(); ++i)
+	for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
 	{
-		const CONFIG_ENTRY& bc = config->get_config_entry(*i);
-		const string board_name = bc.get_part_as_string(0);
-		const string board_dev = bc.get_part_as_string(1);
+		const CONFIG_ENTRY& bc = config->get_config_entry( *i );
+		const string board_name = bc.get_part_as_string( 0 );
+		const string board_dev = bc.get_part_as_string( 1 );
 		bool debug = false;
 
-		if(bc.get_part_count() == 3)
+		if( bc.get_part_count() == 3 )
 		{
-			if(bc.get_part_as_string(2) == "DEBUG")
+			if( bc.get_part_as_string( 2 ) == "DEBUG" )
 			{
-				LOG_INFO_STAT("Starting board " + board_name + " in debug mode.");
+				LOG_INFO_STAT( "Starting board " + board_name + " in debug mode." );
 				debug = true;
 			}
 		}
 
-		LOG_DEBUG_STAT("Starting thread for board: " + board_name);
-		IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM(board_dev.data(),board_name,debug);
+		LOG_DEBUG_STAT( "Starting thread for board: " + board_name );
+		IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM( board_dev.data(), board_name, debug );
 
-		if(ser_comm->init()!= IOCOMM::ENUM_ERRORS::ERR_NONE)
+		if( ser_comm->init() != IOCOMM::ENUM_ERRORS::ERR_NONE )
 		{
-			LOG_ERROR_STAT("Failed to initialized serial IO for board:" + board_name);
+			LOG_ERROR_STAT( "Failed to initialized serial IO for board:" + board_name );
 			return false;
 		}
 
@@ -203,7 +203,7 @@ bool start_io_threads(CONFIGURATOR* config)
 	return true;
 }
 
-bool start_shim_thread(void)
+bool start_shim_thread( void )
 {
 	SHIM_LISTENER* listener = new SHIM_LISTENER();
 
@@ -211,9 +211,9 @@ bool start_shim_thread(void)
 	{
 		listener->init();
 	}
-	catch(const exception& _e)
+	catch( const exception& _e )
 	{
-		LOG_ERROR_STAT("Failed to initialize shim listener thread: " + string(_e.what()));
+		LOG_ERROR_STAT( "Failed to initialize shim listener thread: " + string( _e.what() ) );
 		delete listener;
 		return false;
 	}
@@ -222,9 +222,9 @@ bool start_shim_thread(void)
 	return true;
 }
 
-bool start_logic_thread(CONFIGURATOR* config)
+bool start_logic_thread( CONFIGURATOR* config )
 {
-	GLOBALS::logic_instance = new HVAC_LOGIC_LOOP(config);
+	GLOBALS::logic_instance = new HVAC_LOGIC_LOOP( config );
 	/*
 	 * HVAC_LOGIC_LOOP takes ownership of the CONFIGURATOR instance.
 	 */
@@ -232,58 +232,58 @@ bool start_logic_thread(CONFIGURATOR* config)
 	return true;
 }
 
-bool start_threads(CONFIGURATOR* config)
+bool start_threads( CONFIGURATOR* config )
 {
 	GLOBALS::configure_watchdog();
 
-	if(!start_shim_thread())
+	if( !start_shim_thread() )
 	{
-		LOG_ERROR_STAT("Failed to start shim listener thread.");
+		LOG_ERROR_STAT( "Failed to start shim listener thread." );
 		return false;
 	}
 
-	if(!start_io_threads(config))
+	if( !start_io_threads( config ) )
 	{
-		LOG_ERROR_STAT("Failed to start IO threads.");
+		LOG_ERROR_STAT( "Failed to start IO threads." );
 		return false;
 	}
 
-	if(!start_logic_thread(config))
+	if( !start_logic_thread( config ) )
 	{
-		LOG_ERROR_STAT("Failed to start logic thread.");
+		LOG_ERROR_STAT( "Failed to start logic thread." );
 		return false;
 	}
 
 	return true;
 }
 
-int main(void)
+int main( void )
 {
-	GLOBALS::configure_logging(LOGGING::ENUM_LOG_LEVEL::DEBUG);
-	LOG_INFO_STAT("Starting up BBB HVAC server.");
+	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
+	LOG_INFO_STAT( "Starting up BBB HVAC server." );
 	GLOBALS::configure_signals();
 	drop_privs();
-	CONFIGURATOR* config = new CONFIGURATOR("configuration.cfg");
+	CONFIGURATOR* config = new CONFIGURATOR( "configuration.cfg" );
 	config->read_file();
 	//start_io_threads(config);
 
-	if(!start_threads(config))
+	if( !start_threads( config ) )
 	{
-		LOG_ERROR_STAT("Failed to start threads.");
+		LOG_ERROR_STAT( "Failed to start threads." );
 		GLOBALS::global_exit_flag = true;
 		THREAD_REGISTRY::stop_all();
 	}
 	else
 	{
-		while(GLOBALS::global_exit_flag == false)
+		while( GLOBALS::global_exit_flag == false )
 		{
-			sleep(1);
+			sleep( 1 );
 		}
 	}
 
 	THREAD_REGISTRY::stop_all();
 	THREAD_REGISTRY::destroy_global();
-	LOG_INFO_STAT("Main process is exiting.");
+	LOG_INFO_STAT( "Main process is exiting." );
 	LOGGING::LOG_CONFIGURATOR::destroy_root_configurator();
 	return EXIT_SUCCESS;
 }
