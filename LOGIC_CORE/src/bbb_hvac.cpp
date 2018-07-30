@@ -208,9 +208,9 @@ bool start_shim_thread( void )
 	return true;
 }
 
-bool start_logic_thread( CONFIGURATOR* config )
+bool start_logic_thread( CONFIGURATOR* )
 {
-	GLOBALS::logic_instance = new HVAC_LOGIC_LOOP( config );
+	GLOBALS::logic_instance = new HVAC_LOGIC::HVAC_LOGIC_LOOP( config );
 	/*
 	 * HVAC_LOGIC_LOOP takes ownership of the CONFIGURATOR instance.
 	 */
