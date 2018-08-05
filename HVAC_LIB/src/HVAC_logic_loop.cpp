@@ -58,7 +58,7 @@ HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP( CONFIGURATOR* _config ) :
 	{
 		const CONFIG_TYPE_INDEX_TYPE& idx = this->configurator->get_ai_index();
 
-		for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
+		for ( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
 		{
 			this->logic_status_fluff.ai_labels.push_back( this->configurator->get_config_entry( *i ).get_part_as_string( 2 ) );
 		}
@@ -66,7 +66,7 @@ HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP( CONFIGURATOR* _config ) :
 	{
 		const CONFIG_TYPE_INDEX_TYPE& idx = this->configurator->get_do_index();
 
-		for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
+		for ( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
 		{
 			this->logic_status_fluff.do_labels.push_back( this->configurator->get_config_entry( *i ).get_part_as_string( 2 ) );
 		}
@@ -74,7 +74,7 @@ HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP( CONFIGURATOR* _config ) :
 	{
 		const CONFIG_TYPE_INDEX_TYPE& idx = this->configurator->get_sp_index();
 
-		for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
+		for ( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
 		{
 			this->logic_status_fluff.sp_labels.push_back( this->configurator->get_config_entry( *i ).get_part_as_string( 0 ) );
 		}

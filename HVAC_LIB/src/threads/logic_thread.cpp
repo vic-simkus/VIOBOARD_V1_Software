@@ -50,27 +50,27 @@ LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
 	this->logic_status_fluff.sp_labels = this->configurator->get_sp_points();
 	this->logic_status_fluff.point_map = this->configurator->get_point_map();
 
-	for( auto i = this->logic_status_fluff.do_labels.cbegin(); i != this->logic_status_fluff.do_labels.cend(); ++i )
+	for ( auto i = this->logic_status_fluff.do_labels.cbegin(); i != this->logic_status_fluff.do_labels.cend(); ++i )
 	{
 		std::string board_tag = ( *i ).get_board_tag();
 
-		if( std::find( this->involved_board_tags.cbegin(), this->involved_board_tags.cend(), board_tag ) == this->involved_board_tags.cend() )
+		if ( std::find( this->involved_board_tags.cbegin(), this->involved_board_tags.cend(), board_tag ) == this->involved_board_tags.cend() )
 		{
 			this->involved_board_tags.push_back( board_tag );
 		}
 	}
 
-	for( auto i = this->logic_status_fluff.ai_labels.cbegin(); i != this->logic_status_fluff.ai_labels.cend(); ++i )
+	for ( auto i = this->logic_status_fluff.ai_labels.cbegin(); i != this->logic_status_fluff.ai_labels.cend(); ++i )
 	{
 		std::string board_tag = ( *i ).get_board_tag();
 
-		if( std::find( this->involved_board_tags.cbegin(), this->involved_board_tags.cend(), board_tag ) == this->involved_board_tags.cend() )
+		if ( std::find( this->involved_board_tags.cbegin(), this->involved_board_tags.cend(), board_tag ) == this->involved_board_tags.cend() )
 		{
 			this->involved_board_tags.push_back( board_tag );
 		}
 	}
 
-	for( auto i = this->involved_board_tags.cbegin(); i != this->involved_board_tags.cend(); ++i )
+	for ( auto i = this->involved_board_tags.cbegin(); i != this->involved_board_tags.cend(); ++i )
 	{
 		this->logic_status_core.current_state_map.emplace( std::make_pair( *i, BOARD_STATE_STRUCT() ) );
 	}
@@ -95,19 +95,19 @@ std::map<std::string, LOGIC_POINT_STATUS> LOGIC_PROCESSOR_BASE::get_logic_status
 	std::map<std::string, LOGIC_POINT_STATUS> ret;
 	this->obtain_lock();
 
-	for( auto map_iterator = this->configurator->get_point_map().cbegin(); map_iterator != this->configurator->get_point_map().cend(); ++map_iterator )
+	for ( auto map_iterator = this->configurator->get_point_map().cbegin(); map_iterator != this->configurator->get_point_map().cend(); ++map_iterator )
 	{
 		const std::string map_name = map_iterator->first;
 		const BOARD_POINT& board_point = map_iterator->second;
 		ENUM_CONFIG_TYPES point_type = board_point.get_type();
 
-		if( point_type == ENUM_CONFIG_TYPES::DO )
+		if ( point_type == ENUM_CONFIG_TYPES::DO )
 		{
 			// Digital output point
 			bool value = ( this->logic_status_core.current_state_map.at( board_point.get_board_tag() ).do_state.get_value() & ( 1 << board_point.get_point_id() ) ) ? true : false;
 			ret.emplace( std::make_pair( map_name, LOGIC_POINT_STATUS( value ) ) );
 		}
-		else if( point_type == ENUM_CONFIG_TYPES::AI )
+		else if ( point_type == ENUM_CONFIG_TYPES::AI )
 		{
 			// Analog input
 			ret.emplace( std::make_pair( map_name, LOGIC_POINT_STATUS( this->logic_status_core.calculated_adc_values[map_name] ) ) );
@@ -140,7 +140,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 	this->pre_process();
 	this->release_lock();
 
-	while( this->abort_thread == false )
+	while ( this->abort_thread == false )
 	{
 		this->reset_sleep_timespec( GC_LOGIC_THREAD_SLEEP );
 		this->nsleep();
@@ -154,7 +154,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 
 		Step 1 of 2: Get all of the current IO board values.
 		*/
-		for( auto i = this->involved_board_tags.cbegin(); i != this->involved_board_tags.cend(); ++i )
+		for ( auto i = this->involved_board_tags.cbegin(); i != this->involved_board_tags.cend(); ++i )
 		{
 			/*
 			involved_board_tags is a vector of strings - board IDs
@@ -168,7 +168,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 			{
 				thread_handle = THREAD_REGISTRY::get_serial_io_thread( *i );
 			}
-			catch( const exception& _e )
+			catch ( const exception& _e )
 			{
 				LOG_ERROR_P( "Failed to find board IO thread: (" + std::string( _e.what() ) + ").  Skipping logic iteration." );
 				goto _end;
@@ -182,7 +182,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 				*/
 				auto board_state_iterator = this->logic_status_core.current_state_map.find( ( *i ) );
 
-				if( board_state_iterator == this->logic_status_core.current_state_map.end() )
+				if ( board_state_iterator == this->logic_status_core.current_state_map.end() )
 				{
 					LOG_ERROR_P( "Failed to find state map for the current board tag: " + ( *i ) );
 					goto _end;
@@ -196,7 +196,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 				board_state_cache.get_latest_pmic_status( board_state_ptr->pmic_state );
 				board_state_cache.get_latest_adc_values( board_state_ptr->ai_state );
 			}
-			catch( const exception& _e )
+			catch ( const exception& _e )
 			{
 				LOG_ERROR_P( "Failed to update state: " + string( _e.what() ) );
 			}
@@ -207,7 +207,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 		*/
 		const auto&  point_map = this->configurator->get_point_map();
 
-		for( auto map_iterator = point_map.cbegin(); map_iterator != point_map.cend(); ++map_iterator )
+		for ( auto map_iterator = point_map.cbegin(); map_iterator != point_map.cend(); ++map_iterator )
 		{
 			const std::string& point_name = map_iterator->first;
 			const BOARD_POINT& board_point = map_iterator->second;
@@ -217,11 +217,11 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 			double volt_value = ( double )val * this->logic_status_core.adc_step_val;
 			double calculated_value = 0;
 
-			if( board_point.get_ai_type() == AI_TYPE::CL_420 )
+			if ( board_point.get_ai_type() == AI_TYPE::CL_420 )
 			{
 				calculated_value = calculate_420_value( volt_value, board_point.get_min_value(), board_point.get_max_value() );
 			}
-			else if( board_point.get_ai_type() == AI_TYPE::ICTD )
+			else if ( board_point.get_ai_type() == AI_TYPE::ICTD )
 			{
 				// TODO - calculate ICTD temp value.
 				double in_volts = volt_value / 10;	// The opamp gain is 10x
@@ -240,7 +240,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 		*/
 		const SET_POINT_MAP& set_points = this->configurator->get_sp_points();
 
-		for( auto i = set_points.begin(); i != set_points.end(); ++i )
+		for ( auto i = set_points.begin(); i != set_points.end(); ++i )
 		{
 			this->logic_status_core.set_point_values[i->first] = this->configurator->get_sp_value( i->first );
 		}
@@ -249,12 +249,12 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 		{
 			this->process_logic();
 		}
-		catch( const std::exception& e )
+		catch ( const std::exception& e )
 		{
 			LOG_ERROR_P( "process_logic() emitted an std::exception.  Logic thread will abort. Message: " + std::string( e.what() ) );
 			this->abort_thread = true;
 		}
-		catch( ... )
+		catch ( ... )
 		{
 			LOG_ERROR_P( "process_logic() emitted an unspecified exception.  Logic thread will abort." );
 			this->abort_thread = true;
@@ -286,11 +286,11 @@ bool LOGIC_PROCESSOR_BASE::thread_func( void )
 	{
 		return this->inner_thread_func();
 	}
-	catch( const exception& _e )
+	catch ( const exception& _e )
 	{
 		LOG_ERROR_P( "Unhandled exception caught in the main logic loop: " + string( _e.what() ) );
 	}
-	catch( ... )
+	catch ( ... )
 	{
 		LOG_ERROR_P( "Unhandled and unknown exception caught in the main logic loop." );
 	}
@@ -299,7 +299,7 @@ bool LOGIC_PROCESSOR_BASE::thread_func( void )
 	{
 		this->release_lock();
 	}
-	catch( const exception& _e )
+	catch ( const exception& _e )
 	{
 		LOG_ERROR_P( "Ignoring exception during last ditch effort to release lock: " + string( _e.what() ) );
 	}
@@ -311,7 +311,7 @@ bool LOGIC_PROCESSOR_BASE::thread_func( void )
 
 double LOGIC_PROCESSOR_BASE::c_to_f( double _c )
 {
-	return( ( _c * 9 / 5 ) + 32 );
+	return ( ( _c * 9 / 5 ) + 32 );
 }
 double LOGIC_PROCESSOR_BASE::calculate_ICTD_value( double _voltage )
 {
@@ -361,7 +361,7 @@ bool LOGIC_PROCESSOR_BASE::is_output_set( const string& _name ) const
 	const BOARD_POINT& board_point = this->configurator->get_point_map().at( _name );
 	uint8_t do_status = this->logic_status_core.current_state_map.at( board_point.get_board_tag() ).do_state.get_value();
 
-	if( do_status & ( 1 << board_point.get_point_id() ) )
+	if ( do_status & ( 1 << board_point.get_point_id() ) )
 	{
 		return true;
 	}
@@ -376,7 +376,7 @@ void LOGIC_PROCESSOR_BASE::set_output( const string& _name )
 	BOARD_POINT board_point = this->configurator->get_point_map().at( _name );
 	uint8_t do_status = this->logic_status_core.current_state_map.at( board_point.get_board_tag() ).do_state.get_value();
 
-	if( do_status & ( 1 << board_point.get_point_id() ) )
+	if ( do_status & ( 1 << board_point.get_point_id() ) )
 	{
 		// Do nothing.  The DO is already set.
 		return;
