@@ -109,7 +109,7 @@ const vector<string>& MESSAGE::get_parts( void ) const
 	return this->parts;
 }
 
-uint16_t MESSAGE::get_part_as_ui(size_t _part ) throw( exception )
+uint16_t MESSAGE::get_part_as_ui( size_t _part ) throw( exception )
 {
 	this->check_part_index( _part );
 
@@ -241,21 +241,21 @@ string MESSAGE::to_string( void ) const
 	return ret;
 }
 
-void MESSAGE::message_to_map(const MESSAGE_PTR& _message, std::map<std::string,std::string>& _dest_map) throw (exception)
+void MESSAGE::message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) throw( exception )
 {
-	if(_message->get_part_count() < 2)
+	if( _message->get_part_count() < 2 )
 	{
-		throw logic_error("Message part count too low.");
+		throw logic_error( "Message part count too low." );
 	}
 
-	if((_message->get_part_count() % 2)!=0)
+	if( ( _message->get_part_count() % 2 ) != 0 )
 	{
-		throw logic_error("Message part count is not even.");
+		throw logic_error( "Message part count is not even." );
 	}
 
-	for(size_t i=0;i<_message->get_part_count();i+=2)
+	for( size_t i = 0; i < _message->get_part_count(); i += 2 )
 	{
-		_dest_map.emplace(std::make_pair(_message->get_part_as_s(i),_message->get_part_as_s(i+1)));
+		_dest_map.emplace( std::make_pair( _message->get_part_as_s( i ), _message->get_part_as_s( i + 1 ) ) );
 	}
 
 	return;

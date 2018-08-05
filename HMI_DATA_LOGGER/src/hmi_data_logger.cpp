@@ -29,52 +29,49 @@ For sleep
 */
 #include <unistd.h>
 
-DEF_LOGGER_STAT("HMI_DATA_LOGGER::MAIN");
+DEF_LOGGER_STAT( "HMI_DATA_LOGGER::MAIN" );
 
 /**
 Application namespace
 */
 namespace HMI_DATA_LOGGER
 {
-	static void dump_config(const HMI_DATA_LOGGER_CONFIG& _config)
+	static void dump_config( const HMI_DATA_LOGGER_CONFIG& _config )
 	{
-		LOG_DEBUG_STAT("Application configuration:");
-		LOG_DEBUG_STAT("log rotate size: " + num_to_str(_config.rotate_size));
-		LOG_DEBUG_STAT("log dir: " + _config.log_dir);
-		LOG_DEBUG_STAT("base data file name: " + _config.base_data_file_name);
-		LOG_DEBUG_STAT("current file index: " + num_to_str(_config.current_file_index));
-		LOG_DEBUG_STAT("fail hard: " + num_to_str(_config.fail_hard));
+		LOG_DEBUG_STAT( "Application configuration:" );
+		LOG_DEBUG_STAT( "log rotate size: " + num_to_str( _config.rotate_size ) );
+		LOG_DEBUG_STAT( "log dir: " + _config.log_dir );
+		LOG_DEBUG_STAT( "base data file name: " + _config.base_data_file_name );
+		LOG_DEBUG_STAT( "current file index: " + num_to_str( _config.current_file_index ) );
+		LOG_DEBUG_STAT( "fail hard: " + num_to_str( _config.fail_hard ) );
 		return;
 	}
 
-/*
-	static bool check_data_need_rotate(const HMI_DATA_LOGGER_CONTEXT& _ctx)
-	{
+	/*
+		static bool check_data_need_rotate(const HMI_DATA_LOGGER_CONTEXT& _ctx)
+		{
 
-	}
-	*/
+		}
+		*/
 }
 
-bool process_command_line(int _argc,char ** _argv,HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT& _ctx)
+bool process_command_line( int _argc, char** _argv, HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT& _ctx )
 {
-	LOG_DEBUG_STAT("Processing command line parameters.");
-
+	LOG_DEBUG_STAT( "Processing command line parameters." );
 	bool rc = true;
+	std::unique_ptr<char> _real_path_ptr( realpath( _argv[0], nullptr ) );
 
-	std::unique_ptr<char> _real_path_ptr(realpath(_argv[0],nullptr));
-
-	if(!_real_path_ptr)
+	if( !_real_path_ptr )
 	{
-		LOG_ERROR_STAT(BBB_HVAC::create_perror_string("Failed to normalize our own executable path?"));
+		LOG_ERROR_STAT( BBB_HVAC::create_perror_string( "Failed to normalize our own executable path?" ) );
 		return false;
 	}
 
-	std::string normalized_me = std::string(_real_path_ptr.get());
+	std::string normalized_me = std::string( _real_path_ptr.get() );
+	_ctx.set_prog_name( std::string( _argv[0] ) );
+	_ctx.set_prog_name_fixed( normalized_me );
 
-	_ctx.set_prog_name(std::string(_argv[0]));
-	_ctx.set_prog_name_fixed(normalized_me);
-
-	if( (_argc % 2) == 0)
+	if( ( _argc % 2 ) == 0 )
 	{
 		/*
 		We always expect an odd number of parameters.
@@ -84,46 +81,45 @@ bool process_command_line(int _argc,char ** _argv,HMI_DATA_LOGGER::HMI_DATA_LOGG
 
 		... so forth ...
 		*/
-
-		LOG_ERROR_STAT("Command line parameter goofiness.  We always expect an odd number of parameters (including argv[0]!).");
+		LOG_ERROR_STAT( "Command line parameter goofiness.  We always expect an odd number of parameters (including argv[0]!)." );
 		return false;
 	}
 
-	for(int i=1;i<_argc;i++)
+	for( int i = 1; i < _argc; i++ )
 	{
 		//LOG_DEBUG_STAT("Param [" + num_to_str(i) + "]: " + std::string(_argv[i]) );
-
 		std::string param = _argv[i];
 
-		if(param == "ROTATE_SIZE")
+		if( param == "ROTATE_SIZE" )
 		{
 			size_t rotate_size;
+
 			try
 			{
-				rotate_size = std::stoul(std::string(_argv[i+1]));
+				rotate_size = std::stoul( std::string( _argv[i + 1] ) );
 			}
-			catch( const std::exception& e)
+			catch( const std::exception& e )
 			{
-				LOG_ERROR_STAT("Failed to convert value to LOG_SIZE parameter to number.  Value [" + std::string(_argv[i+1]) + "], error: " + e.what());
+				LOG_ERROR_STAT( "Failed to convert value to LOG_SIZE parameter to number.  Value [" + std::string( _argv[i + 1] ) + "], error: " + e.what() );
 				rc = false;
 			}
 
 			_ctx.configuration.rotate_size = rotate_size;
 			i += 1;
 		}
-		else if(param == "LOG_DIR")
+		else if( param == "LOG_DIR" )
 		{
-			_ctx.configuration.log_dir = std::string(_argv[i+1]);
+			_ctx.configuration.log_dir = std::string( _argv[i + 1] );
 			i += 1;
 		}
-		else if(param == "BASE_DATA_FILE_NAME")
+		else if( param == "BASE_DATA_FILE_NAME" )
 		{
-			_ctx.configuration.base_data_file_name = std::string(_argv[i+1]);
+			_ctx.configuration.base_data_file_name = std::string( _argv[i + 1] );
 			i += 1;
 		}
-		else if(param == "FAIL_HARD")
+		else if( param == "FAIL_HARD" )
 		{
-			if(to_upper_case(std::string(_argv[i+1])) == "TRUE")
+			if( to_upper_case( std::string( _argv[i + 1] ) ) == "TRUE" )
 			{
 				_ctx.configuration.fail_hard = true;
 			}
@@ -131,81 +127,80 @@ bool process_command_line(int _argc,char ** _argv,HMI_DATA_LOGGER::HMI_DATA_LOGG
 			{
 				_ctx.configuration.fail_hard = false;
 			}
+
 			i += 1;
 		}
 		else
 		{
-			LOG_ERROR_STAT("Unrecognized command line parameter [" + param + "]");
+			LOG_ERROR_STAT( "Unrecognized command line parameter [" + param + "]" );
 			rc = false;
 		}
-
 	}
 
 	return rc;
 }
 
-bool collect_data(HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT&)
+bool collect_data( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT& )
 {
 	HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONNECTION connection;
 
-	if(!connection.connect())
+	if( !connection.connect() )
 	{
 		return false;
 	}
 
 	return true;
 }
-int main(int argc,char ** argv)
+int main( int argc, char** argv )
 {
-	BBB_HVAC::GLOBALS::configure_logging(BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG);
+	BBB_HVAC::GLOBALS::configure_logging( BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals();
-
 	HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT logger_context;
+	LOG_ERROR_STAT( "Starting." );
 
-	LOG_ERROR_STAT("Starting.");
-
-	if(!process_command_line(argc,argv,logger_context))
+	if( !process_command_line( argc, argv, logger_context ) )
 	{
-		LOG_ERROR_STAT("Command line parameter processing failed.  Please refer to previous error messages.  Program will abort.");
-		exit(-1);
+		LOG_ERROR_STAT( "Command line parameter processing failed.  Please refer to previous error messages.  Program will abort." );
+		exit( -1 );
 	}
 
-	dump_config(logger_context.configuration);
+	dump_config( logger_context.configuration );
 
-	if(logger_context.check_data_dir() == false)
+	if( logger_context.check_data_dir() == false )
 	{
-		LOG_ERROR_STAT("Check of data log directory failed.  See previous error messages for hints.  Bailing.");
+		LOG_ERROR_STAT( "Check of data log directory failed.  See previous error messages for hints.  Bailing." );
 		return -1;
 	}
 
-	if(logger_context.configuration.fail_hard == true)
+	if( logger_context.configuration.fail_hard == true )
 	{
-		collect_data(logger_context);
+		collect_data( logger_context );
 	}
 	else
 	{
-		LOG_INFO_STAT("Application is running in FAIL_HARD=FALSE mode.  Will retry indefinitely on all error conditions.");
-		while(1)
+		LOG_INFO_STAT( "Application is running in FAIL_HARD=FALSE mode.  Will retry indefinitely on all error conditions." );
+
+		while( 1 )
 		{
-			if(collect_data(logger_context))
+			if( collect_data( logger_context ) )
 			{
-				LOG_DEBUG_STAT("Data collection ended successfully.  Exiting.");
+				LOG_DEBUG_STAT( "Data collection ended successfully.  Exiting." );
 				break;
 			}
 			else
 			{
-				LOG_DEBUG_STAT("Error in data collection process.  FAIL_HARD is false.  Looping.");
+				LOG_DEBUG_STAT( "Error in data collection process.  FAIL_HARD is false.  Looping." );
 			}
 
-			if(BBB_HVAC::GLOBALS::global_exit_flag == true)
+			if( BBB_HVAC::GLOBALS::global_exit_flag == true )
 			{
-				LOG_INFO_STAT("Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true.");
+				LOG_INFO_STAT( "Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true." );
 				break;
 			}
 
-			sleep(1);
+			sleep( 1 );
 		}
 	}
 
-	LOG_INFO_STAT("Application is exiting.");
+	LOG_INFO_STAT( "Application is exiting." );
 }

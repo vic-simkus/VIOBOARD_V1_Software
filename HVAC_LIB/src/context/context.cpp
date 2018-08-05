@@ -116,11 +116,9 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			IOCOMM::CAL_VALUE_ENTRY l2_cal_cache[GC_IO_AI_COUNT];
 			std::string board_tag = _message->get_part_as_s( 0 );
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
-
 			/*
 			Rather than continually call into the serial IO thread and grabbing the lock we get the whole cache at once and tease out the individual components on our own time.
 			*/
-
 			IOCOMM::BOARD_STATE_CACHE state_cache;
 			comm_thread->get_latest_state_values( state_cache );
 			state_cache.get_latest_adc_values( dac_cache );
@@ -128,7 +126,6 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			state_cache.get_latest_pmic_status( pmic_cache );
 			state_cache.get_latest_l1_cal_values( l1_cal_cache );
 			state_cache.get_latest_l2_cal_values( l2_cal_cache );
-
 			/*
 			Response message parts
 			*/
@@ -229,11 +226,11 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			comm_thread->cmd_set_l2_calibration_values( cal_values );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if (t == ENUM_MESSAGE_TYPE::READ_LOGIC_STATUS)
+		else if( t == ENUM_MESSAGE_TYPE::READ_LOGIC_STATUS )
 		{
-			if(GLOBALS::logic_instance == nullptr)
+			if( GLOBALS::logic_instance == nullptr )
 			{
-				LOG_ERROR("Why is the logic thread instance null?");
+				LOG_ERROR( "Why is the logic thread instance null?" );
 			}
 			else
 			{
@@ -241,20 +238,19 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 				Response message parts
 				*/
 				vector<string> parts;
+				std::map<std::string, LOGIC_POINT_STATUS> logic_status = GLOBALS::logic_instance->get_logic_status();
 
-				std::map<std::string,LOGIC_POINT_STATUS> logic_status = GLOBALS::logic_instance->get_logic_status();
-
-				for(auto map_iterator = logic_status.begin();map_iterator != logic_status.end();++map_iterator)
+				for( auto map_iterator = logic_status.begin(); map_iterator != logic_status.end(); ++map_iterator )
 				{
-					parts.push_back(map_iterator->first);
+					parts.push_back( map_iterator->first );
 
-					if(map_iterator->second.is_double_value)
+					if( map_iterator->second.is_double_value )
 					{
-						parts.push_back(num_to_str(map_iterator->second.double_value));
+						parts.push_back( num_to_str( map_iterator->second.double_value ) );
 					}
 					else
 					{
-						parts.push_back(num_to_str(map_iterator->second.bool_value));
+						parts.push_back( num_to_str( map_iterator->second.bool_value ) );
 					}
 				}
 

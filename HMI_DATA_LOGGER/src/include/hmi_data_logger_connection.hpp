@@ -33,7 +33,7 @@ namespace HMI_DATA_LOGGER
 		HMI_DATA_LOGGER_CONNECTION();
 		~HMI_DATA_LOGGER_CONNECTION();
 
-		bool connect(void);
+		bool connect( void );
 	protected:
 	private:
 		DEF_LOGGER;

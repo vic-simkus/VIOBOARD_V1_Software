@@ -24,23 +24,20 @@ using namespace HMI_DATA_LOGGER;
 
 HMI_DATA_LOGGER_CONNECTION::HMI_DATA_LOGGER_CONNECTION()
 {
-	INIT_LOGGER("HMI_DATA_LOGGER::HMIC_DATA_LOGGER_CONNECTION");
-
-	LOG_DEBUG("Instantiating.");
-
-	this->ctx.reset(BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance());
-
+	INIT_LOGGER( "HMI_DATA_LOGGER::HMIC_DATA_LOGGER_CONNECTION" );
+	LOG_DEBUG( "Instantiating." );
+	this->ctx.reset( BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance() );
 }
 
-bool HMI_DATA_LOGGER_CONNECTION::connect(void)
+bool HMI_DATA_LOGGER_CONNECTION::connect( void )
 {
 	try
 	{
 		this->ctx->connect();
 	}
-	catch(const BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR& e)
+	catch( const BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR& e )
 	{
-		LOG_ERROR("Failed to connect to logic core: " + std::string(e.what()));
+		LOG_ERROR( "Failed to connect to logic core: " + std::string( e.what() ) );
 		return false;
 	}
 
@@ -49,13 +46,11 @@ bool HMI_DATA_LOGGER_CONNECTION::connect(void)
 
 HMI_DATA_LOGGER_CONNECTION::~HMI_DATA_LOGGER_CONNECTION()
 {
-	LOG_DEBUG("Destroying.");
+	LOG_DEBUG( "Destroying." );
 
-	if(this->ctx)
+	if( this->ctx )
 	{
 		this->ctx->disconnect();
 	}
-
-
 }
 

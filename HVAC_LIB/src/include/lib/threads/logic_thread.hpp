@@ -49,21 +49,17 @@ namespace BBB_HVAC
 	class LOGIC_POINT_STATUS
 	{
 	public:
-		explicit inline LOGIC_POINT_STATUS(double _double_value)
-		{
+		explicit inline LOGIC_POINT_STATUS( double _double_value ) {
 			this->is_double_value = true;
 			this->double_value = _double_value;
 			this->bool_value = false;
-
 			return;
 		}
 
-		explicit inline LOGIC_POINT_STATUS(bool _bool_value)
-		{
+		explicit inline LOGIC_POINT_STATUS( bool _bool_value ) {
 			this->is_double_value = false;
 			this->double_value = 0;
 			this->bool_value = _bool_value;
-
 			return;
 		}
 
@@ -94,12 +90,12 @@ namespace BBB_HVAC
 		/**
 		A map of setpoint values.  Key is setpoint name.  Value is ... the value.
 		*/
-		std::map<std::string,double> set_point_values;
+		std::map<std::string, double> set_point_values;
 
 		/**
 		A map of analog input values.  The key is the globally unique point name from the configuration MAP statement.  The value is the calculated value of the analog input based on the point's configuration.
 		*/
-		std::map<std::string,double> calculated_adc_values;
+		std::map<std::string, double> calculated_adc_values;
 
 		double adc_vref_max;
 		double adc_step_val;
@@ -108,9 +104,7 @@ namespace BBB_HVAC
 		/**
 		 * Constructor.
 		 */
-		inline LOGIC_STATUS_CORE()
-		{
-
+		inline LOGIC_STATUS_CORE() {
 			this->init();
 		}
 
@@ -118,8 +112,7 @@ namespace BBB_HVAC
 		/**
 		 * Destructor.
 		 */
-		inline ~LOGIC_STATUS_CORE()
-		{
+		inline ~LOGIC_STATUS_CORE() {
 			this->iterations = 0;
 			this->adc_vref_max = 0;
 			this->adc_steps = 0;
@@ -136,22 +129,19 @@ namespace BBB_HVAC
 		/**
 		 * Init method.
 		 */
-		inline void init( void )
-		{
+		inline void init( void ) {
 			this->iterations = 0;
 			this->adc_vref_max = GC_IO_ADC_VREF_MAX;
 			this->adc_steps = GC_IO_ADC_STEPS;
 			this->adc_step_val = this->adc_vref_max / this->adc_steps;
-
 			return;
 		}
 	private:
 		/**
 		 * Copy constructor.
 		 */
-		inline LOGIC_STATUS_CORE( const LOGIC_STATUS_CORE&  )
-		{
-			throw logic_error("Can not copy LOGIC_STATUS_CORE");
+		inline LOGIC_STATUS_CORE( const LOGIC_STATUS_CORE& ) {
+			throw logic_error( "Can not copy LOGIC_STATUS_CORE" );
 			return;
 		}
 	};
@@ -168,14 +158,13 @@ namespace BBB_HVAC
 			this->ai_labels = _src.ai_labels;
 			this->sp_labels = _src.sp_labels;
 			this->point_map = _src.point_map;
-
 			return;
 		}
 
 		BOARD_POINT_VECTOR do_labels;
 		BOARD_POINT_VECTOR ai_labels;
 		SET_POINT_MAP sp_labels;
-		std::map<std::string,BOARD_POINT> point_map;
+		std::map<std::string, BOARD_POINT> point_map;
 	};
 
 	/**
@@ -224,49 +213,49 @@ namespace BBB_HVAC
 		 * Returns a copy of the in-time status of the logic core.
 		 * \return A copy of the logic core status.
 		 */
-		std::map<std::string,LOGIC_POINT_STATUS> get_logic_status(void);
+		std::map<std::string, LOGIC_POINT_STATUS> get_logic_status( void );
 
 		void get_logic_status_fluff( LOGIC_STATUS_FLUFF& ) const;
 
 	protected:
-		static double calculate_420_value(double _voltage,long _min,long _max);
-		static double calculate_ICTD_value(double _voltage);
-		static double c_to_f(double c);
+		static double calculate_420_value( double _voltage, long _min, long _max );
+		static double calculate_ICTD_value( double _voltage );
+		static double c_to_f( double c );
 
 		bool thread_func( void );
 
-		bool inner_thread_func(void);
+		bool inner_thread_func( void );
 
 
 		/**
 		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 		*/
-		double get_sp_value(const string& _name) const throw (exception);
+		double get_sp_value( const string& _name ) const throw( exception );
 
 		/**
 		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 		*/
-		void set_sp_value(const string& _name,double _value);
+		void set_sp_value( const string& _name, double _value );
 
 		/**
 		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 		*/
-		double get_ai_value(const string & _name) const;
+		double get_ai_value( const string& _name ) const;
 
 		/**
 		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 		*/
-		bool is_output_set(const string& _name) const;
+		bool is_output_set( const string& _name ) const;
 
 		/**
 		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 		*/
-		void set_output(const string& _name);
+		void set_output( const string& _name );
 
 		/**
 		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 		*/
-		void clear_output(const string& _name);
+		void clear_output( const string& _name );
 
 		/**
 		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.

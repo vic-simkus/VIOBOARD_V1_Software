@@ -141,7 +141,7 @@ namespace BBB_HVAC
 		 */
 		static const char sep_char;
 
-		static void message_to_map(const MESSAGE_PTR& _message, std::map<std::string,std::string>& _dest_map) throw (exception);
+		static void message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) throw( exception );
 
 	protected:
 		/**

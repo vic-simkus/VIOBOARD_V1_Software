@@ -35,9 +35,8 @@ namespace HMI_DATA_LOGGER
 	public:
 		DEF_LOGGER;
 
-		HMI_DATA_LOGGER_CONTEXT()
-		{
-			INIT_LOGGER("HMI_DATA_LOGGER_CONTEXT");
+		HMI_DATA_LOGGER_CONTEXT() {
+			INIT_LOGGER( "HMI_DATA_LOGGER_CONTEXT" );
 			return;
 		}
 
@@ -46,20 +45,20 @@ namespace HMI_DATA_LOGGER
 		This method does reset this->full_data_dir.  If the method returns false this->full_data_dir remains empty.
 		\return True if the check is successful.  Also sets this->full_data_dir.  False otherwise and clears this->full_data_dir.
 		*/
-		bool check_data_dir(void);
+		bool check_data_dir( void );
 
 		/**
 		Goes through all of the directory entries in the log_dir and guesses the next file index.
 		*/
-		size_t get_next_data_file_index(void) throw (std::runtime_error);
+		size_t get_next_data_file_index( void ) throw( std::runtime_error );
 
-		std::string get_data_file_name_before_index(void);
+		std::string get_data_file_name_before_index( void );
 
-		std::string get_data_file_name_after_index(void);
+		std::string get_data_file_name_after_index( void );
 
-		void set_prog_name(const std::string& _p) throw (std::logic_error);
+		void set_prog_name( const std::string& _p ) throw( std::logic_error );
 
-		void set_prog_name_fixed(const std::string& _p) throw (std::logic_error);
+		void set_prog_name_fixed( const std::string& _p ) throw( std::logic_error );
 
 		HMI_DATA_LOGGER_CONFIG configuration;
 

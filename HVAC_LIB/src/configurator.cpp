@@ -142,57 +142,56 @@ void CONFIGURATOR::process_file( void ) throw( exception )
 			throw runtime_error( "Failed to find line terminator before exceeding buffer size." );
 		}
 	}
-	LOG_DEBUG("Point mappings:");
 
-	for(auto i=this->point_map.begin();i!=this->point_map.end();++i)
+	LOG_DEBUG( "Point mappings:" );
+
+	for( auto i = this->point_map.begin(); i != this->point_map.end(); ++i )
 	{
-		LOG_DEBUG(i->first + " --> " + i->second.to_string());
+		LOG_DEBUG( i->first + " --> " + i->second.to_string() );
 	}
 
 	//LOG_DEBUG("Lines processed: " + num_to_str(line_idx));
 	fclose( file );
 	return;
 }
-void CONFIGURATOR::process_mapping(const CONFIG_ENTRY& _ce) throw (exception)
+void CONFIGURATOR::process_mapping( const CONFIG_ENTRY& _ce ) throw( exception )
 {
-	ENUM_CONFIG_TYPES type = CONFIG_ENTRY::string_to_type(_ce.get_part_as_string(0));
-	std::string target_board = _ce.get_part_as_string(1);
-	unsigned int target_point = (unsigned int)_ce.get_part_as_int(2);
+	ENUM_CONFIG_TYPES type = CONFIG_ENTRY::string_to_type( _ce.get_part_as_string( 0 ) );
+	std::string target_board = _ce.get_part_as_string( 1 );
+	unsigned int target_point = ( unsigned int )_ce.get_part_as_int( 2 );
+	BOARD_POINT* target_entry = nullptr;
+	BOARD_POINT_VECTOR* point_list = nullptr;
 
-	BOARD_POINT * target_entry = nullptr;
-	BOARD_POINT_VECTOR * point_list = nullptr;
-
-	if(type == ENUM_CONFIG_TYPES::DO)
+	if( type == ENUM_CONFIG_TYPES::DO )
 	{
 		point_list = &this->do_points;
 	}
-	else if(type == ENUM_CONFIG_TYPES::AI)
+	else if( type == ENUM_CONFIG_TYPES::AI )
 	{
 		point_list = &this->ai_points;
 	}
 	else
 	{
-		LOG_ERROR("Invalid target entry type: " + _ce.get_part_as_string(0));
+		LOG_ERROR( "Invalid target entry type: " + _ce.get_part_as_string( 0 ) );
 		return;
 	}
 
-
-	for(auto i = point_list->begin();i!=point_list->end();++i)
+	for( auto i = point_list->begin(); i != point_list->end(); ++i )
 	{
-		if(i->get_board_tag() == target_board && target_point == i->get_point_id())
+		if( i->get_board_tag() == target_board && target_point == i->get_point_id() )
 		{
-			target_entry = &(*i);
+			target_entry = &( *i );
 		}
 	}
 
-	if(target_entry == nullptr)
+	if( target_entry == nullptr )
 	{
-		LOG_ERROR("Failed to find target entry for: " + _ce.to_string());
+		LOG_ERROR( "Failed to find target entry for: " + _ce.to_string() );
 		return;
 	}
 
-	std::string key = _ce.get_part_as_string(3);
-	this->point_map[key] = (*target_entry);
+	std::string key = _ce.get_part_as_string( 3 );
+	this->point_map[key] = ( *target_entry );
 }
 void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 {
@@ -265,54 +264,55 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 
 		case ENUM_CONFIG_TYPES::AI:
 		{
-			if(line_parts.size() < 4)
+			if( line_parts.size() < 4 )
 			{
-				LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx)  + "; missing parts.");
+				LOG_ERROR( "Malformed AI entry at line " + num_to_str( _line_idx )  + "; missing parts." );
 			}
 			else
 			{
-				if(line_parts[3] == "420")
+				if( line_parts[3] == "420" )
 				{
-					if(line_parts.size() != 6)
+					if( line_parts.size() != 6 )
 					{
-						LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx) + "; Wrong number of parts.  Expecting 6, found: " + num_to_str(line_parts.size()));
+						LOG_ERROR( "Malformed AI entry at line " + num_to_str( _line_idx ) + "; Wrong number of parts.  Expecting 6, found: " + num_to_str( line_parts.size() ) );
 						break;
 					}
 				}
-				else if(line_parts[3] == "ICTD")
+				else if( line_parts[3] == "ICTD" )
 				{
 					//
 					// No other parts for ICTD.  We're just doing a health and welfare check.
-
-					if(line_parts.size() != 5)
+					if( line_parts.size() != 5 )
 					{
-						LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx) + "; Wrong number of parts.  Expecting 5, found: " + num_to_str(line_parts.size()));
+						LOG_ERROR( "Malformed AI entry at line " + num_to_str( _line_idx ) + "; Wrong number of parts.  Expecting 5, found: " + num_to_str( line_parts.size() ) );
 						break;
 					}
+
 					//
 				}
 				else
 				{
-					LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx) + "; Unrecognized type: " + line_parts[3]);
+					LOG_ERROR( "Malformed AI entry at line " + num_to_str( _line_idx ) + "; Unrecognized type: " + line_parts[3] );
 					break;
 				}
 
 				this->ai_points.push_back( BOARD_POINT( ce, type, ces ) );
 			}
+
 			break;
 		}
 
 		case ENUM_CONFIG_TYPES::SP:
 		{
-			string key = ce.get_part_as_string(0);
-			this->sp_points[key]= SET_POINT( ce, ces );
+			string key = ce.get_part_as_string( 0 );
+			this->sp_points[key] = SET_POINT( ce, ces );
 			break;
 		}
 
 		case ENUM_CONFIG_TYPES::MAP:
 		{
 			this->map_configs.push_back( ces );
-			this->process_mapping(ce);
+			this->process_mapping( ce );
 			break;
 		}
 

@@ -197,6 +197,6 @@ void convert_vector_to_string( const std::vector<uint16_t>& _source, std::vector
 
 uint16_t checksum( const uint16_t* _buffer, size_t _length );
 
-void split_string_to_vector(const std::string& _string,char _split,std::vector<std::string>& _vector);
+void split_string_to_vector( const std::string& _string, char _split, std::vector<std::string>& _vector );
 
 #endif /* STRING_LIB_H_ */

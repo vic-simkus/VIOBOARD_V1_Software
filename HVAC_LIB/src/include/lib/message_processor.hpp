@@ -182,7 +182,7 @@ namespace BBB_HVAC
 		 * Creates a message of type READ_LOGIC_STATUS
 		 * \return Valid message instance.
 		 */
-		MESSAGE_PTR create_read_logic_status(void) throw( exception );
+		MESSAGE_PTR create_read_logic_status( void ) throw( exception );
 
 		/**
 		 * Creates a message of type SET_PMIC_STATUS

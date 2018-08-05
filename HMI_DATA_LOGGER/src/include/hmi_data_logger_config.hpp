@@ -35,8 +35,7 @@ namespace HMI_DATA_LOGGER
 		\brief Default constructor.
 		Initializes all of the instance values to their super reasonable defaults.
 		*/
-		HMI_DATA_LOGGER_CONFIG()
-		{
+		HMI_DATA_LOGGER_CONFIG() {
 			this->rotate_size = 0;
 			this->log_dir = "./log_data";
 			this->base_data_file_name = "sys_status_log.#.csv";
@@ -44,11 +43,11 @@ namespace HMI_DATA_LOGGER
 			this->fail_hard = true;
 		}
 
-		 size_t rotate_size;
-		 std::string log_dir;
-		 std::string base_data_file_name;
-		 bool fail_hard;
-		 size_t current_file_index;
+		size_t rotate_size;
+		std::string log_dir;
+		std::string base_data_file_name;
+		bool fail_hard;
+		size_t current_file_index;
 	};
 }
 #endif

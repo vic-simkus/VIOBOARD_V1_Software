@@ -192,7 +192,7 @@ std::string num_to_str( double _i )
 
 std::string num_to_str( bool _i )
 {
-	if(_i)
+	if( _i )
 	{
 		return "TRUE";
 	}
@@ -403,25 +403,23 @@ uint16_t checksum( const uint16_t* _buffer, size_t _length )
 	return ( ( uint16_t ) ~sum );
 }
 
-void split_string_to_vector(const std::string& _string,char _split,std::vector<std::string>& _vector)
+void split_string_to_vector( const std::string& _string, char _split, std::vector<std::string>& _vector )
 {
 	size_t previous_match = 0;
 	size_t current_match = 0;
-
 	_vector.clear();
 
-	while(1)
+	while( 1 )
 	{
-		current_match = _string.find(_split,previous_match);
+		current_match = _string.find( _split, previous_match );
 
-		if(current_match == std::string::npos)
+		if( current_match == std::string::npos )
 		{
-			_vector.push_back(_string.substr(previous_match,std::string::npos));
+			_vector.push_back( _string.substr( previous_match, std::string::npos ) );
 			break;
 		}
 
-		_vector.push_back(_string.substr(previous_match,current_match - previous_match));
-
+		_vector.push_back( _string.substr( previous_match, current_match - previous_match ) );
 		previous_match = current_match + 1;
 	}
 

@@ -151,7 +151,7 @@ namespace BBB_HVAC
 		*/
 		string get_part_as_string( size_t _idx ) const throw( exception );
 
-		bool get_part_as_bool(size_t _idx) const throw (exception);
+		bool get_part_as_bool( size_t _idx ) const throw( exception );
 
 		/**
 		 * Sets a specified part to the supplied value.
@@ -185,7 +185,7 @@ namespace BBB_HVAC
 		/**
 		Returns the string representation of the instance.
 		*/
-		std::string to_string(void) const;
+		std::string to_string( void ) const;
 
 		/**
 		Converts the type enum to a string suitable for outputting to a configuration file.  An exception is thrown in case of hinkiness.
@@ -218,19 +218,16 @@ namespace BBB_HVAC
 	class SET_POINT
 	{
 	public:
-		inline SET_POINT()
-		{
+		inline SET_POINT() {
 			this->description.clear();
 			this->value = 0xFFFF;
 			this->index = 0xFF;
 		}
 
-		inline SET_POINT( const std::string& _description, double _value)
-		{
+		inline SET_POINT( const std::string& _description, double _value ) {
 			this->description = _description;
 			this->value = _value;
 			this->index = 0xFE;
-
 			return;
 		}
 
@@ -259,29 +256,23 @@ namespace BBB_HVAC
 			return "(" + CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES::SP ) + ',' + this->description + ',' + num_to_str( this->value ) + ")";
 		}
 
-		static inline SET_POINT from_string(const std::string& _source)
-		{
+		static inline SET_POINT from_string( const std::string& _source ) {
 			/*
 			No fucking error checking at all...
 
 			XXX - need to make this not shit.  Like add error checking and handling and other such luxuries.
 			*/
-
 			// Get rid of the perens.
-			std::string str = trimmed(_source);
-			str = str.substr(1,_source.length()-2);
-
-
+			std::string str = trimmed( _source );
+			str = str.substr( 1, _source.length() - 2 );
 			std::vector<std::string> parts;
+			split_string_to_vector( str, ',', parts );
 
-			split_string_to_vector(str,',',parts);
-
-			if(parts.size() != 3)
-			{
+			if( parts.size() != 3 ) {
 				return SET_POINT();
 			}
 
-			return SET_POINT(parts[1],stod(parts[2]));
+			return SET_POINT( parts[1], stod( parts[2] ) );
 		}
 
 		/*
@@ -290,28 +281,23 @@ namespace BBB_HVAC
 		}
 		*/
 
-		static inline std::string to_string_static(const std::pair<std::string, BBB_HVAC::SET_POINT>& _pair)
-		{
+		static inline std::string to_string_static( const std::pair<std::string, BBB_HVAC::SET_POINT>& _pair ) {
 			return _pair.second.to_string();
 		}
 
-		inline double get_value(void) const
-		{
+		inline double get_value( void ) const {
 			return this->value;
 		}
 
-		inline void set_value(double _val)
-		{
+		inline void set_value( double _val ) {
 			this->value = _val;
 		}
 
-		inline size_t get_index(void) const
-		{
+		inline size_t get_index( void ) const {
 			return this->index;
 		}
 
-		inline std::string get_description(void) const
-		{
+		inline std::string get_description( void ) const {
 			return description;
 		}
 
@@ -322,24 +308,21 @@ namespace BBB_HVAC
 	private:
 	};
 
-	typedef std::map<std::string,SET_POINT> SET_POINT_MAP;
+	typedef std::map<std::string, SET_POINT> SET_POINT_MAP;
 
 	class BOARD_POINT
 	{
 	public:
 
-		inline BOARD_POINT()
-		{
+		inline BOARD_POINT() {
 			this->board_tag.clear();
 			this->point_id = 0xFF;
 			this->description.clear();
 			this->type = ENUM_CONFIG_TYPES::INVALID;
 			this->index = 0;
-
 			this->ai_type = AI_TYPE::INVALID;
 			this->min = 0;
 			this->max = 0;
-
 			return;
 		}
 
@@ -367,18 +350,14 @@ namespace BBB_HVAC
 			this->description = _src.description;
 			this->type = _src.type;
 			this->index = _src.index;
-
 			this->ai_type = _src.ai_type;
 			this->min = _src.min;
 			this->max = _src.max;
-
 			this->is_celcius = _src.is_celcius;
-
 			return;
 		}
 
-		inline BOARD_POINT( const CONFIG_ENTRY& _config_entry, ENUM_CONFIG_TYPES _type, size_t _index )
-		{
+		inline BOARD_POINT( const CONFIG_ENTRY& _config_entry, ENUM_CONFIG_TYPES _type, size_t _index ) {
 			this->board_tag = _config_entry.get_part_as_string( 0 );
 			this->point_id = _config_entry.get_part_as_uchar( 1 );
 			this->description = _config_entry.get_part_as_string( 2 );
@@ -386,19 +365,15 @@ namespace BBB_HVAC
 			this->index = _index;
 			this->is_celcius = false;
 
-			if(this->type == ENUM_CONFIG_TYPES::AI)
-			{
-				if(_config_entry.get_part_as_string(3) == "420")
-				{
+			if( this->type == ENUM_CONFIG_TYPES::AI ) {
+				if( _config_entry.get_part_as_string( 3 ) == "420" ) {
 					this->ai_type = AI_TYPE::CL_420;
-
-					this->min = _config_entry.get_part_as_int(4);
-					this->max = _config_entry.get_part_as_int(5);
+					this->min = _config_entry.get_part_as_int( 4 );
+					this->max = _config_entry.get_part_as_int( 5 );
 				}
-				else if (_config_entry.get_part_as_string(3) == "ICTD")
-				{
+				else if( _config_entry.get_part_as_string( 3 ) == "ICTD" ) {
 					this->ai_type = AI_TYPE::ICTD;
-					this->is_celcius = (_config_entry.get_part_as_string(4) == "C") ? true : false;
+					this->is_celcius = ( _config_entry.get_part_as_string( 4 ) == "C" ) ? true : false;
 				}
 
 				//
@@ -415,13 +390,10 @@ namespace BBB_HVAC
 			this->description.clear();
 			this->type = ENUM_CONFIG_TYPES::INVALID;
 			this->index = 0;
-
 			this->ai_type = AI_TYPE::INVALID;
 			this->min = 0;
 			this->max = 0;
-
 			this->is_celcius = true;
-
 			return;
 		}
 
@@ -449,34 +421,27 @@ namespace BBB_HVAC
 			return "(" + CONFIG_ENTRY::type_to_string( this->type ) + ',' + this->board_tag + ',' + num_to_str( this->point_id ) + ',' + this->description + ")";
 		}
 
-		static inline BOARD_POINT from_string(const std::string& _source)
-		{
+		static inline BOARD_POINT from_string( const std::string& _source ) {
 			/*
 			No fucking error checking at all...
 
 			XXX - need to make this not shit.  Like add error checking and handling and other such luxuries.
 			*/
-
 			// Get rid of the perens.
-			std::string str = trimmed(_source);
-			str = str.substr(1,_source.length()-2);
-
+			std::string str = trimmed( _source );
+			str = str.substr( 1, _source.length() - 2 );
 			std::vector<std::string> parts;
-
-			split_string_to_vector(str,',',parts);
-
+			split_string_to_vector( str, ',', parts );
 			BOARD_POINT ret;
 
-			if(parts.size() != 4)
-			{
+			if( parts.size() != 4 ) {
 				return ret;
 			}
 
-			ret.type = CONFIG_ENTRY::string_to_type(parts[0]);
+			ret.type = CONFIG_ENTRY::string_to_type( parts[0] );
 			ret.board_tag = parts[1];
-			ret.point_id = (unsigned char)stoi(parts[2]);
+			ret.point_id = ( unsigned char )stoi( parts[2] );
 			ret.description = parts[3];
-
 			return ret;
 		}
 
@@ -484,23 +449,19 @@ namespace BBB_HVAC
 			return _point.to_string();
 		}
 
-		long get_min_value(void) const
-		{
+		long get_min_value( void ) const {
 			return this->min;
 		}
 
-		long get_max_value(void) const
-		{
+		long get_max_value( void ) const {
 			return this->max;
 		}
 
-		bool get_is_celcius(void) const
-		{
+		bool get_is_celcius( void ) const {
 			return this->is_celcius;
 		}
 
-		const AI_TYPE& get_ai_type(void) const
-		{
+		const AI_TYPE& get_ai_type( void ) const {
 			return this->ai_type;
 		}
 
@@ -520,12 +481,12 @@ namespace BBB_HVAC
 
 	private:
 
-		friend bool operator==(const BOARD_POINT&,const BOARD_POINT& );
+		friend bool operator==( const BOARD_POINT&, const BOARD_POINT& );
 	};
 
-	inline bool operator==(const BOARD_POINT& _l, const BOARD_POINT& _r)
+	inline bool operator==( const BOARD_POINT& _l, const BOARD_POINT& _r )
 	{
-		if(_l.type == _r.type && _l.board_tag == _r.board_tag && _l.point_id == _r.point_id)
+		if( _l.type == _r.type && _l.board_tag == _r.board_tag && _l.point_id == _r.point_id )
 		{
 			return true;
 		}
@@ -596,20 +557,18 @@ namespace BBB_HVAC
 		/**
 		Returns the value of the specified set point.  An exception is thrown if a set point with the specified name does not exist.
 		*/
-		inline double get_sp_value(const string& _name) const throw (exception)
-		{
-			return this->sp_points.at(_name).get_value();
+		inline double get_sp_value( const string& _name ) const throw( exception ) {
+			return this->sp_points.at( _name ).get_value();
 		}
 
 		/**
 		Sets the value of the specified set point.  An exception is thrown if a set point with the specified name does not exist.
 		*/
-		inline void set_sp_value(const string& _name,double _value) throw (exception)
-		{
-			SET_POINT & sp = this->sp_points.at(_name);
-			sp.set_value(_value);
-			CONFIG_ENTRY & ce = this->config_entries.at(sp.get_index());
-			ce.set_part(1,_value);
+		inline void set_sp_value( const string& _name, double _value ) throw( exception ) {
+			SET_POINT& sp = this->sp_points.at( _name );
+			sp.set_value( _value );
+			CONFIG_ENTRY& ce = this->config_entries.at( sp.get_index() );
+			ce.set_part( 1, _value );
 			return;
 		}
 
@@ -617,8 +576,7 @@ namespace BBB_HVAC
 		Returns the point map.
 		\see CONFIGURATOR::point_map
 		*/
-		inline const std::map<std::string,BOARD_POINT> & get_point_map(void) const
-		{
+		inline const std::map<std::string, BOARD_POINT>& get_point_map( void ) const {
 			return this->point_map;
 		}
 
@@ -633,7 +591,7 @@ namespace BBB_HVAC
 		void check_file_permissions( void ) throw( exception );
 		void process_file( void ) throw( exception );
 		void process_line( size_t _line_idx ) throw( exception );
-		void process_mapping(const CONFIG_ENTRY& _ce) throw (exception);
+		void process_mapping( const CONFIG_ENTRY& _ce ) throw( exception );
 
 		char* buffer;
 
@@ -651,7 +609,7 @@ namespace BBB_HVAC
 		The key is the globally unique name.  The payload is an instance of the BOARD_POINT.
 		\see Configuration directive 'MAP'
 		*/
-		std::map<std::string,BOARD_POINT> point_map;
+		std::map<std::string, BOARD_POINT> point_map;
 	};
 }
 

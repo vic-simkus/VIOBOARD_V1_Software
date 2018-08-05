@@ -304,11 +304,10 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_T
 			break;
 
 		case ENUM_CONFIG_TYPES::MAP:
-
-			for(auto map_iterator = fluff.point_map.begin();map_iterator!=fluff.point_map.end();++map_iterator)
+			for( auto map_iterator = fluff.point_map.begin(); map_iterator != fluff.point_map.end(); ++map_iterator )
 			{
-				labels.push_back(map_iterator->first);
-				labels.push_back(map_iterator->second.to_string());
+				labels.push_back( map_iterator->first );
+				labels.push_back( map_iterator->second.to_string() );
 			}
 
 			break;
@@ -440,7 +439,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::get_latest_outgoing_ping( void )
 	return MESSAGE_PTR();
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_read_logic_status(void) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_read_logic_status( void ) throw( exception )
 {
 	vector<string> parts;
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::READ_LOGIC_STATUS ), parts ) );

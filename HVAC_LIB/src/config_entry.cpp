@@ -69,14 +69,14 @@ double CONFIG_ENTRY::get_part_as_double( size_t _idx ) const throw( exception )
 
 	return stod( this->parts[_idx] );
 }
-bool CONFIG_ENTRY::get_part_as_bool(size_t _idx) const throw (exception)
+bool CONFIG_ENTRY::get_part_as_bool( size_t _idx ) const throw( exception )
 {
 	if( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "get_part: Specified index is >= size of parts vector" );
 	}
 
-	if(this->parts[_idx] == "T" || this->parts[_idx] == "t" || this->parts[_idx] == "TRUE" || this->parts[_idx] == "true")
+	if( this->parts[_idx] == "T" || this->parts[_idx] == "t" || this->parts[_idx] == "TRUE" || this->parts[_idx] == "true" )
 	{
 		return true;
 	}
@@ -170,7 +170,7 @@ ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type ) throw( exc
 	{
 		return ENUM_CONFIG_TYPES::BOARD;
 	}
-	else if( _type == "MAP")
+	else if( _type == "MAP" )
 	{
 		return ENUM_CONFIG_TYPES::MAP;
 	}
@@ -230,17 +230,14 @@ size_t CONFIG_ENTRY::get_part_count( void ) const
 	return this->parts.size();
 }
 
-std::string CONFIG_ENTRY::to_string(void) const
+std::string CONFIG_ENTRY::to_string( void ) const
 {
 	stringstream ss;
-
 	vector<string> ret;
 	ret.push_back( type_to_string( this->type ) );
 	ret.insert( ret.end(), this->parts.begin(), this->parts.end() );
-
 	ss << "(";
-	ss << join_vector(ret,',');
+	ss << join_vector( ret, ',' );
 	ss << ")";
 	return ss.str();
-
 }
