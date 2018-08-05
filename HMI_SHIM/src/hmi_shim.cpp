@@ -40,29 +40,29 @@ using namespace std;
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::CLIENT;
 
-size_t calc_ai_offset(size_t x, size_t y)
+size_t calc_ai_offset( size_t x, size_t y )
 {
-	return (GC_IO_AI_COUNT * y) +x;
+	return ( GC_IO_AI_COUNT * y ) + x;
 }
 
-void client_main(CLIENT_CONTEXT* ctx) throw(exception)
+void client_main( CLIENT_CONTEXT* ctx ) throw( exception )
 {
 	CAL_VALUE_ARRAY vals;
-	vals.push_back(0);
-	vals.push_back(1);
-	vals.push_back(2);
-	vals.push_back(3);
-	vals.push_back(4);
-	vals.push_back(5);
-	vals.push_back(6);
-	vals.push_back(7);
+	vals.push_back( 0 );
+	vals.push_back( 1 );
+	vals.push_back( 2 );
+	vals.push_back( 3 );
+	vals.push_back( 4 );
+	vals.push_back( 5 );
+	vals.push_back( 6 );
+	vals.push_back( 7 );
 	size_t idx = 0;
 
-	while(1)
+	while( 1 )
 	{
-		MESSAGE_PTR m = ctx->message_processor->create_set_l1_cal_vals("BOARD1",vals);
-		ctx->send_message(m);
-		cout << "[" << idx << "] -- "<< m->to_string() << endl;
+		MESSAGE_PTR m = ctx->message_processor->create_set_l1_cal_vals( "BOARD1", vals );
+		ctx->send_message( m );
+		cout << "[" << idx << "] -- " << m->to_string() << endl;
 		idx += 1;
 		//usleep(100);
 		//sleep(1);
@@ -73,9 +73,9 @@ void client_main(CLIENT_CONTEXT* ctx) throw(exception)
 	cout << endl;
 }
 
-int main(void)
+int main( void )
 {
-	GLOBALS::configure_logging(LOGGING::ENUM_LOG_LEVEL::DEBUG);
+	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	GLOBALS::configure_signals();
 	CLIENT_CONTEXT* ctx = CLIENT_CONTEXT::create_instance();
 
@@ -83,19 +83,19 @@ int main(void)
 	{
 		ctx->connect();
 	}
-	catch(const exception& _e)
+	catch( const exception& _e )
 	{
-		cout << string("Failed to connect to server: ") + _e.what();
-		exit(-1);
+		cout << string( "Failed to connect to server: " ) + _e.what();
+		exit( -1 );
 	}
 
 	try
 	{
-		client_main(ctx);
+		client_main( ctx );
 	}
-	catch(const exception& _e)
+	catch( const exception& _e )
 	{
-		cerr << "Caught exception in client main: " + string(_e.what()) << endl;
+		cerr << "Caught exception in client main: " + string( _e.what() ) << endl;
 	}
 
 	THREAD_REGISTRY::stop_all();
