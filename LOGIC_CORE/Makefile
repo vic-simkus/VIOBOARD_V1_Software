@@ -2,7 +2,7 @@
 #
 # This file is mechanically generated.  Any changes will most likely be lost.
 #
-# File generated on: 2017-11-11T23:09:06.022730
+# File generated on: 2018-08-05T08:46:46.221306
 #
 
 #
@@ -36,6 +36,7 @@ bin/bbb_hvac.o: src/bbb_hvac.cpp ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
  ../HVAC_LIB/src/include/lib/configurator.hpp \
  ../HVAC_LIB/src/include/lib/logger.hpp \
  ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/configurator/configurator_types.hpp \
  ../HVAC_LIB/src/include/lib/globals.hpp \
  ../HVAC_LIB/src/include/lib/config.hpp \
  ../HVAC_LIB/src/include/lib/context.hpp \
