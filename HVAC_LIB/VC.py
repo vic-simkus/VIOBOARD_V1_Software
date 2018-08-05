@@ -50,7 +50,10 @@ class MyContext(Context):
 			SourceFile("message_types.cpp"),
 			SourceFile("serial_io_types.cpp"),
 			SourceFile("socket_reader.cpp"),
-			SourceFile("string_lib.cpp")
+			SourceFile("string_lib.cpp"),
+			SourceFile("configurator/set_point.cpp"),
+			SourceFile("configurator/board_point.cpp"),
+			SourceFile("configurator/configurator_operators.cpp")
 			)
 
 	INCLUDE_DIRS=(os.path.join(Context.SOURCE_DIR,"include"),)
