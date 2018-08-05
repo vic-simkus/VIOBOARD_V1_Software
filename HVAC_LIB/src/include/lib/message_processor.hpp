@@ -178,6 +178,11 @@ namespace BBB_HVAC
 		 * \return Valid message instance.
 		 */
 		MESSAGE_PTR create_get_status( const std::string& _board_tag ) throw( exception );
+		/**
+		 * Creates a message of type READ_LOGIC_STATUS
+		 * \return Valid message instance.
+		 */
+		MESSAGE_PTR create_read_logic_status(void) throw( exception );
 
 		/**
 		 * Creates a message of type SET_PMIC_STATUS

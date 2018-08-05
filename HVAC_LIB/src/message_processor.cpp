@@ -280,38 +280,44 @@ void MESSAGE_PROCESSOR::process_hello_message( void ) throw( exception )
 MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_TYPES _type ) throw( exception )
 {
 	vector<string> parts;
-	parts.push_back( CONFIG_ENTRY::type_to_string( _type ) );
-	parts.push_back( "RESP" );
-	LABEL_LIST labels;
-	LOGIC_STATUS_FLUFF fluff = GLOBALS::logic_instance->get_logic_status_fluff();
+	//parts.push_back( CONFIG_ENTRY::type_to_string( _type ) );
+	//parts.push_back( "RESP" );
+	std::vector<std::string> labels;
+	LOGIC_STATUS_FLUFF fluff;
+	GLOBALS::logic_instance->get_logic_status_fluff( fluff );
 
 	switch( _type )
 	{
 		case ENUM_CONFIG_TYPES::AI:
-			labels = fluff.ai_labels;
-			break;
-
-		case ENUM_CONFIG_TYPES::AO:
-			labels = fluff.ao_labels;
-			break;
-
-		case ENUM_CONFIG_TYPES::DI:
-			labels = fluff.di_labels;
+			labels.resize( fluff.ai_labels.size() );
+			std::transform( fluff.ai_labels.begin(), fluff.ai_labels.end(), labels.begin(), BOARD_POINT::to_string_static );
 			break;
 
 		case ENUM_CONFIG_TYPES::DO:
-			labels = fluff.do_labels;
+			labels.resize( fluff.do_labels.size() );
+			std::transform( fluff.do_labels.begin(), fluff.do_labels.end(), labels.begin(), BOARD_POINT::to_string_static );
 			break;
 
 		case ENUM_CONFIG_TYPES::SP:
-			labels = fluff.sp_labels;
+			labels.resize( fluff.sp_labels.size() );
+			std::transform( fluff.sp_labels.begin(), fluff.sp_labels.end(), labels.begin(), SET_POINT::to_string_static );
+			break;
+
+		case ENUM_CONFIG_TYPES::MAP:
+
+			for(auto map_iterator = fluff.point_map.begin();map_iterator!=fluff.point_map.end();++map_iterator)
+			{
+				labels.push_back(map_iterator->first);
+				labels.push_back(map_iterator->second.to_string());
+			}
+
 			break;
 
 		default:
 			THROW_EXCEPTION( runtime_error, "Can not respond to type specified: " + CONFIG_ENTRY::type_to_string( _type ) );
 	}
 
-	for( LABEL_LIST::const_iterator i = labels.cbegin(); i != labels.cend(); ++i )
+	for( std::vector<std::string>::const_iterator i = labels.cbegin(); i != labels.cend(); ++i )
 	{
 		parts.push_back( *i );
 	}
@@ -432,6 +438,12 @@ MESSAGE_PTR MESSAGE_PROCESSOR::get_latest_outgoing_ping( void )
 	}
 
 	return MESSAGE_PTR();
+}
+
+MESSAGE_PTR MESSAGE_PROCESSOR::create_read_logic_status(void) throw( exception )
+{
+	vector<string> parts;
+	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::READ_LOGIC_STATUS ), parts ) );
 }
 
 MESSAGE_PTR MESSAGE_PROCESSOR::get_latest_incomming_of_type( ENUM_MESSAGE_TYPE _type )

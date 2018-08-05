@@ -109,7 +109,7 @@ const vector<string>& MESSAGE::get_parts( void ) const
 	return this->parts;
 }
 
-uint16_t MESSAGE::get_part_as_ui( unsigned int _part ) throw( exception )
+uint16_t MESSAGE::get_part_as_ui(size_t _part ) throw( exception )
 {
 	this->check_part_index( _part );
 
@@ -122,7 +122,7 @@ uint16_t MESSAGE::get_part_as_ui( unsigned int _part ) throw( exception )
 		throw runtime_error( string( "Failed to parse part " ) + this->parts[_part] + " to an unsigned integer: " + e.what() );
 	}
 }
-int16_t MESSAGE::get_part_as_si( unsigned int _part ) throw( exception )
+int16_t MESSAGE::get_part_as_si( size_t _part ) throw( exception )
 {
 	this->check_part_index( _part );
 
@@ -135,7 +135,7 @@ int16_t MESSAGE::get_part_as_si( unsigned int _part ) throw( exception )
 		throw runtime_error( string( "Failed to parse part " ) + this->parts[_part] + " to a signed integer: " + e.what() );
 	}
 }
-string MESSAGE::get_part_as_s( unsigned int _part ) throw( exception )
+string MESSAGE::get_part_as_s( size_t _part ) throw( exception )
 {
 	this->check_part_index( _part );
 	return this->parts[_part];
@@ -145,7 +145,7 @@ size_t MESSAGE::get_part_count( void ) const
 {
 	return this->parts.size();
 }
-void MESSAGE::check_part_index( unsigned int _idx ) throw( exception )
+void MESSAGE::check_part_index( size_t _idx ) throw( exception )
 {
 	if( this->parts.size() == 0 || _idx >= this->parts.size() )
 	{
@@ -239,4 +239,24 @@ string MESSAGE::to_string( void ) const
 	string p = join_vector( this->parts, ':' );
 	ret = "(MSG:" + this->message_type->label + "; c:" + created_ts + "; r:" + received_ts + "; s:" + sent_ts + "; (" + p + "))";
 	return ret;
+}
+
+void MESSAGE::message_to_map(const MESSAGE_PTR& _message, std::map<std::string,std::string>& _dest_map) throw (exception)
+{
+	if(_message->get_part_count() < 2)
+	{
+		throw logic_error("Message part count too low.");
+	}
+
+	if((_message->get_part_count() % 2)!=0)
+	{
+		throw logic_error("Message part count is not even.");
+	}
+
+	for(size_t i=0;i<_message->get_part_count();i+=2)
+	{
+		_dest_map.emplace(std::make_pair(_message->get_part_as_s(i),_message->get_part_as_s(i+1)));
+	}
+
+	return;
 }

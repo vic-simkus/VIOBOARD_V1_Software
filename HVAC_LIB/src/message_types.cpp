@@ -38,7 +38,8 @@ static std::string __message_type_list[] = { "INVALID", \
 											 "GET_L2_CAL_VALS", \
 											 "SET_L1_CAL_VALS", \
 											 "SET_L2_CAL_VALS", \
-											 "GET_BOOT_COUNT" \
+											 "GET_BOOT_COUNT", \
+											 "READ_LOGIC_STATUS" \
 										   };
 
 using namespace BBB_HVAC;

@@ -107,7 +107,7 @@ void CONFIGURATOR::process_file( void ) throw( exception )
 	memset( buffer, 0, GC_BUFFER_SIZE );
 	int c = 0;
 	size_t buff_idx = 0;
-	size_t line_idx = 0;
+	size_t line_idx = 1;
 	char cin = 0;
 	FILE* file = fopen( this->file_name.data(), "rt" );
 
@@ -142,10 +142,57 @@ void CONFIGURATOR::process_file( void ) throw( exception )
 			throw runtime_error( "Failed to find line terminator before exceeding buffer size." );
 		}
 	}
+	LOG_DEBUG("Point mappings:");
+
+	for(auto i=this->point_map.begin();i!=this->point_map.end();++i)
+	{
+		LOG_DEBUG(i->first + " --> " + i->second.to_string());
+	}
 
 	//LOG_DEBUG("Lines processed: " + num_to_str(line_idx));
 	fclose( file );
 	return;
+}
+void CONFIGURATOR::process_mapping(const CONFIG_ENTRY& _ce) throw (exception)
+{
+	ENUM_CONFIG_TYPES type = CONFIG_ENTRY::string_to_type(_ce.get_part_as_string(0));
+	std::string target_board = _ce.get_part_as_string(1);
+	unsigned int target_point = (unsigned int)_ce.get_part_as_int(2);
+
+	BOARD_POINT * target_entry = nullptr;
+	BOARD_POINT_VECTOR * point_list = nullptr;
+
+	if(type == ENUM_CONFIG_TYPES::DO)
+	{
+		point_list = &this->do_points;
+	}
+	else if(type == ENUM_CONFIG_TYPES::AI)
+	{
+		point_list = &this->ai_points;
+	}
+	else
+	{
+		LOG_ERROR("Invalid target entry type: " + _ce.get_part_as_string(0));
+		return;
+	}
+
+
+	for(auto i = point_list->begin();i!=point_list->end();++i)
+	{
+		if(i->get_board_tag() == target_board && target_point == i->get_point_id())
+		{
+			target_entry = &(*i);
+		}
+	}
+
+	if(target_entry == nullptr)
+	{
+		LOG_ERROR("Failed to find target entry for: " + _ce.to_string());
+		return;
+	}
+
+	std::string key = _ce.get_part_as_string(3);
+	this->point_map[key] = (*target_entry);
 }
 void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 {
@@ -205,37 +252,81 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 
 	line_parts.erase( line_parts.begin() );
 	size_t ces = this->config_entries.size();
-	this->config_entries.push_back( CONFIG_ENTRY( type, line_parts ) );
+	CONFIG_ENTRY ce = CONFIG_ENTRY( type, line_parts );
+	this->config_entries.push_back( ce );
 
 	switch( type )
 	{
-		case ENUM_CONFIG_TYPES::DI:
-			this->di_configs.push_back( ces );
-			break;
-
 		case ENUM_CONFIG_TYPES::DO:
-			this->do_configs.push_back( ces );
+		{
+			this->do_points.push_back( BOARD_POINT( ce, type, ces ) );
 			break;
+		}
 
 		case ENUM_CONFIG_TYPES::AI:
-			this->ai_configs.push_back( ces );
-			break;
+		{
+			if(line_parts.size() < 4)
+			{
+				LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx)  + "; missing parts.");
+			}
+			else
+			{
+				if(line_parts[3] == "420")
+				{
+					if(line_parts.size() != 6)
+					{
+						LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx) + "; Wrong number of parts.  Expecting 6, found: " + num_to_str(line_parts.size()));
+						break;
+					}
+				}
+				else if(line_parts[3] == "ICTD")
+				{
+					//
+					// No other parts for ICTD.  We're just doing a health and welfare check.
 
-		case ENUM_CONFIG_TYPES::AO:
-			this->ao_configs.push_back( ces );
+					if(line_parts.size() != 5)
+					{
+						LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx) + "; Wrong number of parts.  Expecting 5, found: " + num_to_str(line_parts.size()));
+						break;
+					}
+					//
+				}
+				else
+				{
+					LOG_ERROR("Malformed AI entry at line " + num_to_str(_line_idx) + "; Unrecognized type: " + line_parts[3]);
+					break;
+				}
+
+				this->ai_points.push_back( BOARD_POINT( ce, type, ces ) );
+			}
 			break;
+		}
 
 		case ENUM_CONFIG_TYPES::SP:
-			this->sp_configs.push_back( ces );
+		{
+			string key = ce.get_part_as_string(0);
+			this->sp_points[key]= SET_POINT( ce, ces );
 			break;
+		}
+
+		case ENUM_CONFIG_TYPES::MAP:
+		{
+			this->map_configs.push_back( ces );
+			this->process_mapping(ce);
+			break;
+		}
 
 		case ENUM_CONFIG_TYPES::BOARD:
+		{
 			this->board_configs.push_back( ces );
 			break;
+		}
 
 		case ENUM_CONFIG_TYPES::INVALID:
-			//this is caought above.  This is here for the compiler warning.
+		{
+			//this is caught above.  This is here for the compiler warning.
 			break;
+		}
 	}
 
 	return;
@@ -269,18 +360,6 @@ void CONFIGURATOR::write_file( void ) const throw( exception )
 	return;
 }
 
-const CONFIG_TYPE_INDEX_TYPE& CONFIGURATOR::get_do_index( void ) const
-{
-	return this->do_configs;
-}
-const CONFIG_TYPE_INDEX_TYPE& CONFIGURATOR::get_ai_index( void ) const
-{
-	return this->ai_configs;
-}
-const CONFIG_TYPE_INDEX_TYPE& CONFIGURATOR::get_sp_index( void ) const
-{
-	return this->sp_configs;
-}
 const CONFIG_TYPE_INDEX_TYPE& CONFIGURATOR::get_board_index( void ) const
 {
 	return this->board_configs;
@@ -296,50 +375,3 @@ CONFIG_ENTRY& CONFIGURATOR::get_config_entry( size_t _idx ) throw( exception )
 	return this->config_entries[_idx];
 }
 
-const CONFIG_ENTRY& CONFIGURATOR::get_type_by_id( ENUM_CONFIG_TYPES _type, const string& _id ) throw( exception )
-{
-	const CONFIG_TYPE_INDEX_TYPE* idx;
-
-	switch( _type )
-	{
-		case ENUM_CONFIG_TYPES::AI:
-			idx = & ( this->ai_configs );
-			break;
-
-		case ENUM_CONFIG_TYPES::AO:
-			idx = & ( this->ao_configs );
-			break;
-
-		case ENUM_CONFIG_TYPES::DI:
-			idx = & ( this->di_configs );
-			break;
-
-		case ENUM_CONFIG_TYPES::DO:
-			idx = & ( this->do_configs );
-			break;
-
-		case ENUM_CONFIG_TYPES::SP:
-			idx = & ( this->sp_configs );
-			break;
-
-		case ENUM_CONFIG_TYPES::INVALID:
-			THROW_EXCEPTION( runtime_error, "INVALID configuration record type passed.  Why?" );
-			break;
-
-		default:
-			THROW_EXCEPTION( runtime_error, "Unexpected code path." );
-			break;
-	}
-
-	for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx->cbegin(); i != idx->cend(); ++i )
-	{
-		const CONFIG_ENTRY& e = this->get_config_entry( *i );
-
-		if( e.get_id() == _id )
-		{
-			return e;
-		}
-	}
-
-	THROW_EXCEPTION( range_error, "Failed to find item" );
-}

@@ -26,6 +26,7 @@
 #include <memory>
 #include <map>
 #include <ostream>
+#include <utility>
 
 using namespace std;
 
@@ -34,94 +35,21 @@ using namespace std;
  */
 namespace BBB_HVAC
 {
-
 	/**
-	 * Types of configuration elements
-	 */
-	enum class ENUM_CONFIG_TYPES
-		: unsigned int
+	Type of analog input
+	*/
+
+	enum class AI_TYPE : unsigned int
 	{
-		INVALID = 0, // Invalid value.
-		DI,			///Digital input.  Not supported in V1.
-		DO,			///Digital output.
-		AO,			///Analog output.  Not supported in V1.
-		AI,			///Analog input.
-		SP,			///Set-point.
-		BOARD		///IO Board entry
-
-	} ;
-
-	/**
-	 * Operator to turn an ENUM_CONFIG_TYPES into a string number
-	 * \param os  Output stream
-	 * \param _v ENUM_CONFIG_TYPES instance
-	 * \return Output stream instance
-	 */
-	inline std::ostream& operator<< ( std::ostream& os, ENUM_CONFIG_TYPES _v )
-	{
-		return os << static_cast < unsigned int >( _v );
-	}
-
-	/**
-	 * Type for a list of labels
-	 */
-	typedef vector<string> LABEL_LIST;
-
-	/**
-	 * Type for a list of message parts
-	 */
-	typedef vector<string> CONFIG_PARTS_TYPE;
-
-	/**
-	 * Forward declaration
-	 */
-	class CONFIG_ENTRY;
-
-	/**
-	 * Type for list of configuration entries
-	 */
-	typedef vector<CONFIG_ENTRY> CONFIG_ENTRY_LIST_TYPE;
-
-	/**
-	 * Type for list of configuration type indexes
-	 */
-	typedef vector<size_t> CONFIG_TYPE_INDEX_TYPE;
-
-	namespace LOGGING
-	{
-
-		/**
-		 * Logging levels
-		 */
-		enum class ENUM_LOG_LEVEL
-			: unsigned int
-		{
-			INVALID = 0, /// Invalid level.  Parent's level will be utilized
-			NONE,		/// Level of none.  XXX - what's the logic here
-			TRACE,		/// Trace-level logging level
-			DEBUG,		/// Debug-level logging level
-			INFO,		/// Information-level logging level
-			WARNING,	/// Warning-level logging level
-			ERROR		/// Error-level logging level
-		} ;
-
-		/**
-		 * Helper operator to turn a logging level into a string number
-		 * \param os Output stream
-		 * \param _v Logging level instance
-		 * \return  Output stream
-		 */
-		inline std::ostream& operator<< ( std::ostream& os, ENUM_LOG_LEVEL _v )
-		{
-			return os << static_cast < unsigned int >( _v );
-		}
-	}
+		INVALID = 0,
+		CL_420,
+		ICTD
+	};
 
 	/**
 	 * Message direction enum
 	 */
-	enum class ENUM_MESSAGE_DIRECTION
-		: unsigned int
+	enum class ENUM_MESSAGE_DIRECTION : unsigned int
 	{
 		IN = 0, /// In
 		OUT		/// Out
@@ -130,8 +58,7 @@ namespace BBB_HVAC
 	/**
 	 * Message processor callback result
 	 */
-	enum class ENUM_MESSAGE_CALLBACK_RESULT
-		: unsigned int
+	enum class ENUM_MESSAGE_CALLBACK_RESULT : unsigned int
 	{
 		PROCESSED = 0,		/// Message was processed by callback.  Message processing will stop.
 		IGNORED				/// Message was ignored by the callback.  Message processing will continue.
@@ -147,8 +74,7 @@ namespace BBB_HVAC
 	/**
 	 * Defines behavior in a situation where an attemp tto add a message has been made, but the message queue is full.
 	 */
-	enum class ENUM_APPEND_MODE
-		: unsigned int
+	enum class ENUM_APPEND_MODE : unsigned int
 	{
 
 		LOSE_OVERFLOW = 0,	/// Delete the oldest message.
@@ -170,8 +96,7 @@ namespace BBB_HVAC
 	 * 	-# If wanted, add creation method to BBB_HVAC::MESSAGE_PROCESSOR.
 	 *
 	 */
-	enum class ENUM_MESSAGE_TYPE
-		: unsigned int
+	enum class ENUM_MESSAGE_TYPE : unsigned int
 	{
 		INVALID = 0, 				/// Invalid message
 		PING,						/// Ping message.  Used to invoke a 'pong' response.  Intended to be used as a check of the connection status
@@ -183,12 +108,13 @@ namespace BBB_HVAC
 		SET_PMIC_STATUS,			///	Requests for the DO and AI PMICs to be set to specified states.
 		GET_LABELS, 				/// Requests the map between human readable labels and input/output ports.
 		SET_POINT,					/// Sets an adjustable point in the logic core
-		ERROR,						/// Error response
-		GET_L1_CAL_VALS,
-		GET_L2_CAL_VALS,
-		SET_L1_CAL_VALS,
-		SET_L2_CAL_VALS,
-		GET_BOOT_COUNT,
+		ERROR,						/// Error response.
+		GET_L1_CAL_VALS,			/// Get L1 calibration values
+		GET_L2_CAL_VALS,			///	Get L2 calibration values
+		SET_L1_CAL_VALS,			/// Set L1 calibration values
+		SET_L2_CAL_VALS,			/// Set L2 calibration values
+		GET_BOOT_COUNT,				/// Get board boot count
+		READ_LOGIC_STATUS,			/// Gets the point statuses from the logic thread.  This will include all calculated analog values as the logic thread sees it.
 		__MSG_END__					/// Terminator of the enum.  Used in iterating through the enum values.
 	} ;
 
@@ -215,7 +141,6 @@ namespace BBB_HVAC
 	typedef std::map<std::string, MESSAGE_TYPE> MAP_LABEL_TO_TYPE;
 
 	typedef std::vector<uint16_t> CAL_VALUE_ARRAY;
-
 }
 
 #endif /* SRC_INCLUDE_LIB_HVAC_TYPES_HPP_ */

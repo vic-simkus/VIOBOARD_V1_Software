@@ -61,6 +61,7 @@ namespace BBB_HVAC
 
 		static const vector<THREAD_BASE*>* get_io_threads( void ) throw( runtime_error );
 		static IOCOMM::SER_IO_COMM* get_serial_io_thread( const std::string& _tag ) throw( runtime_error );
+
 		static inline void global_cleanup( void ) {
 			THREAD_REGISTRY::global_instance->cleanup();
 		}

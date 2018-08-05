@@ -27,6 +27,7 @@
 #include <sstream>
 
 using namespace BBB_HVAC;
+using namespace std;
 
 /*
  * Lots of copy-and-paste coding here...
@@ -46,15 +47,10 @@ CONFIG_ENTRY::~CONFIG_ENTRY()
 	return;
 }
 
-string CONFIG_ENTRY::get_id( void ) const
+unsigned char CONFIG_ENTRY::get_part_as_uchar( size_t _idx ) const throw( exception )
 {
-	return this->parts[0];
+	return ( unsigned char )this->get_part_as_int( _idx );
 }
-string CONFIG_ENTRY::get_id_for_human( void ) const
-{
-	return type_to_string( this->type ) + "(" + this->get_id() + ")";
-}
-
 int CONFIG_ENTRY::get_part_as_int( size_t _idx ) const throw( exception )
 {
 	if( _idx >= this->parts.size() )
@@ -72,6 +68,22 @@ double CONFIG_ENTRY::get_part_as_double( size_t _idx ) const throw( exception )
 	}
 
 	return stod( this->parts[_idx] );
+}
+bool CONFIG_ENTRY::get_part_as_bool(size_t _idx) const throw (exception)
+{
+	if( _idx >= this->parts.size() )
+	{
+		throw out_of_range( "get_part: Specified index is >= size of parts vector" );
+	}
+
+	if(this->parts[_idx] == "T" || this->parts[_idx] == "t" || this->parts[_idx] == "TRUE" || this->parts[_idx] == "true")
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 string CONFIG_ENTRY::get_part_as_string( size_t _idx ) const throw( exception )
 {
@@ -138,21 +150,13 @@ ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type ) throw( exc
 		THROW_EXCEPTION( runtime_error, "Called with type string of unexpected length." );
 	}
 
-	if( _type == "DI" )
-	{
-		return ENUM_CONFIG_TYPES::DI;
-	}
-	else if( _type == "DO" )
+	if( _type == "DO" )
 	{
 		return ENUM_CONFIG_TYPES::DO;
 	}
 	else if( _type == "AI" )
 	{
 		return ENUM_CONFIG_TYPES::AI;
-	}
-	else if( _type == "AO" )
-	{
-		return ENUM_CONFIG_TYPES::AO;
 	}
 	else if( _type == "SP" )
 	{
@@ -165,6 +169,10 @@ ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type ) throw( exc
 	else if( _type == "BOARD" )
 	{
 		return ENUM_CONFIG_TYPES::BOARD;
+	}
+	else if( _type == "MAP")
+	{
+		return ENUM_CONFIG_TYPES::MAP;
 	}
 	else
 	{
@@ -180,14 +188,6 @@ string CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception 
 			return ( "AI" );
 			break;
 
-		case ENUM_CONFIG_TYPES::AO:
-			return ( "AO" );
-			break;
-
-		case ENUM_CONFIG_TYPES::DI:
-			return ( "DI" );
-			break;
-
 		case ENUM_CONFIG_TYPES::DO:
 			return ( "DO" );
 			break;
@@ -198,6 +198,10 @@ string CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception 
 
 		case ENUM_CONFIG_TYPES::BOARD:
 			return ( "BOARD" );
+			break;
+
+		case ENUM_CONFIG_TYPES::MAP:
+			return ( "MAP" );
 			break;
 
 		case ENUM_CONFIG_TYPES::INVALID:
@@ -224,4 +228,19 @@ string CONFIG_ENTRY::write_self_to_file( void ) const throw( exception )
 size_t CONFIG_ENTRY::get_part_count( void ) const
 {
 	return this->parts.size();
+}
+
+std::string CONFIG_ENTRY::to_string(void) const
+{
+	stringstream ss;
+
+	vector<string> ret;
+	ret.push_back( type_to_string( this->type ) );
+	ret.insert( ret.end(), this->parts.begin(), this->parts.end() );
+
+	ss << "(";
+	ss << join_vector(ret,',');
+	ss << ")";
+	return ss.str();
+
 }

@@ -42,6 +42,7 @@
 #define LOG_TRACE_STAT(message) logger.log_trace(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define LOG_DEBUG_STAT(message) logger.log_debug(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define LOG_INFO_STAT(message) logger.log_info(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define LOG_WARNING_STAT(message) logger.log_warning(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define LOG_ERROR_STAT(message) logger.log_error(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #define LOG_TRACE(message) this->__logger__.log_trace(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
@@ -62,6 +63,33 @@ namespace BBB_HVAC
 {
 	namespace LOGGING
 	{
+
+		/**
+		 * Logging levels
+		 */
+		enum class ENUM_LOG_LEVEL
+			: unsigned int
+		{
+			INVALID = 0, /// Invalid level.  Parent's level will be utilized
+			NONE,		/// Level of none.  XXX - what's the logic here
+			TRACE,		/// Trace-level logging level
+			DEBUG,		/// Debug-level logging level
+			INFO,		/// Information-level logging level
+			WARNING,	/// Warning-level logging level
+			ERROR		/// Error-level logging level
+		} ;
+
+		/**
+		 * Helper operator to turn a logging level into a string number
+		 * \param os Output stream
+		 * \param _v Logging level instance
+		 * \return  Output stream
+		 */
+		inline std::ostream& operator<< ( std::ostream& os, ENUM_LOG_LEVEL _v )
+		{
+			return os << static_cast < unsigned int >( _v );
+		}
+
 		class LOG_CONFIGURATOR : public TPROTECT_BASE
 		{
 		public:

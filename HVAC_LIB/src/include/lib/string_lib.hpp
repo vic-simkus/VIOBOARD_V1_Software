@@ -90,6 +90,11 @@ std::string num_to_str( float _i );
 std::string num_to_str( double _i );
 
 /**
+ * \see num_to_str(int)
+ */
+std::string num_to_str( bool _i );
+
+/**
  * Returns the current date and time in ISO format.
  * \return Time and date in ISO format: YYYY-MM-DDTHH:MM:SS
  */
@@ -191,5 +196,7 @@ void convert_vector_to_string( const std::vector<int>& _source, std::vector<std:
 void convert_vector_to_string( const std::vector<uint16_t>& _source, std::vector<std::string>& _dest );
 
 uint16_t checksum( const uint16_t* _buffer, size_t _length );
+
+void split_string_to_vector(const std::string& _string,char _split,std::vector<std::string>& _vector);
 
 #endif /* STRING_LIB_H_ */

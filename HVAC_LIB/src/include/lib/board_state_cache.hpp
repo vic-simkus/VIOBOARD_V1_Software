@@ -37,19 +37,52 @@ namespace BBB_HVAC
 	namespace IOCOMM
 	{
 
+		/**
+		IO board's state cache.  When a thread asks for analog values, digital output status, etc. we don't immediately reach out to the board
+		to get the requested values.  The board periodically feeds us its status and we cache it in an instance of this class.
+		When a thread asks for the various values we then return the values stored by the cache.
+		The serial IO thread manages the cache state.  All requests for values goes through a boards respective IO thread.
+		\see SER_IO_COMM
+		*/
 		class BOARD_STATE_CACHE
 		{
 
 		public:
+			/**
+			A function pointer we use in SER_IO_COMM::add_calibration_values in order to use a conditional once rather than with every value added.
+			*/
 			typedef std::function<void ( BOARD_STATE_CACHE&, size_t, uint16_t ) > CAL_VALUE_ADDER_PTR;
 
+			/**
+			Constructor.
+			*/
 			BOARD_STATE_CACHE();
 
+			/**
+			Adds a PMIC (power management IC) status value to the cache
+			*/
 			void add_pmic_status( uint8_t _value );
+
+			/**
+			Adds a DO (digital output) value to the cache.  All four statuses are packed into a single 8 bit int.
+			*/
 			void add_do_status( uint8_t _value );
+
+			/**
+			Adds an analog value to the cache.
+			\param _x_index The index of the board's analog input
+			\param _value Value of the input
+			*/
 			void add_adc_value( size_t _x_index, uint16_t _value ) throw( logic_error );
 
+			/**
+			Adds a L1 (level 1) calibration value to the cache.  Calibration values are valid only for analog inputs.
+			*/
 			void add_l1_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error );
+
+			/**
+			Adds a L2 (level 2) calibration value to the cache.  Calibration values are valid only for analog inputs.
+			*/
 			void add_l2_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error );
 
 			void set_boot_count( uint16_t _value );

@@ -190,6 +190,18 @@ std::string num_to_str( double _i )
 	return ss.str();
 }
 
+std::string num_to_str( bool _i )
+{
+	if(_i)
+	{
+		return "TRUE";
+	}
+	else
+	{
+		return "FALSE";
+	}
+}
+
 std::string get_iso_date_time( void )
 {
 	std::stringstream ret;
@@ -389,4 +401,29 @@ uint16_t checksum( const uint16_t* _buffer, size_t _length )
 	 * Return the inverted 16-bit result.
 	 */
 	return ( ( uint16_t ) ~sum );
+}
+
+void split_string_to_vector(const std::string& _string,char _split,std::vector<std::string>& _vector)
+{
+	size_t previous_match = 0;
+	size_t current_match = 0;
+
+	_vector.clear();
+
+	while(1)
+	{
+		current_match = _string.find(_split,previous_match);
+
+		if(current_match == std::string::npos)
+		{
+			_vector.push_back(_string.substr(previous_match,std::string::npos));
+			break;
+		}
+
+		_vector.push_back(_string.substr(previous_match,current_match - previous_match));
+
+		previous_match = current_match + 1;
+	}
+
+	return;
 }

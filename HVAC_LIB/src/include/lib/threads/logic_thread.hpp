@@ -27,134 +27,103 @@
 #include "lib/config.hpp"
 #include "lib/hvac_types.hpp"
 #include "lib/threads/thread_base.hpp"
+#include "lib/configurator.hpp"
+#include "lib/serial_io_types.hpp"
 
 #include <vector>
-
+#include <map>
 #include <string.h>
 #include <string>
 
 namespace BBB_HVAC
 {
+
+	typedef struct
+	{
+		IOCOMM::DO_CACHE_ENTRY do_state;
+		IOCOMM::PMIC_CACHE_ENTRY pmic_state;
+		IOCOMM::ADC_CACHE_ENTRY ai_state[GC_IO_AI_COUNT];
+		std::string board_tag;
+	} BOARD_STATE_STRUCT;
+
+	class LOGIC_POINT_STATUS
+	{
+	public:
+		explicit inline LOGIC_POINT_STATUS(double _double_value)
+		{
+			this->is_double_value = true;
+			this->double_value = _double_value;
+			this->bool_value = false;
+
+			return;
+		}
+
+		explicit inline LOGIC_POINT_STATUS(bool _bool_value)
+		{
+			this->is_double_value = false;
+			this->double_value = 0;
+			this->bool_value = _bool_value;
+
+			return;
+		}
+
+		bool is_double_value;
+		double double_value;
+		bool bool_value;
+	};
+
 	/**
 	 * Class encapsulating the in-time status of the logic core.  Contains things such as digital pin status, DAC values, etc.
 	 */
 	class LOGIC_STATUS_CORE
 	{
 	public:
-		/**
-		 * Digital state typedef
-		 */
-		typedef bool DIGITAL_STATE;
 
-		/**
-		 * Analog state typedef
-		 */
-		typedef double ANALOG_STATE;
-
-		/**
-		 * Digital input state buffer.
-		 */
-		DIGITAL_STATE* di_buffer;
-
-		/**
-		 * Digital output state buffer
-		 */
-		DIGITAL_STATE* do_buffer;
-
-		/**
-		 * Analog input state buffer
-		 */
-		ANALOG_STATE* ai_buffer;
-
-		/**
-		 * Analog output state buffer.
-		 */
-		ANALOG_STATE* ao_buffer;
-
-		ANALOG_STATE* sp_buffer;
-
-		/**
-		 * Number of digital inputs utilized by the logic core.
-		 */
-		size_t di_num;
-
-		/**
-		 * Number of digital outputs utilized by the logic core.
-		 */
-		size_t do_num;
-
-		/**
-		 * Number of analog inputs utilized by the logic core.
-		 */
-		size_t ai_num;
-
-		/**
-		 * Number of analog outputs utilized by the logic core.
-		 */
-		size_t ao_num;
-
-		size_t sp_num;
 
 		/**
 		 * Number of iterations the logic core has performed.  Incremented every time the logic core goes through its processing loop.
 		 */
 		unsigned long iterations;
+
+		/**
+		Boars state map that we generate from the serial IO thread's state cache.
+		The key is the board tag.  Value is an instance of BOARD_STATE_STRUCT.
+		*/
+		std::map<std::string, BOARD_STATE_STRUCT> current_state_map;
+
+		/**
+		A map of setpoint values.  Key is setpoint name.  Value is ... the value.
+		*/
+		std::map<std::string,double> set_point_values;
+
+		/**
+		A map of analog input values.  The key is the globally unique point name from the configuration MAP statement.  The value is the calculated value of the analog input based on the point's configuration.
+		*/
+		std::map<std::string,double> calculated_adc_values;
+
+		double adc_vref_max;
+		double adc_step_val;
+		unsigned int adc_steps;
+
 		/**
 		 * Constructor.
 		 */
-		inline LOGIC_STATUS_CORE() {
-			this->di_buffer = nullptr;
-			this->do_buffer = nullptr;
-			this->ai_buffer = nullptr;
-			this->ao_buffer = nullptr;
-			this->sp_buffer = nullptr;
-			this->di_num = 0;
-			this->do_num = 0;
-			this->ai_num = 0;
-			this->ao_num = 0;
-			this->sp_num = 0;
-			this->iterations = 0;
+		inline LOGIC_STATUS_CORE()
+		{
+
 			this->init();
 		}
 
-		/**
-		 * Copy constructor.
-		 */
-		inline LOGIC_STATUS_CORE( const LOGIC_STATUS_CORE& _src ) {
-			this->di_buffer = nullptr;
-			this->do_buffer = nullptr;
-			this->ai_buffer = nullptr;
-			this->ao_buffer = nullptr;
-			this->sp_buffer = nullptr;
-			this->init();
-			memcpy( this->di_buffer, _src.di_buffer, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS] ) );
-			memcpy( this->do_buffer, _src.do_buffer, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS] ) );
-			memcpy( this->ai_buffer, _src.ai_buffer, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS] ) );
-			memcpy( this->ao_buffer, _src.ao_buffer, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS] ) );
-			memcpy( this->sp_buffer, _src.sp_buffer, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2] ) );
-			this->di_num = _src.di_num;
-			this->do_num = _src.do_num;
-			this->ai_num = _src.ai_num;
-			this->ao_num = _src.ao_num;
-			this->sp_num = _src.sp_num;
-			this->iterations = _src.iterations;
-			return;
-		}
 
 		/**
 		 * Destructor.
 		 */
-		inline ~LOGIC_STATUS_CORE() {
-			delete [] this->di_buffer;
-			delete [] this->do_buffer;
-			delete [] this->ai_buffer;
-			delete [] this->ao_buffer;
-			delete [] this->sp_buffer;
-			this->di_buffer = nullptr;
-			this->do_buffer = nullptr;
-			this->ai_buffer = nullptr;
-			this->ao_buffer = nullptr;
-			this->sp_buffer = nullptr;
+		inline ~LOGIC_STATUS_CORE()
+		{
+			this->iterations = 0;
+			this->adc_vref_max = 0;
+			this->adc_steps = 0;
+			this->adc_step_val = 0;
 			return;
 		}
 
@@ -167,19 +136,24 @@ namespace BBB_HVAC
 		/**
 		 * Init method.
 		 */
-		inline void init( void ) {
-			this->di_buffer = new DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS];
-			this->do_buffer = new DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS];
-			this->ai_buffer = new ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS];
-			this->ao_buffer = new ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS];
-			this->sp_buffer = new ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2];
-			memset( this->di_buffer, 0, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_INPUTS] ) );
-			memset( this->do_buffer, 0, sizeof( DIGITAL_STATE[GC_LOGIC_DIGITAL_OUTPUTS] ) );
-			memset( this->ai_buffer, 0, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_INPUTS] ) );
-			memset( this->ao_buffer, 0, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS] ) );
-			memset( this->sp_buffer, 0, sizeof( ANALOG_STATE[GC_LOGIC_ANALOG_OUTPUTS * 2] ) );
-		}
+		inline void init( void )
+		{
+			this->iterations = 0;
+			this->adc_vref_max = GC_IO_ADC_VREF_MAX;
+			this->adc_steps = GC_IO_ADC_STEPS;
+			this->adc_step_val = this->adc_vref_max / this->adc_steps;
 
+			return;
+		}
+	private:
+		/**
+		 * Copy constructor.
+		 */
+		inline LOGIC_STATUS_CORE( const LOGIC_STATUS_CORE&  )
+		{
+			throw logic_error("Can not copy LOGIC_STATUS_CORE");
+			return;
+		}
 	};
 
 	class LOGIC_STATUS_FLUFF
@@ -190,20 +164,18 @@ namespace BBB_HVAC
 		}
 
 		inline LOGIC_STATUS_FLUFF( const LOGIC_STATUS_FLUFF& _src ) {
-			this->di_labels = _src.di_labels;
 			this->do_labels = _src.do_labels;
 			this->ai_labels = _src.ai_labels;
-			this->ao_labels = _src.ao_labels;
 			this->sp_labels = _src.sp_labels;
+			this->point_map = _src.point_map;
+
 			return;
 		}
 
-		LABEL_LIST di_labels;
-		LABEL_LIST do_labels;
-		LABEL_LIST ai_labels;
-		LABEL_LIST ao_labels;
-		LABEL_LIST sp_labels;
-
+		BOARD_POINT_VECTOR do_labels;
+		BOARD_POINT_VECTOR ai_labels;
+		SET_POINT_MAP sp_labels;
+		std::map<std::string,BOARD_POINT> point_map;
 	};
 
 	/**
@@ -252,14 +224,54 @@ namespace BBB_HVAC
 		 * Returns a copy of the in-time status of the logic core.
 		 * \return A copy of the logic core status.
 		 */
-		LOGIC_STATUS_CORE get_logic_status( void );
+		std::map<std::string,LOGIC_POINT_STATUS> get_logic_status(void);
 
-		LOGIC_STATUS_FLUFF get_logic_status_fluff( void ) const;
+		void get_logic_status_fluff( LOGIC_STATUS_FLUFF& ) const;
 
 	protected:
+		static double calculate_420_value(double _voltage,long _min,long _max);
+		static double calculate_ICTD_value(double _voltage);
+		static double c_to_f(double c);
 
 		bool thread_func( void );
 
+		bool inner_thread_func(void);
+
+
+		/**
+		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
+		*/
+		double get_sp_value(const string& _name) const throw (exception);
+
+		/**
+		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
+		*/
+		void set_sp_value(const string& _name,double _value);
+
+		/**
+		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
+		*/
+		double get_ai_value(const string & _name) const;
+
+		/**
+		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
+		*/
+		bool is_output_set(const string& _name) const;
+
+		/**
+		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
+		*/
+		void set_output(const string& _name);
+
+		/**
+		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
+		*/
+		void clear_output(const string& _name);
+
+		/**
+		\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
+		*/
+		//const BOARD_POINT& get_board_point(const string& _name) const;
 
 		/**
 		 * Logic status instance.
@@ -270,9 +282,12 @@ namespace BBB_HVAC
 
 		CONFIGURATOR* configurator;
 
+		std::vector<std::string> involved_board_tags;
+
 	private:
 
 	};
 }
 
 #endif /* SRC_INCLUDE_LIB_LOGIC_HPP_ */
+

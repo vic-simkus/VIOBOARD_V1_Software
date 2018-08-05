@@ -77,7 +77,7 @@ HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP( CONFIGURATOR* _config ) :
 		for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = idx.cbegin(); i != idx.cend(); ++i )
 		{
 			this->logic_status_fluff.sp_labels.push_back( this->configurator->get_config_entry( *i ).get_part_as_string( 0 ) );
-		}
+		}asds
 	}
 	return;
 }

@@ -66,7 +66,7 @@ namespace BBB_HVAC
 			 * Copy constructor.
 			 * \param _src Source of the copy.
 			 */
-			inline CACHE_ENTRY_BASE( const CACHE_ENTRY_BASE& _src );
+			CACHE_ENTRY_BASE( const CACHE_ENTRY_BASE& _src );
 
 			/**
 			 * Destructor.

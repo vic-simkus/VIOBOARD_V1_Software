@@ -74,7 +74,7 @@
 /**
  * Number of NANOSECCONDS the logic thread will sleep between iterations.
  */
-#define GC_LOGIC_THREAD_SLEEP GC_NSEC_TIMEOUT
+#define GC_LOGIC_THREAD_SLEEP 999000000
 
 /**
  * Number of attempts the logic thread will try to obtain a mutex.  Between tries it will sleep for a random number of nanoseconds.
@@ -82,27 +82,18 @@
 #define GC_MUTEX_LOCK_ATTEMPT 400
 
 /**
- * Sets the size of the LOGIC_STATUS digital input buffer.  Obviously this has to equal to or be greater than the actual number of digital inputs used.
- */
-#define GC_LOGIC_DIGITAL_INPUTS 10
-
-/**
  * Sets the size of the LOGIC_STATUS digital output buffer.
  * \see GC_LOGIC_DIGITAL_INPUTS
  */
-#define GC_LOGIC_DIGITAL_OUTPUTS 10
+#define GC_LOGIC_DIGITAL_OUTPUTS 8
 
 /**
  * Sets the size of the LOGIC_STATUS analog input buffer.
  * \see GC_LOGIC_DIGITAL_INPUTS
  */
-#define GC_LOGIC_ANALOG_INPUTS 10
+#define GC_LOGIC_ANALOG_INPUTS 16
 
-/**
- * Sets the size of the LOGIC_STATUS analog output buffer.
- * \see GC_LOGIC_DIGITAL_INPUTS
- */
-#define GC_LOGIC_ANALOG_OUTPUTS 10
+#define GC_LOGIC_SET_POINTS	32
 
 /**
  * How long, in seconds, the watchdog thread will sleep between iterations
@@ -183,4 +174,7 @@ XXX - need to update to reflect changes in timing mechanism
  */
 #define GC_IO_DO_COUNT 4
 
+
+#define GC_IO_ADC_VREF_MAX ((double)5.0)
+#define GC_IO_ADC_STEPS	(4096)
 #endif /* CONFIG_H_ */

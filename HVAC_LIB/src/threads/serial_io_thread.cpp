@@ -488,7 +488,7 @@ bool SER_IO_COMM::add_pmic_status( size_t _idx )
 	return true;
 }
 
-bool SER_IO_COMM::add_cache_values( size_t _idx, unsigned char _level )
+bool SER_IO_COMM::add_calibration_values( size_t _idx, unsigned char _level )
 {
 	BOARD_STATE_CACHE::CAL_VALUE_ADDER_PTR adder_ptr;
 	unsigned char* line = this->active_table->table[_idx];
@@ -582,7 +582,7 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 	{
 		LOG_ERROR_P( "Message failed checksum check: " + num_to_str( chksum ) + ", in message: " + num_to_str( data_ptr[4] ) );
 		LOG_ERROR_P( "Message length: " + num_to_str( length ) );
-		LOG_ERROR_P("\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE  ) );
+		LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
 		goto _end;
 	}
 
@@ -647,13 +647,13 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 
 		case CMD_ID_GET_L1_CAL_VALS:
 		{
-			this->add_cache_values( _idx, 1 );
+			this->add_calibration_values( _idx, 1 );
 			break;
 		}
 
 		case CMD_ID_GET_L2_CAL_VALS:
 		{
-			this->add_cache_values( _idx, 2 );
+			this->add_calibration_values( _idx, 2 );
 			break;
 		}
 
@@ -687,10 +687,19 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 			break;
 		}
 
+		case CMD_ID_GET_BOARD_STATS:
+		{
+			// do nothing
+			/*
+			XXX - Need to implement
+			*/
+			break;
+		}
+
 		case CMD_ID_SYS_FAILURE:
 		{
 			LOG_ERROR_P( "Board returned a hard error.  Buffer output bellow:" );
-			LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE) );
+			LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
 			break;
 		}
 
