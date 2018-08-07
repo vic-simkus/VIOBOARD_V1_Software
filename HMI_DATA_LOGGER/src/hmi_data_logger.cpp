@@ -23,6 +23,7 @@
 
 #include "lib/logger.hpp"
 
+#include "lib/threads/thread_registry.hpp"
 
 /*
 For sleep
@@ -61,7 +62,7 @@ bool process_command_line( int _argc, char** _argv, HMI_DATA_LOGGER::HMI_DATA_LO
 	bool rc = true;
 	std::unique_ptr<char> _real_path_ptr( realpath( _argv[0], nullptr ) );
 
-	if( !_real_path_ptr )
+	if ( !_real_path_ptr )
 	{
 		LOG_ERROR_STAT( BBB_HVAC::create_perror_string( "Failed to normalize our own executable path?" ) );
 		return false;
@@ -71,7 +72,7 @@ bool process_command_line( int _argc, char** _argv, HMI_DATA_LOGGER::HMI_DATA_LO
 	_ctx.set_prog_name( std::string( _argv[0] ) );
 	_ctx.set_prog_name_fixed( normalized_me );
 
-	if( ( _argc % 2 ) == 0 )
+	if ( ( _argc % 2 ) == 0 )
 	{
 		/*
 		We always expect an odd number of parameters.
@@ -85,12 +86,12 @@ bool process_command_line( int _argc, char** _argv, HMI_DATA_LOGGER::HMI_DATA_LO
 		return false;
 	}
 
-	for( int i = 1; i < _argc; i++ )
+	for ( int i = 1; i < _argc; i++ )
 	{
 		//LOG_DEBUG_STAT("Param [" + num_to_str(i) + "]: " + std::string(_argv[i]) );
 		std::string param = _argv[i];
 
-		if( param == "ROTATE_SIZE" )
+		if ( param == "ROTATE_SIZE" )
 		{
 			size_t rotate_size;
 
@@ -98,7 +99,7 @@ bool process_command_line( int _argc, char** _argv, HMI_DATA_LOGGER::HMI_DATA_LO
 			{
 				rotate_size = std::stoul( std::string( _argv[i + 1] ) );
 			}
-			catch( const std::exception& e )
+			catch ( const std::exception& e )
 			{
 				LOG_ERROR_STAT( "Failed to convert value to LOG_SIZE parameter to number.  Value [" + std::string( _argv[i + 1] ) + "], error: " + e.what() );
 				rc = false;
@@ -107,19 +108,19 @@ bool process_command_line( int _argc, char** _argv, HMI_DATA_LOGGER::HMI_DATA_LO
 			_ctx.configuration.rotate_size = rotate_size;
 			i += 1;
 		}
-		else if( param == "LOG_DIR" )
+		else if ( param == "LOG_DIR" )
 		{
 			_ctx.configuration.log_dir = std::string( _argv[i + 1] );
 			i += 1;
 		}
-		else if( param == "BASE_DATA_FILE_NAME" )
+		else if ( param == "BASE_DATA_FILE_NAME" )
 		{
 			_ctx.configuration.base_data_file_name = std::string( _argv[i + 1] );
 			i += 1;
 		}
-		else if( param == "FAIL_HARD" )
+		else if ( param == "FAIL_HARD" )
 		{
-			if( to_upper_case( std::string( _argv[i + 1] ) ) == "TRUE" )
+			if ( to_upper_case( std::string( _argv[i + 1] ) ) == "TRUE" )
 			{
 				_ctx.configuration.fail_hard = true;
 			}
@@ -140,14 +141,29 @@ bool process_command_line( int _argc, char** _argv, HMI_DATA_LOGGER::HMI_DATA_LO
 	return rc;
 }
 
-bool collect_data( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT& )
-{
-	HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONNECTION connection;
 
-	if( !connection.connect() )
+bool collect_data( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* _logger_context)
+{
+	HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONNECTION connection(_logger_context);
+
+	if ( !connection.connect() )
 	{
 		return false;
 	}
+
+	while (!BBB_HVAC::GLOBALS::global_exit_flag)
+	{
+		if (!connection.read_status())
+		{
+			LOG_ERROR_STAT("Failed to read status.  See previous error logs.");
+			connection.disconnect();
+			return false;
+		}
+
+		sleep(1);
+	}
+
+	LOG_DEBUG_STAT("collect_data returning.");
 
 	return true;
 }
@@ -158,7 +174,7 @@ int main( int argc, char** argv )
 	HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT logger_context;
 	LOG_ERROR_STAT( "Starting." );
 
-	if( !process_command_line( argc, argv, logger_context ) )
+	if ( !process_command_line( argc, argv, logger_context ) )
 	{
 		LOG_ERROR_STAT( "Command line parameter processing failed.  Please refer to previous error messages.  Program will abort." );
 		exit( -1 );
@@ -166,23 +182,26 @@ int main( int argc, char** argv )
 
 	dump_config( logger_context.configuration );
 
-	if( logger_context.check_data_dir() == false )
+	if ( logger_context.check_data_dir() == false )
 	{
 		LOG_ERROR_STAT( "Check of data log directory failed.  See previous error messages for hints.  Bailing." );
 		return -1;
 	}
 
-	if( logger_context.configuration.fail_hard == true )
+	LOG_DEBUG_STAT("Next data file: " + logger_context.get_next_data_file_name());
+
+	if ( logger_context.configuration.fail_hard == true )
 	{
-		collect_data( logger_context );
+		collect_data( &logger_context );
+		LOG_DEBUG_STAT("collect_data returned.");
 	}
 	else
 	{
 		LOG_INFO_STAT( "Application is running in FAIL_HARD=FALSE mode.  Will retry indefinitely on all error conditions." );
 
-		while( 1 )
+		while ( 1 )
 		{
-			if( collect_data( logger_context ) )
+			if ( collect_data( &logger_context ) )
 			{
 				LOG_DEBUG_STAT( "Data collection ended successfully.  Exiting." );
 				break;
@@ -192,11 +211,13 @@ int main( int argc, char** argv )
 				LOG_DEBUG_STAT( "Error in data collection process.  FAIL_HARD is false.  Looping." );
 			}
 
-			if( BBB_HVAC::GLOBALS::global_exit_flag == true )
+			if ( BBB_HVAC::GLOBALS::global_exit_flag == true )
 			{
 				LOG_INFO_STAT( "Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true." );
 				break;
 			}
+
+			BBB_HVAC::THREAD_REGISTRY::global_cleanup();
 
 			sleep( 1 );
 		}

@@ -24,20 +24,33 @@
 #include "lib/bbb_hvac.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace HMI_DATA_LOGGER
 {
+	class HMI_DATA_LOGGER_CONTEXT;
+
 	class HMI_DATA_LOGGER_CONNECTION
 	{
 	public:
-		HMI_DATA_LOGGER_CONNECTION();
+
+		HMI_DATA_LOGGER_CONNECTION(HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* );
 		~HMI_DATA_LOGGER_CONNECTION();
 
 		bool connect( void );
+		bool disconnect(void);
+
+		bool read_status(void);
+
 	protected:
 	private:
 		DEF_LOGGER;
-		std::unique_ptr<BBB_HVAC::CLIENT::CLIENT_CONTEXT> ctx;
+		BBB_HVAC::CLIENT::CLIENT_CONTEXT* client_context;
+		HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* logger_context;
+
+		std::vector<std::string> logic_core_points;
+
+		bool opened_output;
 	};
 }
 
