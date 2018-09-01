@@ -35,6 +35,8 @@
 #include <algorithm>
 #include <iterator>
 
+#include <float.h>
+
 using namespace BBB_HVAC;
 
 LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
@@ -219,15 +221,34 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 
 			if ( board_point.get_ai_type() == AI_TYPE::CL_420 )
 			{
-				calculated_value = calculate_420_value( volt_value, board_point.get_min_value(), board_point.get_max_value() );
+				if (volt_value == 0)
+				{
+					/*
+					No such thing as 0 volts on a 4-20 input.
+					*/
+					calculated_value = -DBL_MAX;
+				}
+				else
+				{
+					calculated_value = calculate_420_value( volt_value, board_point.get_min_value(), board_point.get_max_value() );
+				}
 			}
 			else if ( board_point.get_ai_type() == AI_TYPE::ICTD )
 			{
-				// TODO - calculate ICTD temp value.
-				double in_volts = volt_value / 10;	// The opamp gain is 10x
-				calculated_value = calculate_ICTD_value( in_volts );
-				calculated_value = board_point.get_is_celcius() ? calculated_value : c_to_f( calculated_value );
-				//LOG_DEBUG_P("Defrees C: " + num_to_str(calculated_value) + " F: " + num_to_str(c_to_f(calculated_value)));
+				if (volt_value == 0)
+				{
+					/*
+					Only way this could be zero if we were reading 0K.
+					*/
+					calculated_value = -DBL_MAX;
+				}
+				else
+				{
+					double in_volts = volt_value / 10;	// The opamp gain is 10x
+					calculated_value = calculate_ICTD_value( in_volts );
+					calculated_value = board_point.get_is_celcius() ? calculated_value : c_to_f( calculated_value );
+					//LOG_DEBUG_P("Defrees C: " + num_to_str(calculated_value) + " F: " + num_to_str(c_to_f(calculated_value)));
+				}
 			}
 
 			this->logic_status_core.calculated_adc_values[point_name] = calculated_value;
