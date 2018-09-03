@@ -57,7 +57,8 @@ namespace BBB_HVAC
 			 * \param _tag Name of the instance.  Used for debugging purposes.
 			 */
 			inline IO_COMM_BASE( const string& _tag ) :
-				THREAD_BASE( _tag ) {
+				THREAD_BASE( _tag )
+			{
 				this->tag = _tag;
 				this->is_io_thread = true;
 				return;
@@ -80,7 +81,8 @@ namespace BBB_HVAC
 			Returns the tag of this thread.  The tag is used for debugging, log output, etc.
 			\return Thread's tag
 			*/
-			inline const string& get_tag( void ) const {
+			inline const string& get_tag( void ) const
+			{
 				return this->tag;
 			}
 
@@ -307,9 +309,10 @@ namespace BBB_HVAC
 
 			/**
 			 * Reads all of the available serial data from the port and shoves it into the holding buffer.
+			 * \param _discard If set to true discard all of th read data.  Used on board reset to clear any pre-existing output from board waiting to be read.
 			 * \return True is everything was handled without drama, false otherwise.
 			 */
-			bool drain_serial( void );
+			bool drain_serial( bool _discard = false );
 
 			/**
 			 * Sends a message to the IO board.  The message is expected to contain the terminating newline (\n).
