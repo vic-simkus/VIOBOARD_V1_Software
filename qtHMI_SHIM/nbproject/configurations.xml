@@ -62,15 +62,15 @@
         <ccTool>
           <standard>8</standard>
           <incDir>
-            <pElem>/opt/dev/git_work/VIOBOARD_V1_Software/HVAC_LIB/src/include</pElem>
+            <pElem>../HVAC_LIB/src/include</pElem>
           </incDir>
         </ccTool>
         <linkerTool>
           <linkerDynSerch>
-            <pElem>/opt/dev/git_work/VIOBOARD_V1_Software/HVAC_LIB/bin</pElem>
+            <pElem>../HVAC_LIB/bin</pElem>
           </linkerDynSerch>
           <linkerLibItems>
-            <linkerLibFileItem>/opt/dev/git_work/VIOBOARD_V1_Software/HVAC_LIB/bin/libHVAC_LIB.so</linkerLibFileItem>
+            <linkerLibFileItem>../HVAC_LIB/bin/libHVAC_LIB.so</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>

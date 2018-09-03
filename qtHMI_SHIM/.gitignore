@@ -1,0 +1,7 @@
+moc_*.*
+dist
+build
+nbproject/private
+nbproject/*.mk
+nbproject/*.pro
+nbproject/*.bash
