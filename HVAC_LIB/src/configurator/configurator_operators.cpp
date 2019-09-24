@@ -35,7 +35,7 @@ namespace BBB_HVAC
 
 	bool operator==( const BOARD_POINT& _l, const BOARD_POINT& _r )
 	{
-		if ( _l.type == _r.type && _l.board_tag == _r.board_tag && _l.point_id == _r.point_id )
+		if( _l.type == _r.type && _l.board_tag == _r.board_tag && _l.point_id == _r.point_id )
 		{
 			return true;
 		}

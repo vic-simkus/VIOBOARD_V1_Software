@@ -59,15 +59,15 @@ BOARD_POINT::BOARD_POINT( const CONFIG_ENTRY& _config_entry, ENUM_CONFIG_TYPES _
 	this->index = _index;
 	this->is_celcius = false;
 
-	if ( this->type == ENUM_CONFIG_TYPES::AI )
+	if( this->type == ENUM_CONFIG_TYPES::AI )
 	{
-		if ( _config_entry.get_part_as_string( 3 ) == "420" )
+		if( _config_entry.get_part_as_string( 3 ) == "420" )
 		{
 			this->ai_type = AI_TYPE::CL_420;
 			this->min = _config_entry.get_part_as_int( 4 );
 			this->max = _config_entry.get_part_as_int( 5 );
 		}
-		else if ( _config_entry.get_part_as_string( 3 ) == "ICTD" )
+		else if( _config_entry.get_part_as_string( 3 ) == "ICTD" )
 		{
 			this->ai_type = AI_TYPE::ICTD;
 			this->is_celcius = ( _config_entry.get_part_as_string( 4 ) == "C" ) ? true : false;
@@ -139,7 +139,7 @@ BOARD_POINT BOARD_POINT::from_string( const std::string& _source )
 	split_string_to_vector( str, ',', parts );
 	BOARD_POINT ret;
 
-	if ( parts.size() != 4 )
+	if( parts.size() != 4 )
 	{
 		return ret;
 	}

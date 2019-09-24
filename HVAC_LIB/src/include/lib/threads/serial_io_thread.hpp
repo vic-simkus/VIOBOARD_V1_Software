@@ -57,8 +57,7 @@ namespace BBB_HVAC
 			 * \param _tag Name of the instance.  Used for debugging purposes.
 			 */
 			inline IO_COMM_BASE( const string& _tag ) :
-				THREAD_BASE( _tag )
-			{
+				THREAD_BASE( _tag ) {
 				this->tag = _tag;
 				this->is_io_thread = true;
 				return;
@@ -81,8 +80,7 @@ namespace BBB_HVAC
 			Returns the tag of this thread.  The tag is used for debugging, log output, etc.
 			\return Thread's tag
 			*/
-			inline const string& get_tag( void ) const
-			{
+			inline const string& get_tag( void ) const {
 				return this->tag;
 			}
 

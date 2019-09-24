@@ -86,7 +86,7 @@ void SER_IO_COMM::serial_port_close( void )
 
 SER_IO_COMM::~SER_IO_COMM()
 {
-	if ( this->serial_fd != 0 )
+	if( this->serial_fd != 0 )
 	{
 		this->serial_port_close();
 	}
@@ -121,7 +121,7 @@ void SER_IO_COMM::writer_thread_func( void )
 {
 	LOG_DEBUG_P( "Write event loop thread starting." );
 
-	if ( !this->write_event_loop() )
+	if( !this->write_event_loop() )
 	{
 		LOG_DEBUG_P( "Thread's write event loop returned 'false'." );
 	}
@@ -145,7 +145,7 @@ bool SER_IO_COMM::thread_func( void )
 	this->nsleep( &ts );
 	LOG_DEBUG_P( "Main event loop thread starting." );
 
-	if ( !this->main_event_loop() )
+	if( !this->main_event_loop() )
 	{
 		LOG_DEBUG_P( "Thread's main event loop returned 'false'." );
 	}
@@ -180,7 +180,7 @@ bool SER_IO_COMM::is_process_alive( const string& _pid )
 {
 	string proc_file = "/proc/" + _pid;
 
-	if ( access( proc_file.data(), F_OK ) == 0 )
+	if( access( proc_file.data(), F_OK ) == 0 )
 	{
 		return true;
 	}
@@ -205,12 +205,12 @@ bool SER_IO_COMM::try_lock_serial( void )
 	bool ret = false;
 	LOG_DEBUG_P( "Checking lock file: " + this->lock_file );
 
-	if ( access( this->lock_file.data(), F_OK ) == 0 )
+	if( access( this->lock_file.data(), F_OK ) == 0 )
 	{
 		//lock file exists
 		string pid = get_locking_pid( this->lock_file );
 
-		if ( is_process_alive( pid ) )
+		if( is_process_alive( pid ) )
 		{
 			LOG_ERROR_P( "Port is locked and locking process is alive: " + get_locking_pid_command( pid ) );
 			ret = false;
@@ -228,14 +228,14 @@ bool SER_IO_COMM::try_lock_serial( void )
 		ret = true;
 	}
 
-	if ( ret )
+	if( ret )
 	{
 		/*
 		 * Either lock file does not exist or we were able to clear it.
 		 */
 		ofstream lock_file( this->lock_file );
 
-		if ( !lock_file.is_open() )
+		if( !lock_file.is_open() )
 		{
 			LOG_ERROR_P( "Failed to open lock file for writting." );
 			ret = false;
@@ -260,7 +260,7 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 	long int bytes_read = 0;
 	//long int start_index = this->buffer_context.buffer_idx;
 
-	while ( bytes_read < GC_SERIAL_BUFF_SIZE )
+	while( bytes_read < GC_SERIAL_BUFF_SIZE )
 	{
 		/*
 		 * If I make the type ssize_t arithmetic with size_t fails
@@ -270,7 +270,7 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 		// DEBUG SET A.1.  Also enable DEBUG SET A.2 at the same time.
 		//long int rc = read( this->serial_fd, buffer + this->buffer_context.buffer_idx, 1 );
 
-		if ( rc == 0 )
+		if( rc == 0 )
 		{
 			/*
 			 * Nothing more to read
@@ -278,7 +278,7 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 			rc = true;
 			break;
 		}
-		else if ( rc < 0 )
+		else if( rc < 0 )
 		{
 			LOG_ERROR_P( create_perror_string( "Serial read" ) );
 			rc = false;
@@ -287,34 +287,32 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 
 		bytes_read += rc;
 
-		if (_discard)
+		if( _discard )
 		{
 			continue;
 		}
 
 		// DEBUG SET A.2
 		//cerr << "[" << this->buffer_context.buffer_idx << "] -- 0x" << char_to_hex( buffer[this->buffer_context.buffer_idx]) << " -- " <<  (buffer[this->buffer_context.buffer_idx] != 0x0A ? char(buffer[this->buffer_context.buffer_idx]) : (char)' ')   << endl;
-
 		this->buffer_context.buffer_idx = this->buffer_context.buffer_idx + rc;
 
-		if ( this->buffer_context.buffer_idx >= GC_SERIAL_BUFF_SIZE )
+		if( this->buffer_context.buffer_idx >= GC_SERIAL_BUFF_SIZE )
 		{
 			/*
 			 * Overflow
 			 */
-			LOG_ERROR_P( "Serial receive buffer overflowed. Bytes read: " + num_to_str(bytes_read) +  ".  Buffer index: " + num_to_str(this->buffer_context.buffer_idx) + ". Buffer size: " + num_to_str(GC_SERIAL_BUFF_SIZE) + ". Data has been lost." );
+			LOG_ERROR_P( "Serial receive buffer overflowed. Bytes read: " + num_to_str( bytes_read ) +  ".  Buffer index: " + num_to_str( this->buffer_context.buffer_idx ) + ". Buffer size: " + num_to_str( GC_SERIAL_BUFF_SIZE ) + ". Data has been lost." );
 			this->reset_buffer_context();
 			memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 		}
 	}
 
-	if(bytes_read > 0)
+	if( bytes_read > 0 )
 	{
 		//LOG_DEBUG_P("Read " + num_to_str(bytes_read) + " from serial port.  Discard: " + num_to_str(_discard));
 	}
 
 	//LOG_DEBUG_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
-
 	return rc;
 }
 
@@ -323,19 +321,19 @@ unsigned char SER_IO_COMM::clear_to_send( void ) const
 	unsigned int flow_ctrl_status;
 	unsigned int output_queue;
 
-	if ( ioctl( this->serial_fd, TIOCOUTQ, &output_queue ) != 0 )
+	if( ioctl( this->serial_fd, TIOCOUTQ, &output_queue ) != 0 )
 	{
 		LOG_ERROR_P( create_perror_string( "Failed get IOCTL port queue" ) );
 		return 2;
 	}
 
-	if ( ioctl( this->serial_fd, TIOCMGET, &flow_ctrl_status ) != 0 )
+	if( ioctl( this->serial_fd, TIOCMGET, &flow_ctrl_status ) != 0 )
 	{
 		LOG_ERROR_P( create_perror_string( "Failed get IOCTL port status" ) );
 		return 3;
 	}
 
-	if ( output_queue == 0 && ( flow_ctrl_status & TIOCM_CTS ) )
+	if( output_queue == 0 && ( flow_ctrl_status & TIOCM_CTS ) )
 		//if(flow_ctrl_status & TIOCM_CTS)
 	{
 		return 1;
@@ -349,7 +347,7 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 {
 	this->serial_fd = open( this->tty_dev.data(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_NDELAY );
 
-	if ( this->serial_fd < 0 )
+	if( this->serial_fd < 0 )
 	{
 		LOG_ERROR_P( create_perror_string( "Serial port open" ) );
 		return ENUM_ERRORS::ERR_PORT_OPEN;
@@ -405,7 +403,7 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 	 */
 	this->current_tio.c_cflag |= CRTSCTS;
 
-	if ( tcsetattr( this->serial_fd, TCSANOW, &this->current_tio ) < 0 )
+	if( tcsetattr( this->serial_fd, TCSANOW, &this->current_tio ) < 0 )
 	{
 		LOG_ERROR_P( create_perror_string( "Serial port attributes" ) );
 		return ENUM_ERRORS::ERR_ATTRIBUTES;
@@ -418,7 +416,7 @@ ENUM_ERRORS SER_IO_COMM::init( void )
 {
 	LOG_INFO_P( "Operating on serial port:" + this->tty_dev );
 
-	if ( !this->try_lock_serial() )
+	if( !this->try_lock_serial() )
 	{
 		LOG_ERROR_P( "Failed to obtain lock on serial port." );
 		return ENUM_ERRORS::ERR_FAIL_LOCK;
@@ -426,7 +424,7 @@ ENUM_ERRORS SER_IO_COMM::init( void )
 
 	ENUM_ERRORS rc;
 
-	if ( ( rc = this->serial_port_open() ) != ENUM_ERRORS::ERR_NONE )
+	if( ( rc = this->serial_port_open() ) != ENUM_ERRORS::ERR_NONE )
 	{
 		LOG_ERROR_P( "Failed to open serial port." );
 		return rc;
@@ -442,15 +440,15 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 	ssize_t rc;
 	unsigned char cts_res = 0;
 
-	while ( this->abort_thread == false )
+	while( this->abort_thread == false )
 	{
 		cts_res = this->clear_to_send();
 
-		if ( cts_res == 0 )
+		if( cts_res == 0 )
 		{
 			continue;
 		}
-		else if ( cts_res == 1 )
+		else if( cts_res == 1 )
 		{
 			/*
 			Normal clear to continue
@@ -466,7 +464,7 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 
 		rc = write( this->serial_fd, _buffer + bytes_written, _length - bytes_written );
 
-		if ( rc < 0 )
+		if( rc < 0 )
 		{
 			LOG_ERROR_P( create_perror_string( this->tag + ": Failed to write message to IO board. rc < 0" ) );
 			return false;
@@ -474,13 +472,13 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 
 		bytes_written += rc;
 
-		if ( ( size_t ) bytes_written == _length )
+		if( ( size_t ) bytes_written == _length )
 		{
 			break;
 		}
 	}
 
-	if ( _length != ( size_t ) bytes_written )
+	if( _length != ( size_t ) bytes_written )
 	{
 		LOG_ERROR_P( "Write loop aborted before writing full buffer.  bytes written: " + num_to_str( bytes_written ) + "; buffer length: " + num_to_str( _length ) );
 		return false;
@@ -519,11 +517,11 @@ bool SER_IO_COMM::add_calibration_values( size_t _idx, unsigned char _level )
 	}
 	*/
 
-	if ( _level == 1 )
+	if( _level == 1 )
 	{
 		adder_ptr = &BOARD_STATE_CACHE::add_l1_cal_value;
 	}
-	else if ( _level == 2 )
+	else if( _level == 2 )
 	{
 		adder_ptr = &BOARD_STATE_CACHE::add_l2_cal_value;
 	}
@@ -533,7 +531,7 @@ bool SER_IO_COMM::add_calibration_values( size_t _idx, unsigned char _level )
 		return false;
 	}
 
-	for ( size_t i = 0; ( i < length && result_index < GC_IO_AI_COUNT ); i += 2 )
+	for( size_t i = 0; ( i < length && result_index < GC_IO_AI_COUNT ); i += 2 )
 	{
 		adder_ptr( this->state_cache, result_index, ASSEMBLE_16INT( line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1] ) );
 		result_index += 1;
@@ -547,7 +545,7 @@ bool SER_IO_COMM::add_boot_count( size_t _idx )
 	unsigned char* line = this->active_table->table[_idx];
 	uint16_t length = ASSEMBLE_16INT( line[RESP_HEAD_LEN_LSB_IDX], line[RESP_HEAD_LEN_MSB_IDX] );
 
-	if ( length != 4 )
+	if( length != 4 )
 	{
 		LOG_ERROR_P( "Invalid payload length received for boot count response: " + num_to_str( length ) );
 		return false;
@@ -568,7 +566,7 @@ bool SER_IO_COMM::add_ai_result( size_t _line_index )
 	We're expecting RESP_HEAD_SIZE of header, 16 bytes of payload, and 2 bytes of checksum
 	*/
 
-	for ( size_t i = 0; ( i < length && result_index < GC_IO_AI_COUNT ); i += 2 )
+	for( size_t i = 0; ( i < length && result_index < GC_IO_AI_COUNT ); i += 2 )
 	{
 		this->state_cache.add_adc_value( result_index, ASSEMBLE_16INT( line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1] ) );
 		result_index = result_index + 1;
@@ -593,7 +591,7 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 	uint16_t* data_ptr = ( uint16_t* ) this->active_table->table[_idx];
 	uint16_t chksum = checksum( data_ptr, ( length  + RESP_HEAD_SIZE ) / 2 );
 
-	if ( chksum != 0 )
+	if( chksum != 0 )
 	{
 		LOG_ERROR_P( "Message failed checksum check: " + num_to_str( chksum ) + ", in message: " + num_to_str( data_ptr[4] ) );
 		LOG_ERROR_P( "Message length: " + num_to_str( length ) );
@@ -603,126 +601,126 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 
 	//LOG_DEBUG_P("Command: " + to_string(cmd) + ", status: " + to_string(status) + ", length: " + to_string(length));
 
-	switch ( cmd )
+	switch( cmd )
 	{
-	case CMD_ID_RESET_BOARD:
-	{
-		// This should never happen.
-		LOG_ERROR_P( "We received a response of type CMD_ID_RESET_BOARD??  How is that possible?" )
-		LOG_ERROR_P( buffer_to_hex( this->active_table->table[_idx], RESP_HEAD_SIZE + length ) );
-		this->set_active_table_line_blank( _idx );
-		break;
-	}
-
-	case CMD_ID_GET_AI_STATUS:
-	{
-		if ( length % 2 != 0 )
+		case CMD_ID_RESET_BOARD:
 		{
-			LOG_ERROR_P( "Payload length for response to CMD_ID_GET_AI_SATATUS is not a multiple of two [" + num_to_str( length ) + "].  Clearing offending line." );
+			// This should never happen.
+			LOG_ERROR_P( "We received a response of type CMD_ID_RESET_BOARD??  How is that possible?" )
+			LOG_ERROR_P( buffer_to_hex( this->active_table->table[_idx], RESP_HEAD_SIZE + length ) );
 			this->set_active_table_line_blank( _idx );
-			return;
+			break;
 		}
 
-		this->add_ai_result( _idx );
-		break;
-	}
+		case CMD_ID_GET_AI_STATUS:
+		{
+			if( length % 2 != 0 )
+			{
+				LOG_ERROR_P( "Payload length for response to CMD_ID_GET_AI_SATATUS is not a multiple of two [" + num_to_str( length ) + "].  Clearing offending line." );
+				this->set_active_table_line_blank( _idx );
+				return;
+			}
 
-	case CMD_ID_GET_DO_STATUS:
-	{
-		this->add_do_status( _idx );
-		break;
-	}
+			this->add_ai_result( _idx );
+			break;
+		}
 
-	case CMD_ID_SET_DO_STATUS:
-	{
-		//LOG_ERROR_P( "Accepting response to CMD_ID_SET_DO_STATUS is not yet implemented." );
-		/*
-		 * There's really nothing for us to do with a response.
-		 */
-		this->set_active_table_line_blank( _idx );
-		break;
-	}
+		case CMD_ID_GET_DO_STATUS:
+		{
+			this->add_do_status( _idx );
+			break;
+		}
 
-	case CMD_ID_GET_PMIC_STATUS:
-	{
-		//LOG_ERROR_P( "Accepting response to CMD_ID_GET_PMIC_STATUS is not yet implemented." );
-		/*
-		 * What can we possibly do about a response.
-		 */
-		this->add_pmic_status( _idx );
-		break;
-	}
+		case CMD_ID_SET_DO_STATUS:
+		{
+			//LOG_ERROR_P( "Accepting response to CMD_ID_SET_DO_STATUS is not yet implemented." );
+			/*
+			 * There's really nothing for us to do with a response.
+			 */
+			this->set_active_table_line_blank( _idx );
+			break;
+		}
 
-	case CMD_ID_SET_PMIC_STATUS:
-	{
-		//LOG_ERROR_P( "Accepting response to CMD_ID_SET_PMIC_STATUS is not yet implemented." );
-		this->set_active_table_line_blank( _idx );
-		break;
-	}
+		case CMD_ID_GET_PMIC_STATUS:
+		{
+			//LOG_ERROR_P( "Accepting response to CMD_ID_GET_PMIC_STATUS is not yet implemented." );
+			/*
+			 * What can we possibly do about a response.
+			 */
+			this->add_pmic_status( _idx );
+			break;
+		}
 
-	case CMD_ID_GET_L1_CAL_VALS:
-	{
-		this->add_calibration_values( _idx, 1 );
-		break;
-	}
+		case CMD_ID_SET_PMIC_STATUS:
+		{
+			//LOG_ERROR_P( "Accepting response to CMD_ID_SET_PMIC_STATUS is not yet implemented." );
+			this->set_active_table_line_blank( _idx );
+			break;
+		}
 
-	case CMD_ID_GET_L2_CAL_VALS:
-	{
-		this->add_calibration_values( _idx, 2 );
-		break;
-	}
+		case CMD_ID_GET_L1_CAL_VALS:
+		{
+			this->add_calibration_values( _idx, 1 );
+			break;
+		}
 
-	case CMD_ID_SET_L1_CAL_VALS:
-	{
-		//LOG_ERROR_P( "Accepting response to CMD_ID_SET_L1_CAL_VALS is not yet implemented." );
-		break;
-	}
+		case CMD_ID_GET_L2_CAL_VALS:
+		{
+			this->add_calibration_values( _idx, 2 );
+			break;
+		}
 
-	case CMD_ID_SET_L2_CAL_VALS:
-	{
-		//LOG_ERROR_P("Accepting response to CMD_ID_SET_L2_CAL_VALS is not yet implemented.");
-		break;
-	}
+		case CMD_ID_SET_L1_CAL_VALS:
+		{
+			//LOG_ERROR_P( "Accepting response to CMD_ID_SET_L1_CAL_VALS is not yet implemented." );
+			break;
+		}
 
-	case CMD_ID_GET_BOOT_COUNT:
-	{
-		this->add_boot_count( _idx );
-		break;
-	}
+		case CMD_ID_SET_L2_CAL_VALS:
+		{
+			//LOG_ERROR_P("Accepting response to CMD_ID_SET_L2_CAL_VALS is not yet implemented.");
+			break;
+		}
 
-	case CMD_ID_GET_CONFIRM_OUTPUT:
-	{
-		// Do nothing
-		break;
-	}
+		case CMD_ID_GET_BOOT_COUNT:
+		{
+			this->add_boot_count( _idx );
+			break;
+		}
 
-	case CMD_ID_START_STREAM:
-	{
-		// Do nothing
-		break;
-	}
+		case CMD_ID_GET_CONFIRM_OUTPUT:
+		{
+			// Do nothing
+			break;
+		}
 
-	case CMD_ID_GET_BOARD_STATS:
-	{
-		// do nothing
-		/*
-		XXX - Need to implement
-		*/
-		break;
-	}
+		case CMD_ID_START_STREAM:
+		{
+			// Do nothing
+			break;
+		}
 
-	case CMD_ID_SYS_FAILURE:
-	{
-		LOG_ERROR_P( "Board returned a hard error.  Buffer output bellow:" );
-		LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
-		break;
-	}
+		case CMD_ID_GET_BOARD_STATS:
+		{
+			// do nothing
+			/*
+			XXX - Need to implement
+			*/
+			break;
+		}
 
-	default:
-	{
-		LOG_ERROR_P( "Unrecognized command: " + to_string( cmd ) );
-		break;
-	}
+		case CMD_ID_SYS_FAILURE:
+		{
+			LOG_ERROR_P( "Board returned a hard error.  Buffer output bellow:" );
+			LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
+			break;
+		}
+
+		default:
+		{
+			LOG_ERROR_P( "Unrecognized command: " + to_string( cmd ) );
+			break;
+		}
 	}
 
 _end:
@@ -738,7 +736,7 @@ token_vector SER_IO_COMM::tokenize_protocol_line( size_t _line_index )
 	ssize_t left_idx = find_last_index_of( line, '|', str_len );
 	ssize_t right_idx = 0;
 
-	if ( left_idx < 0 )
+	if( left_idx < 0 )
 	{
 		LOG_ERROR_P( "Malformed protocol message: " + string( ( const char* ) line ) );
 		return ret;
@@ -746,9 +744,9 @@ token_vector SER_IO_COMM::tokenize_protocol_line( size_t _line_index )
 
 	right_idx = find_index_of( line, '.', left_idx + 1, str_len );
 
-	while ( 1 )
+	while( 1 )
 	{
-		if ( left_idx + 1 != right_idx )
+		if( left_idx + 1 != right_idx )
 		{
 			ret.push_back( token( left_idx + 1, right_idx ) );
 		}
@@ -759,14 +757,14 @@ token_vector SER_IO_COMM::tokenize_protocol_line( size_t _line_index )
 
 		left_idx = right_idx;
 
-		if ( left_idx == str_len )
+		if( left_idx == str_len )
 		{
 			break;
 		}
 
 		right_idx = find_index_of( line, '.', right_idx + 1, str_len );
 
-		if ( right_idx < 0 )
+		if( right_idx < 0 )
 		{
 			right_idx = str_len;
 		}
@@ -781,7 +779,7 @@ vector<string> SER_IO_COMM::create_protocol_line_tokens( const token_vector& _ve
 	const string line( ( const char* ) _line );
 	vector<string>ret;
 
-	for ( token_vector::const_iterator i = _vect.begin(); i != _vect.end(); ++i )
+	for( token_vector::const_iterator i = _vect.begin(); i != _vect.end(); ++i )
 	{
 		string s = line.substr( i->first, i->second - i->first );
 		trim( s );
@@ -795,7 +793,7 @@ void SER_IO_COMM::process_protocol_message( size_t _idx )
 {
 	token_vector token_indexes = this->tokenize_protocol_line( _idx );
 
-	if ( token_indexes.size() < 1 )
+	if( token_indexes.size() < 1 )
 	{
 		return;
 	}
@@ -805,14 +803,14 @@ void SER_IO_COMM::process_protocol_message( size_t _idx )
 	 */
 	vector<string> tokens = this->create_protocol_line_tokens( token_indexes, _idx );
 
-	if ( ( tokens[0] == "F CC" && tokens[1] == "CC UP" ) )
+	if( ( tokens[0] == "F CC" && tokens[1] == "CC UP" ) )
 	{
 		LOG_DEBUG_P( "Board reset: communication controller up." );
 		this->board_has_reset = false;
 		this->stream_started = false;
 	}
 
-	if ( ( tokens[0] == "F IC" && tokens[1] == "IC UP" ) )
+	if( ( tokens[0] == "F IC" && tokens[1] == "IC UP" ) )
 	{
 		LOG_DEBUG_P( "Board reset: input controller up." );
 		LOG_DEBUG_P( "Complete board reset sensed." );
@@ -827,7 +825,7 @@ void SER_IO_COMM::process_text_message( size_t _idx )
 {
 	LOG_DEBUG_P( string( ( char* )( this->active_table->table[_idx] ) ) );
 
-	if ( this->active_table->table[_idx][2] == '9' )
+	if( this->active_table->table[_idx][2] == '9' )
 	{
 		this->process_protocol_message( _idx );
 	}
@@ -838,23 +836,23 @@ void SER_IO_COMM::process_text_message( size_t _idx )
 
 bool SER_IO_COMM::digest_line_table( void )
 {
-	for ( size_t i = 0; i < this->active_table->index; i++ )
+	for( size_t i = 0; i < this->active_table->index; i++ )
 	{
-		if ( this->active_table->table[i][0] == 0xFF && this->active_table->table[i][1] == 0xFF )
+		if( this->active_table->table[i][0] == 0xFF && this->active_table->table[i][1] == 0xFF )
 		{
 			/*
 			 * Blank line
 			 */
 			continue;
 		}
-		else if ( this->active_table->table[i][0] == 0x10 )
+		else if( this->active_table->table[i][0] == 0x10 )
 		{
 			/*
 			 * Binary message
 			 */
 			this->process_binary_message( i );
 		}
-		else if ( this->active_table->table[i][0] >= 32 && this->active_table->table[i][0] <= 126 )
+		else if( this->active_table->table[i][0] >= 32 && this->active_table->table[i][0] <= 126 )
 		{
 			this->process_text_message( i );
 		}
@@ -872,7 +870,7 @@ bool SER_IO_COMM::digest_line_table( void )
 
 bool SER_IO_COMM::swap_two_line_table_lines( size_t _target_idx, size_t _source_idx )
 {
-	if ( _target_idx >= GC_SERIAL_LINE_TABLE_ENTRIES || _source_idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
+	if( _target_idx >= GC_SERIAL_LINE_TABLE_ENTRIES || _source_idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
 		LOG_ERROR_P( "One of the supplied indexes is >= GC_SERIAL_LINE_TABLE_ENTRIES." );
 		return false;
@@ -886,15 +884,15 @@ bool SER_IO_COMM::swap_two_line_table_lines( size_t _target_idx, size_t _source_
 
 size_t SER_IO_COMM::find_next_nonblank_line_table_line( size_t _start_idx ) const
 {
-	if ( _start_idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
+	if( _start_idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
 		LOG_ERROR_P( "Supplied line index >= GC_SERIAL_LINE_TABLE_ENTRIES." );
 		return _start_idx;
 	}
 
-	for ( size_t i = _start_idx; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ )
+	for( size_t i = _start_idx; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ )
 	{
-		if ( this->is_line_table_line_blank( _start_idx ) )
+		if( this->is_line_table_line_blank( _start_idx ) )
 		{
 			return i;
 		}
@@ -908,13 +906,13 @@ size_t SER_IO_COMM::find_next_nonblank_line_table_line( size_t _start_idx ) cons
 
 bool SER_IO_COMM::is_line_table_line_blank( size_t _idx ) const
 {
-	if ( _idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
+	if( _idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
 		LOG_ERROR_P( "Supplied line index >= GC_SERIAL_LINE_TABLE_ENTRIES." );
 		return false;
 	}
 
-	if ( this->active_table->table[_idx][0] == 0xFF && this->active_table->table[_idx][1] == 0xFF )
+	if( this->active_table->table[_idx][0] == 0xFF && this->active_table->table[_idx][1] == 0xFF )
 	{
 		return true;
 	}
@@ -929,16 +927,16 @@ void SER_IO_COMM::compact_line_table( void )
 	size_t non_blank_lines = 0;
 	size_t current_line_index = this->active_table->index;
 
-	for ( size_t i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ )
+	for( size_t i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ )
 	{
-		if ( this->is_line_table_line_blank( i ) )
+		if( this->is_line_table_line_blank( i ) )
 		{
 			//LOG_DEBUG_P( "Found blank line @ " + to_string( i ) );
-			if ( i != GC_SERIAL_LINE_TABLE_ENTRIES - 1 )
+			if( i != GC_SERIAL_LINE_TABLE_ENTRIES - 1 )
 			{
 				size_t nb_idx = this->find_next_nonblank_line_table_line( i + 1 );
 
-				if ( nb_idx == i )
+				if( nb_idx == i )
 				{
 					/*
 					 * Failed to find next nonblank line?  All lines after this one are blank?
@@ -950,7 +948,7 @@ void SER_IO_COMM::compact_line_table( void )
 					/*
 					 * Found a next non blank line.
 					 */
-					if ( !this->swap_two_line_table_lines( i, nb_idx ) )
+					if( !this->swap_two_line_table_lines( i, nb_idx ) )
 					{
 						LOG_ERROR_P( "Failed to swap lines. Target: " + to_string( i ) + ", source: " + to_string( nb_idx ) );
 					}
@@ -965,7 +963,7 @@ void SER_IO_COMM::compact_line_table( void )
 
 	this->active_table->index = non_blank_lines;
 
-	if ( this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES )
+	if( this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
 		/*
 		 * All line entries are full.
@@ -980,13 +978,13 @@ int SER_IO_COMM::assemble_serial_data( void )
 {
 	size_t copy_len = 0;
 
-	for ( ; this->buffer_context.buffer_work_index < this->buffer_context.buffer_idx; this->buffer_context.buffer_work_index++ )
+	for( ; this->buffer_context.buffer_work_index < this->buffer_context.buffer_idx; this->buffer_context.buffer_work_index++ )
 	{
 		unsigned char work_char = this->buffer[this->buffer_context.buffer_work_index];
 
 		//LOG_DEBUG_P("in loop: work_index: " + num_to_str(this->buffer_context.buffer_work_index) + ", buffer_index: " + num_to_str(this->buffer_context.buffer_idx));
 
-		if ( work_char == 0x10 ) // begin of binary marker record.
+		if( work_char == 0x10 )  // begin of binary marker record.
 		{
 			/*
 			Once we have the marker of the binary message, we enter enter binary message mode.
@@ -996,14 +994,14 @@ int SER_IO_COMM::assemble_serial_data( void )
 			//LOG_DEBUG_P("Binary marker @ " + num_to_str(this->buffer_context.buffer_work_index));
 			continue;
 		}	// end of binary message marker
-		else if ( this->buffer_context.in_bin_message == true )
+		else if( this->buffer_context.in_bin_message == true )
 		{
 			/*
 			 *
 			 */
 			size_t expected_index = this->buffer_context.bin_msg_start_index + RESP_HEAD_SIZE;
 
-			if ( this->buffer_context.buffer_idx + this->buffer_context.bin_msg_start_index >= expected_index ) // make sure we have enough data in the buffer for the standard preamble
+			if( this->buffer_context.buffer_idx + this->buffer_context.bin_msg_start_index >= expected_index )  // make sure we have enough data in the buffer for the standard preamble
 			{
 				uint16_t length = ASSEMBLE_16INT( this->buffer[this->buffer_context.bin_msg_start_index + RESP_HEAD_LEN_LSB_IDX], this->buffer[this->buffer_context.bin_msg_start_index + RESP_HEAD_LEN_MSB_IDX] );
 
@@ -1013,7 +1011,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 				/*
 				XXX - There's a weird bug in here somewhere.  The size gets misinterpreted on an unexpected board reset.
 				*/
-				if ( length >= GC_SERIAL_BUFF_SIZE || length > 32 )
+				if( length >= GC_SERIAL_BUFF_SIZE || length > 32 )
 				{
 					LOG_ERROR_P( "Weird message size: " + num_to_str( length ) + "; nuking context" );
 					//LOG_DEBUG_P( "\n" + buffer_to_hex( this->buffer + this->buffer_context.bin_msg_start_index , 8 ) );
@@ -1024,7 +1022,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 
 				//LOG_DEBUG_P("Expected message length: " + num_to_str(length));
 
-				if ( ( this->buffer_context.bin_msg_start_index +  RESP_HEAD_SIZE + length ) == GC_SERIAL_BUFF_SIZE )
+				if( ( this->buffer_context.bin_msg_start_index +  RESP_HEAD_SIZE + length ) == GC_SERIAL_BUFF_SIZE )
 				{
 					LOG_ERROR_P( "Possible buffer overflow.  Record length: " + to_string( this->buffer_context.buffer_work_index + RESP_HEAD_SIZE + length ) + ", GC_SERIAL_BUFF_SIZE: " + to_string( GC_SERIAL_BUFF_SIZE ) + ".  Nuking context." );
 					this->reset_buffer_context();
@@ -1038,7 +1036,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 				Expected index is the end index in the buffer after we account for the header size plus expected message length.
 				*/
 
-				if ( this->buffer_context.buffer_idx >= expected_index )
+				if( this->buffer_context.buffer_idx >= expected_index )
 				{
 					//LOG_DEBUG_P("Message start index: " + num_to_str(this->buffer_context.bin_msg_start_index) + ", message end index: " + num_to_str(expected_index) + ", buffer index: " + num_to_str(this->buffer_context.buffer_idx));
 					//LOG_DEBUG_P("\n" + buffer_to_hex(this->buffer,this->buffer_context.buffer_idx,false));
@@ -1052,7 +1050,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 					unsigned char* dest_ptr = this->buffer + this->buffer_context.bin_msg_start_index;
 					size_t move_length = this->buffer_context.buffer_idx - expected_index;
 
-					if ( source_ptr < this->buffer || source_ptr > ( this->buffer + GC_SERIAL_BUFF_SIZE ) )
+					if( source_ptr < this->buffer || source_ptr > ( this->buffer + GC_SERIAL_BUFF_SIZE ) )
 					{
 						LOG_ERROR_P( "Source pointer weirdness.  Nuking context." );
 						this->reset_buffer_context();
@@ -1060,7 +1058,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 						break;
 					}
 
-					if ( dest_ptr < this->buffer || ( dest_ptr + move_length ) > ( this->buffer + GC_SERIAL_BUFF_SIZE ) || move_length > GC_SERIAL_BUFF_SIZE )
+					if( dest_ptr < this->buffer || ( dest_ptr + move_length ) > ( this->buffer + GC_SERIAL_BUFF_SIZE ) || move_length > GC_SERIAL_BUFF_SIZE )
 					{
 						LOG_ERROR_P( "Destination pointer weirdness.  Nuking context." );
 						this->reset_buffer_context();
@@ -1071,7 +1069,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 					//LOG_DEBUG_P("Offset: " + num_to_str(expected_index) + ", buffer index: " + num_to_str(this->buffer_context.buffer_idx));
 					//LOG_DEBUG_P("Move length: " + num_to_str(move_length));
 
-					if ( move_length > 0 )
+					if( move_length > 0 )
 					{
 						memmove( dest_ptr, source_ptr, move_length );
 					}
@@ -1083,11 +1081,9 @@ int SER_IO_COMM::assemble_serial_data( void )
 					this->buffer_context.in_bin_message = false;
 					this->buffer_context.bin_msg_start_index = 0;
 					//LOG_DEBUG_P( "**************************************" );
-					
 					/*
 					* This is due to the buffer_work_index getting incremented at next iteration.  We can't prevent it without doing gymnastics
 					*/
-
 					this->buffer_context.buffer_work_index -= 1;
 				}
 				else
@@ -1104,12 +1100,11 @@ int SER_IO_COMM::assemble_serial_data( void )
 				/*
 				 * If we don't have enough data for the preamble.  Wait for more data.
 				 */
-
 				//LOG_DEBUG_P("Don't have enough data for complete preamble.  Breaking loop.");
 				break;
 			}
 
-			if ( this->buffer_context.buffer_work_index == this->buffer_context.buffer_idx )
+			if( this->buffer_context.buffer_work_index == this->buffer_context.buffer_idx )
 			{
 				/*
 				 * Whole buffer has been consumed.  Reset all of the indexes.
@@ -1124,19 +1119,19 @@ int SER_IO_COMM::assemble_serial_data( void )
 
 			continue;
 		} // we're inside a binary message
-		else if ( work_char ==  '\n' || work_char == '\r' )
+		else if( work_char ==  '\n' || work_char == '\r' )
 		{
 			/*
 			 * Text data
 			 *
 			 * This block has to be second because \n and \r are valid in binary message bytes
 			 */
-			if ( this->buffer_context.buffer_work_index == 0 )
+			if( this->buffer_context.buffer_work_index == 0 )
 			{
 				this->buffer_context.buffer_start_index += 1;
 				continue;
 			}
-			else if ( this->buffer_context.buffer_start_index == 0 )
+			else if( this->buffer_context.buffer_start_index == 0 )
 			{
 				/*
 				 * A \n or \r are not the very first character, but no previous instances have been encountered.
@@ -1151,9 +1146,9 @@ int SER_IO_COMM::assemble_serial_data( void )
 				copy_len = this->buffer_context.buffer_work_index - this->buffer_context.buffer_start_index;
 			}
 
-			if ( copy_len > 0 )
+			if( copy_len > 0 )
 			{
-				if ( copy_len >= GC_SERIAL_BUFF_SIZE )
+				if( copy_len >= GC_SERIAL_BUFF_SIZE )
 				{
 					LOG_ERROR_P( "Text message length (" + num_to_str( copy_len ) + ") is greater than GC_SERIAL_BUFF_SIZE.  Nuking context." );
 					this->reset_buffer_context();
@@ -1165,7 +1160,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 				this->buffer_context.buffer_start_index = this->buffer_context.buffer_work_index + 1; // Advance past the current line terminator
 			}
 
-			if ( this->buffer_context.buffer_start_index == this->buffer_context.buffer_idx )
+			if( this->buffer_context.buffer_start_index == this->buffer_context.buffer_idx )
 			{
 				/*
 				 * Whole buffer has been consumed.  Reset all of the indexes.
@@ -1198,7 +1193,7 @@ void SER_IO_COMM::add_to_active_table( const unsigned char* _buffer, size_t _len
 	//LOG_DEBUG_P(b);
 	this->active_table->index += 1;
 
-	if ( this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES )
+	if( this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
 		LOG_DEBUG_P( "Active table wrap around" );
 		this->active_table->index = 0;
@@ -1225,9 +1220,9 @@ void SER_IO_COMM::handle_hung_board()
 	unsigned int port_status;
 	timespec sleep_time;
 
-	while ( !this->abort_thread )
+	while( !this->abort_thread )
 	{
-		if ( ioctl( this->serial_fd, TIOCMGET, &port_status ) == 0 )
+		if( ioctl( this->serial_fd, TIOCMGET, &port_status ) == 0 )
 		{
 			/*
 			Port successfully reset.
@@ -1257,7 +1252,7 @@ bool SER_IO_COMM::main_event_loop( void )
 	 * Reset board as a first order of business so that we can be sure of its state.
 	 */
 
-	if ( this->in_debug_mode )
+	if( this->in_debug_mode )
 	{
 		this->board_has_reset = true;
 	}
@@ -1272,12 +1267,10 @@ bool SER_IO_COMM::main_event_loop( void )
 	struct timeval refresh_loop_time_trigger;
 	struct timeval refresh_loop_time_now;
 	struct timeval refresh_loop_time_offset;
-
 	refresh_loop_time_offset.tv_sec = 0;
-
 	refresh_loop_time_offset.tv_usec = GC_SERIAL_THREAD_UPDATE_INTERVAL;
 
-	if ( gettimeofday( &refresh_loop_time_now, nullptr ) )
+	if( gettimeofday( &refresh_loop_time_now, nullptr ) )
 	{
 		LOG_ERROR_P( create_perror_string( "gettimeofday" ) );
 		this->abort_thread = true;
@@ -1286,14 +1279,14 @@ bool SER_IO_COMM::main_event_loop( void )
 
 	timeradd( &refresh_loop_time_now, &refresh_loop_time_offset, &refresh_loop_time_trigger );
 
-	while ( this->abort_thread == false )
+	while( this->abort_thread == false )
 	{
 		this->obtain_lock();
 		fds.fd = this->serial_fd;
 		fds.events = POLLIN;
 		int fds_ready_num = poll( &fds, 1, GC_SERIAL_THREAD_POLL_TIMEOUT );
 
-		if ( fds_ready_num == 0 )
+		if( fds_ready_num == 0 )
 		{
 			/*
 			 * Timeout while waiting for the serial file descriptor to get data
@@ -1301,13 +1294,13 @@ bool SER_IO_COMM::main_event_loop( void )
 			zero_fd_counter += 1;
 			gettimeofday( &refresh_loop_time_now, nullptr );
 
-			if ( timercmp( &refresh_loop_time_now, &refresh_loop_time_trigger, > ) )
+			if( timercmp( &refresh_loop_time_now, &refresh_loop_time_trigger, > ) )
 			{
-				if ( this->board_has_reset )
+				if( this->board_has_reset )
 				{
 					this->cmd_confirm_output_state();
 
-					if ( !this->stream_started )
+					if( !this->stream_started )
 					{
 						this->cmd_start_stream();
 						this->stream_started = true;
@@ -1318,7 +1311,7 @@ bool SER_IO_COMM::main_event_loop( void )
 				timeradd( &refresh_loop_time_now, &refresh_loop_time_offset, &refresh_loop_time_trigger );
 			}
 		}
-		else if ( fds_ready_num < 0 )
+		else if( fds_ready_num < 0 )
 		{
 			/*
 			 * Error encountered by 'poll'
@@ -1331,10 +1324,9 @@ bool SER_IO_COMM::main_event_loop( void )
 			/*
 			 * A file descriptor is ready for action
 			 */
-
 			zero_fd_counter = 0;
 
-			if ( fds.revents & POLLIN )
+			if( fds.revents & POLLIN )
 			{
 				this->drain_serial();
 				this->assemble_serial_data();
@@ -1348,30 +1340,30 @@ bool SER_IO_COMM::main_event_loop( void )
 				LOG_ERROR_P( "Don't know what to do when poll.revents is not POLLIN" );
 			}
 
-			if ( fds.events & POLLERR )
+			if( fds.events & POLLERR )
 			{
 				LOG_ERROR_P( "POLLERR flag is set." );
 			}
 
-			if ( fds.events & POLLHUP )
+			if( fds.events & POLLHUP )
 			{
 				LOG_ERROR_P( "POLLHUP flag is set." );
 			}
 
-			if ( fds.events & POLLNVAL )
+			if( fds.events & POLLNVAL )
 			{
 				LOG_ERROR_P( "POLLNVAL flag is set." );
 			}
 		}
 
-		if ( !this->release_lock() )
+		if( !this->release_lock() )
 		{
 			break;
 		}
 
-		if ( zero_fd_counter == 1000 )
+		if( zero_fd_counter == 1000 )
 		{
-			if ( !this->in_debug_mode )
+			if( !this->in_debug_mode )
 			{
 				this->handle_hung_board();
 			}
@@ -1396,9 +1388,9 @@ bool SER_IO_COMM::write_event_loop( void ) throw( LOCK_ERROR )
 	/*
 	 * This event loop runs in a different thread than main_event_loop
 	 */
-	while ( this->abort_thread == false )
+	while( this->abort_thread == false )
 	{
-		if ( this->outgoing_messages->wait_for_signal() == false )
+		if( this->outgoing_messages->wait_for_signal() == false )
 		{
 			/*
 			 * Timed out on conditional.
@@ -1417,11 +1409,11 @@ bool SER_IO_COMM::write_event_loop( void ) throw( LOCK_ERROR )
 		 */
 		this->outgoing_messages->put_lock();
 
-		while ( !work_queue.empty() )
+		while( !work_queue.empty() )
 		{
 			const OUTGOING_MESSAGE& msg = work_queue.front();
 
-			if ( !this->write_buffer( msg.message.get(), msg.message_length ) )
+			if( !this->write_buffer( msg.message.get(), msg.message_length ) )
 			{
 				/*
 				XXX - Do not kill thread
@@ -1443,7 +1435,7 @@ bool SER_IO_COMM::send_message( const unsigned char* _message, size_t _length )
 	/*
 	 * We don't need the main lock for this method since there's a separate writer thread.
 	 */
-	if ( _length >= GC_SERIAL_BUFF_SIZE )
+	if( _length >= GC_SERIAL_BUFF_SIZE )
 	{
 		LOG_ERROR_P( "Tried to send message that would overflow buffer." );
 		return false;
@@ -1459,7 +1451,7 @@ void SER_IO_COMM::swap_tables( void )
 	/*
 	 * We're making an assumption that the object is locked when this is invoked.
 	 */
-	if ( this->active_table == & ( this->table_a ) )
+	if( this->active_table == & ( this->table_a ) )
 	{
 		this->active_table = & ( this->table_b );
 		this->passive_table = & ( this->table_a );
@@ -1595,7 +1587,7 @@ bool SER_IO_COMM::cmd_set_calibration_values( unsigned char _cmd, const CAL_VALU
 	unsigned char* b = ob;
 	b += 4;
 
-	for ( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
+	for( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 	{
 		uint16_t v = _values[i];
 		unsigned char msb = ( unsigned char )( ( v >> 8 ) & 0x00FF );
@@ -1614,7 +1606,7 @@ bool SER_IO_COMM::cmd_set_calibration_values( unsigned char _cmd, const CAL_VALU
 bool SER_IO_COMM::cmd_reset_board( void )
 {
 	this->board_has_reset = false;
-	this->drain_serial(true);
+	this->drain_serial( true );
 	return this->send_message( ( const unsigned char* ) "@\x00\x06\x0E\xFF\xEE\xDD\xEE\xFF", 9 );
 }
 
