@@ -258,11 +258,9 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 {
 	bool rc = true;
 	long int bytes_read = 0;
+	//long int start_index = this->buffer_context.buffer_idx;
 
-	/*
-	XXX why 128??
-	*/
-	while ( bytes_read < 128 )
+	while ( bytes_read < GC_SERIAL_BUFF_SIZE )
 	{
 		/*
 		 * If I make the type ssize_t arithmetic with size_t fails
@@ -282,7 +280,7 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 		}
 		else if ( rc < 0 )
 		{
-			LOG_ERROR_P( create_perror_string( "Read" ) );
+			LOG_ERROR_P( create_perror_string( "Serial read" ) );
 			rc = false;
 			break;
 		}
@@ -294,9 +292,9 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 			continue;
 		}
 
-
 		// DEBUG SET A.2
 		//cerr << "[" << this->buffer_context.buffer_idx << "] -- 0x" << char_to_hex( buffer[this->buffer_context.buffer_idx]) << " -- " <<  (buffer[this->buffer_context.buffer_idx] != 0x0A ? char(buffer[this->buffer_context.buffer_idx]) : (char)' ')   << endl;
+
 		this->buffer_context.buffer_idx = this->buffer_context.buffer_idx + rc;
 
 		if ( this->buffer_context.buffer_idx >= GC_SERIAL_BUFF_SIZE )
@@ -304,11 +302,18 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 			/*
 			 * Overflow
 			 */
-			LOG_ERROR_P( "Serial receive buffer overflowed.  Data has been lost." );
+			LOG_ERROR_P( "Serial receive buffer overflowed. Bytes read: " + num_to_str(bytes_read) +  ".  Buffer index: " + num_to_str(this->buffer_context.buffer_idx) + ". Buffer size: " + num_to_str(GC_SERIAL_BUFF_SIZE) + ". Data has been lost." );
 			this->reset_buffer_context();
 			memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 		}
 	}
+
+	if(bytes_read > 0)
+	{
+		//LOG_DEBUG_P("Read " + num_to_str(bytes_read) + " from serial port.  Discard: " + num_to_str(_discard));
+	}
+
+	//LOG_DEBUG_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
 
 	return rc;
 }
@@ -802,13 +807,14 @@ void SER_IO_COMM::process_protocol_message( size_t _idx )
 
 	if ( ( tokens[0] == "F CC" && tokens[1] == "CC UP" ) )
 	{
-		LOG_DEBUG_P( "Incomplete board reset sensed." );
+		LOG_DEBUG_P( "Board reset: communication controller up." );
 		this->board_has_reset = false;
 		this->stream_started = false;
 	}
 
 	if ( ( tokens[0] == "F IC" && tokens[1] == "IC UP" ) )
 	{
+		LOG_DEBUG_P( "Board reset: input controller up." );
 		LOG_DEBUG_P( "Complete board reset sensed." );
 		this->board_has_reset = true;
 		this->stream_started = false;
@@ -978,6 +984,8 @@ int SER_IO_COMM::assemble_serial_data( void )
 	{
 		unsigned char work_char = this->buffer[this->buffer_context.buffer_work_index];
 
+		//LOG_DEBUG_P("in loop: work_index: " + num_to_str(this->buffer_context.buffer_work_index) + ", buffer_index: " + num_to_str(this->buffer_context.buffer_idx));
+
 		if ( work_char == 0x10 ) // begin of binary marker record.
 		{
 			/*
@@ -987,7 +995,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 			this->buffer_context.in_bin_message = true;
 			//LOG_DEBUG_P("Binary marker @ " + num_to_str(this->buffer_context.buffer_work_index));
 			continue;
-		}
+		}	// end of binary message marker
 		else if ( this->buffer_context.in_bin_message == true )
 		{
 			/*
@@ -1025,6 +1033,10 @@ int SER_IO_COMM::assemble_serial_data( void )
 				}
 
 				expected_index = this->buffer_context.bin_msg_start_index + RESP_HEAD_SIZE + length;
+
+				/*
+				Expected index is the end index in the buffer after we account for the header size plus expected message length.
+				*/
 
 				if ( this->buffer_context.buffer_idx >= expected_index )
 				{
@@ -1071,17 +1083,19 @@ int SER_IO_COMM::assemble_serial_data( void )
 					this->buffer_context.in_bin_message = false;
 					this->buffer_context.bin_msg_start_index = 0;
 					//LOG_DEBUG_P( "**************************************" );
+					
 					/*
-					* Abandon loop until next invocation.
 					* This is due to the buffer_work_index getting incremented at next iteration.  We can't prevent it without doing gymnastics
 					*/
-					break;
+
+					this->buffer_context.buffer_work_index -= 1;
 				}
 				else
 				{
 					/*
 					 * If we don't have enough data for the whole record.  Wait for more data.
 					 */
+					//LOG_DEBUG_P("Don't have enough data for complete message.  Breaking loop.");
 					break;
 				}
 			}
@@ -1090,6 +1104,8 @@ int SER_IO_COMM::assemble_serial_data( void )
 				/*
 				 * If we don't have enough data for the preamble.  Wait for more data.
 				 */
+
+				//LOG_DEBUG_P("Don't have enough data for complete preamble.  Breaking loop.");
 				break;
 			}
 
@@ -1164,6 +1180,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 		}
 	}
 
+	//LOG_DEBUG_P("loop exit: work_index: " + num_to_str(this->buffer_context.buffer_work_index) + ", buffer_index: " + num_to_str(this->buffer_context.buffer_idx));
 	return 1;
 }
 
@@ -1311,11 +1328,12 @@ bool SER_IO_COMM::main_event_loop( void )
 		}
 		else
 		{
-			zero_fd_counter = 0;
-
 			/*
 			 * A file descriptor is ready for action
 			 */
+
+			zero_fd_counter = 0;
+
 			if ( fds.revents & POLLIN )
 			{
 				this->drain_serial();
