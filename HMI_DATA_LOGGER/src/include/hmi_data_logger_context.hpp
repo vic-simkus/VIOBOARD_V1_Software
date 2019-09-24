@@ -37,8 +37,7 @@ namespace HMI_DATA_LOGGER
 	public:
 		DEF_LOGGER;
 
-		HMI_DATA_LOGGER_CONTEXT()
-		{
+		HMI_DATA_LOGGER_CONTEXT() {
 			INIT_LOGGER( "HMI_DATA_LOGGER_CONTEXT" );
 			return;
 		}
@@ -59,22 +58,22 @@ namespace HMI_DATA_LOGGER
 
 		std::string get_data_file_name_after_index( void );
 
-		std::string get_next_data_file_name(void);
+		std::string get_next_data_file_name( void );
 
 		void set_prog_name( const std::string& _p ) throw( std::logic_error );
 
 		void set_prog_name_fixed( const std::string& _p ) throw( std::logic_error );
 
-		std::string get_full_data_dir(void) const;
+		std::string get_full_data_dir( void ) const;
 
-		std::ofstream& get_output_stream(void);
+		std::ofstream& get_output_stream( void );
 
-		void open_output_stream(void) throw (exception);
+		void open_output_stream( void ) throw( exception );
 
-		void close_output_stream(void);
+		void close_output_stream( void );
 
-		bool get_new_file_flag(void);
-		void reset_new_file_flag(void);
+		bool get_new_file_flag( void );
+		void reset_new_file_flag( void );
 
 
 		HMI_DATA_LOGGER_CONFIG configuration;

@@ -34,13 +34,13 @@ namespace HMI_DATA_LOGGER
 	{
 	public:
 
-		HMI_DATA_LOGGER_CONNECTION(HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* );
+		HMI_DATA_LOGGER_CONNECTION( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* );
 		~HMI_DATA_LOGGER_CONNECTION();
 
 		bool connect( void );
-		bool disconnect(void);
+		bool disconnect( void );
 
-		bool read_status(void);
+		bool read_status( void );
 
 	protected:
 	private:
