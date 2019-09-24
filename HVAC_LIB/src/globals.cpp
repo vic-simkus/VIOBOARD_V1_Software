@@ -236,11 +236,6 @@ namespace BBB_HVAC
 				return "SIGSYS";
 			}
 
-			if( _sig == SIGUNUSED )
-			{
-				return "SIGUNUSED";
-			}
-
 			return string( "UNKNOWN(" ) + num_to_str( _sig ) + string( ")" );
 		}
 
