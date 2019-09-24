@@ -2,3 +2,4 @@
 *.tags*
 *.astyle*
 bin
+*.o
