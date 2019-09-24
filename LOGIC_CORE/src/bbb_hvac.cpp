@@ -75,7 +75,7 @@ int check_privs( void )
 	uid_t uid = getuid();
 	gid_t gid = getgid();
 
-	if( uid == 0 || gid == 0 )
+	if ( uid == 0 || gid == 0 )
 	{
 		return 1;
 	}
@@ -90,7 +90,7 @@ int check_privs( void )
  */
 void drop_privs( void )
 {
-	if( check_privs() == 0 )
+	if ( check_privs() == 0 )
 	{
 		return;
 	}
@@ -101,7 +101,7 @@ void drop_privs( void )
 	errno = 0;
 	pwd = getpwnam( GC_PROC_USER );
 
-	if( pwd == 0 )
+	if ( pwd == 0 )
 	{
 		perror( "Failed to get process user pwd entry.  Aborting." );
 		exit( -1 );
@@ -110,7 +110,7 @@ void drop_privs( void )
 	errno = 0;
 	grp = getgrnam( GC_PROC_GROUP );
 
-	if( grp == 0 )
+	if ( grp == 0 )
 	{
 		perror( "Failed to get process group grp entry.  Aborting." );
 		exit( -2 );
@@ -119,24 +119,24 @@ void drop_privs( void )
 	uid_t uid = pwd->pw_uid;
 	gid_t gid = grp->gr_gid;
 
-	if( getgid() != gid )
+	if ( getgid() != gid )
 	{
 		errno = 0;
 		rc = setgid( gid );
 
-		if( rc != 0 )
+		if ( rc != 0 )
 		{
 			perror( "Failed to drop group privileges.  Aborting." );
 			exit( -4 );
 		}
 	}
 
-	if( getuid() != uid )
+	if ( getuid() != uid )
 	{
 		errno = 0;
 		rc = setuid( uid );
 
-		if( rc != 0 )
+		if ( rc != 0 )
 		{
 			perror( "Failed to drop user privileges.  Aborting." );
 			exit( -4 );
@@ -151,9 +151,9 @@ bool start_board_io_thread( const CONFIG_ENTRY& _board_config )
 	const string board_dev = _board_config.get_part_as_string( 1 );
 	bool debug = false;
 
-	if( _board_config.get_part_count() == 3 )
+	if ( _board_config.get_part_count() == 3 )
 	{
-		if( _board_config.get_part_as_string( 2 ) == "DEBUG" )
+		if ( _board_config.get_part_as_string( 2 ) == "DEBUG" )
 		{
 			LOG_INFO_STAT( "Starting board " + board_name + " in debug mode." );
 			debug = true;
@@ -163,7 +163,7 @@ bool start_board_io_thread( const CONFIG_ENTRY& _board_config )
 	LOG_DEBUG_STAT( "Starting thread for board: " + board_name );
 	IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM( board_dev.data(), board_name, debug );
 
-	if( ser_comm->init() != IOCOMM::ENUM_ERRORS::ERR_NONE )
+	if ( ser_comm->init() != IOCOMM::ENUM_ERRORS::ERR_NONE )
 	{
 		LOG_ERROR_STAT( "Failed to initialized serial IO for board:" + board_name );
 		return false;
@@ -176,11 +176,11 @@ bool start_io_threads( CONFIGURATOR* config )
 {
 	const CONFIG_TYPE_INDEX_TYPE& board_config = config->get_board_index();
 
-	for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
+	for ( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
 	{
 		const CONFIG_ENTRY& bc = config->get_config_entry( *i );
 
-		if( !start_board_io_thread( bc ) )
+		if ( !start_board_io_thread( bc ) )
 		{
 			return false;
 		}
@@ -197,7 +197,7 @@ bool start_shim_thread( void )
 	{
 		listener->init();
 	}
-	catch( const exception& _e )
+	catch ( const exception& _e )
 	{
 		LOG_ERROR_STAT( "Failed to initialize shim listener thread: " + string( _e.what() ) );
 		delete listener;
@@ -222,19 +222,21 @@ bool start_threads( CONFIGURATOR* config )
 {
 	GLOBALS::configure_watchdog();
 
-	if( !start_shim_thread() )
+	if ( !start_shim_thread() )
 	{
 		LOG_ERROR_STAT( "Failed to start shim listener thread." );
 		return false;
 	}
 
-	if( !start_io_threads( config ) )
+	if ( !start_io_threads( config ) )
 	{
 		LOG_ERROR_STAT( "Failed to start IO threads." );
 		return false;
 	}
 
-	if( !start_logic_thread( config ) )
+	sleep( 2 );
+
+	if ( !start_logic_thread( config ) )
 	{
 		LOG_ERROR_STAT( "Failed to start logic thread." );
 		return false;
@@ -248,14 +250,14 @@ void io_death_listener( const std::string& _tag )
 	LOG_DEBUG_STAT( "IO thread [" + _tag + "] death sensed." );
 	const CONFIG_TYPE_INDEX_TYPE& board_config = config->get_board_index();
 
-	for( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
+	for ( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
 	{
 		const CONFIG_ENTRY& bc = config->get_config_entry( *i );
 		const string board_name = bc.get_part_as_string( 0 );
 
-		if( board_name == _tag )
+		if ( board_name == _tag )
 		{
-			if( !start_board_io_thread( bc ) )
+			if ( !start_board_io_thread( bc ) )
 			{
 				LOG_ERROR_STAT( "Failed to re-start IO board thread.  Aborting." );
 				GLOBALS::global_exit_flag = true;
@@ -275,7 +277,7 @@ int main( void )
 	config->read_file();
 	//start_io_threads(config);
 
-	if( !start_threads( config ) )
+	if ( !start_threads( config ) )
 	{
 		LOG_ERROR_STAT( "Failed to start threads." );
 		GLOBALS::global_exit_flag = true;
@@ -285,7 +287,7 @@ int main( void )
 	{
 		THREAD_REGISTRY::register_io_death_listener( io_death_listener );
 
-		while( GLOBALS::global_exit_flag == false )
+		while ( GLOBALS::global_exit_flag == false )
 		{
 			sleep( 1 );
 			THREAD_REGISTRY::global_cleanup();
