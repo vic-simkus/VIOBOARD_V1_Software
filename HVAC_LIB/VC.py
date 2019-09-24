@@ -27,6 +27,12 @@ from make_makefile import Context
 import os
 
 class MyContext(Context):
+	def __init__(self):
+		Context.__init__(self)
+		self.CXX_FLAGS.append("-Wno-deprecated");
+		self.LIB_TARGET="HVAC_LIB"
+		self.TAG = self.LIB_TARGET
+
 	SOURCE_FILES = (
 			SourceFile("context/base_context.cpp"),
 			SourceFile("context/client_context.cpp"),
@@ -58,9 +64,6 @@ class MyContext(Context):
 
 	INCLUDE_DIRS=(os.path.join(Context.SOURCE_DIR,"include"),)
 
-	LIB_TARGET="HVAC_LIB"
-
-	TAG = LIB_TARGET
 
 def vc_init():
 	return MyContext()
