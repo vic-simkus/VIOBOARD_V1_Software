@@ -243,7 +243,7 @@ MESSAGE_PTR BOARD_INFO_WIDGET::update_data_and_return( void )
 		}
 	}
 
-	MESSAGE_PTR m = ctx->message_processor->create_get_status( "BOARD1" );
+	MESSAGE_PTR m = ctx->message_processor->create_get_status( this->board_id.toStdString() );
 	m = ctx->send_message_and_wait( m );
 
 	const vector<string>& parts = m->get_parts( );
@@ -444,7 +444,7 @@ void BOARD_INFO_WIDGET::manage_pmic_status( uint8_t _mask )
 	}
 
 
-	m = ctx->message_processor->create_set_pmic_status( "BOARD1", status );
+	m = ctx->message_processor->create_set_pmic_status( this->board_id.toStdString(), status );
 	ctx->send_message( m );
 	this->update_data( );
 
@@ -518,7 +518,7 @@ void BOARD_INFO_WIDGET::cmd_enable_do_clicked( int _do )
 		status = status | mask;
 	}
 
-	m = ctx->message_processor->create_set_status( "BOARD1", status );
+	m = ctx->message_processor->create_set_status( this->board_id.toStdString(), status );
 
 	ctx->send_message( m );
 	this->update_data( );
