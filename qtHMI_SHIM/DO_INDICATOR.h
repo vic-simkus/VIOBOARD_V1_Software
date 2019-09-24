@@ -25,16 +25,16 @@
 
 class DO_INDICATOR : public QPushButton
 {
-	Q_OBJECT;
-public:
-	DO_INDICATOR( );
+		Q_OBJECT;
+	public:
+		DO_INDICATOR( );
 
-	void set_enabled( void );
-	void set_disabled( void );
+		void set_enabled( void );
+		void set_disabled( void );
 
-	bool get_enabled( void ) const;
-protected:
-	bool is_enabled;
+		bool get_enabled( void ) const;
+	protected:
+		bool is_enabled;
 };
 
 #endif /* DO_INDICATOR_H */

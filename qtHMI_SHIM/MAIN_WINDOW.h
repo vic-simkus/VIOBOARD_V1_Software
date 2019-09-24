@@ -28,17 +28,17 @@ class QTabWidget;
 
 class MAIN_WINDOW : public QMainWindow
 {
-	Q_OBJECT;
-public:
-	MAIN_WINDOW( );
-	
-protected:
-	QTabWidget * main_widget;
-	QWidget * update_beacon;
-	
-protected slots:
-	void slot_update_start(void);
-	void slot_update_finish(void);
+		Q_OBJECT;
+	public:
+		MAIN_WINDOW( );
+
+	protected:
+		QTabWidget* main_widget;
+		QWidget* update_beacon;
+
+	protected slots:
+		void slot_update_start( void );
+		void slot_update_finish( void );
 
 
 };

@@ -22,38 +22,34 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-PMIC_INDICATOR::PMIC_INDICATOR(bool _enabled,bool _faulted ) : QFrame( )
+PMIC_INDICATOR::PMIC_INDICATOR( bool _enabled, bool _faulted ) : QFrame( )
 {
 	this->is_enabled = _enabled;
 	this->is_faulted = _faulted;
-	
-	QVBoxLayout * layout = new QVBoxLayout( this );
+	QVBoxLayout* layout = new QVBoxLayout( this );
 	this->setLayout( layout );
-	
 	this->cmd_button = new QPushButton( "...", this );
-
 	layout->addWidget( this->cmd_button );
 	this->update_status();
-	
-	connect(this->cmd_button,SIGNAL(clicked()),this,SLOT(__button_clicked()));
+	connect( this->cmd_button, SIGNAL( clicked() ), this, SLOT( __button_clicked() ) );
 }
 
-void PMIC_INDICATOR::__button_clicked(void)
+void PMIC_INDICATOR::__button_clicked( void )
 {
-	if(this->is_faulted)
+	if ( this->is_faulted )
 	{
-		emit(this->reset_clicked());
+		emit( this->reset_clicked() );
 	}
 	else
 	{
-		emit(this->enable_clicked());
+		emit( this->enable_clicked() );
 	}
 }
-bool PMIC_INDICATOR::get_is_faulted(void) const
+bool PMIC_INDICATOR::get_is_faulted( void ) const
 {
 	return this->is_faulted;
 }
-bool PMIC_INDICATOR::get_is_enabled(void) const
+bool PMIC_INDICATOR::get_is_enabled( void ) const
 {
 	return this->is_enabled;
 }
@@ -61,7 +57,7 @@ bool PMIC_INDICATOR::get_is_enabled(void) const
 void PMIC_INDICATOR::set_enabled( void )
 {
 	this->is_enabled = true;
-	this->update_status();		
+	this->update_status();
 }
 
 void PMIC_INDICATOR::set_disabled( void )
@@ -81,16 +77,16 @@ void PMIC_INDICATOR::set_notfaulted( void )
 	this->is_faulted = false;
 	this->update_status();
 }
-void PMIC_INDICATOR::update_status(void)
+void PMIC_INDICATOR::update_status( void )
 {
-	if(this->is_faulted)
+	if ( this->is_faulted )
 	{
 		this->cmd_button->setStyleSheet( "background: red" );
 		this->cmd_button->setText( "Click to reset" );
 	}
 	else
 	{
-		if(this->is_enabled)
+		if ( this->is_enabled )
 		{
 			this->cmd_button->setStyleSheet( "background: green" );
 			this->cmd_button->setText( "Click to disable" );
@@ -98,7 +94,7 @@ void PMIC_INDICATOR::update_status(void)
 		else
 		{
 			this->cmd_button->setStyleSheet( "background: gray" );
-			this->cmd_button->setText( "Click to enable" );		
+			this->cmd_button->setText( "Click to enable" );
 		}
 	}
 }

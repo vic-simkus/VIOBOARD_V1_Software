@@ -32,30 +32,24 @@ MAIN_WINDOW::MAIN_WINDOW( )
 {
 	this->main_widget = new QTabWidget( this );
 	this->setCentralWidget( main_widget );
-
-	QWidget * logic_widget = nullptr;
-	
-	this->main_widget->addTab((logic_widget = new LOGIC_INFO(nullptr)),"LOGIC INFO");
-	this->main_widget->addTab(new RAW_BOARD_INFO(nullptr),"RAW BOARD INFO");
-	
-	
-	this->statusBar()->setSizeGripEnabled(true);
-	this->statusBar()->showMessage("Application started.");
-	
-	connect(logic_widget,SIGNAL(sig_update_start()),this,SLOT(slot_update_start()));
-	connect(logic_widget,SIGNAL(sig_update_finish()),this,SLOT(slot_update_finish()));
-
+	QWidget* logic_widget = nullptr;
+	this->main_widget->addTab( ( logic_widget = new LOGIC_INFO( nullptr ) ), "LOGIC INFO" );
+	this->main_widget->addTab( new RAW_BOARD_INFO( nullptr ), "RAW BOARD INFO" );
+	this->statusBar()->setSizeGripEnabled( true );
+	this->statusBar()->showMessage( "Application started." );
+	connect( logic_widget, SIGNAL( sig_update_start() ), this, SLOT( slot_update_start() ) );
+	connect( logic_widget, SIGNAL( sig_update_finish() ), this, SLOT( slot_update_finish() ) );
 	return;
 }
 
-void MAIN_WINDOW::slot_update_start(void)
+void MAIN_WINDOW::slot_update_start( void )
 {
-	this->statusBar()->showMessage("Update started.");
+	this->statusBar()->showMessage( "Update started." );
 	return;
 }
-void MAIN_WINDOW::slot_update_finish(void)
+void MAIN_WINDOW::slot_update_finish( void )
 {
-	this->statusBar()->showMessage("Update finished @ " + QDateTime::currentDateTime().toString( Qt::ISODate));
+	this->statusBar()->showMessage( "Update finished @ " + QDateTime::currentDateTime().toString( Qt::ISODate ) );
 	return;
 }
 

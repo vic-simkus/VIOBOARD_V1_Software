@@ -23,10 +23,9 @@
 
 DO_INDICATOR::DO_INDICATOR( ) : QPushButton( )
 {
-	QVBoxLayout * layout = new QVBoxLayout( this );
+	QVBoxLayout* layout = new QVBoxLayout( this );
 	this->setLayout( layout );
 	this->setText( "..." );
-
 	this->set_disabled( );
 }
 

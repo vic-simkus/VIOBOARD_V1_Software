@@ -33,39 +33,39 @@
 
 class LOGIC_INFO : public QFrame
 {
-	Q_OBJECT;
-public:
-	LOGIC_INFO( QWidget * _p );
-	virtual ~LOGIC_INFO( );
+		Q_OBJECT;
+	public:
+		LOGIC_INFO( QWidget* _p );
+		virtual ~LOGIC_INFO( );
 
-protected:
-	BBB_HVAC::CLIENT::CLIENT_CONTEXT * ctx;
+	protected:
+		BBB_HVAC::CLIENT::CLIENT_CONTEXT* ctx;
 
-	void update_status( void );
-private:
-	QTimer* timer;
-	QGroupBox * group_logic_points;
-	QGroupBox * group_io_points;
+		void update_status( void );
+	private:
+		QTimer* timer;
+		QGroupBox* group_logic_points;
+		QGroupBox* group_io_points;
 
-	QSplitter * splitter_io_points;
-	QSplitter * splitter_main_window;
-	QSplitter * splitter_logic_points;
+		QSplitter* splitter_io_points;
+		QSplitter* splitter_main_window;
+		QSplitter* splitter_logic_points;
 
-	QTableWidget* table_sp_points;
-	QTableWidget* table_ai_points;
-	QTableWidget* table_do_points;
-	QTableWidget* table_map_points;
-	QTableWidget* table_point_values;
-	
-	void dump_message_parts( BBB_HVAC::MESSAGE_PTR& _message );
+		QTableWidget* table_sp_points;
+		QTableWidget* table_ai_points;
+		QTableWidget* table_do_points;
+		QTableWidget* table_map_points;
+		QTableWidget* table_point_values;
 
-private slots:
-	void slot_update_labels( void );
-	void slot_update_data_timer( void );
-	
-signals:
-	void sig_update_start( void );
-	void sig_update_finish( void );
+		void dump_message_parts( BBB_HVAC::MESSAGE_PTR& _message );
+
+	private slots:
+		void slot_update_labels( void );
+		void slot_update_data_timer( void );
+
+	signals:
+		void sig_update_start( void );
+		void sig_update_finish( void );
 
 
 } ;

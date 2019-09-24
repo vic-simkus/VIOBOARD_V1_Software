@@ -41,22 +41,18 @@ checksum( uint16_t const data[], int nWords )
 	 */
 	sum = ( sum >> 16 ) + ( sum & 0xFFFF );
 	sum += sum >> 16;
-
 	/*
 	 * Return the inverted 16-bit result.
 	 */
-	return (( unsigned short ) ~sum );
-
+	return ( ( unsigned short ) ~sum );
 }   /* NetIpChecksum() */
 
-int main( int argc, char *argv[] )
-{	
+int main( int argc, char* argv[] )
+{
 	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	GLOBALS::configure_signals( );
-
 	QApplication app( argc, argv );
 	MAIN_WINDOW main_window;
-
 	main_window.show( );
 	return app.exec( );
 }

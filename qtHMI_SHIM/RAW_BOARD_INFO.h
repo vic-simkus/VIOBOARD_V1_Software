@@ -26,13 +26,13 @@
 
 class RAW_BOARD_INFO : public QFrame
 {
-public:
-	RAW_BOARD_INFO( QWidget * _p);
-	virtual ~RAW_BOARD_INFO( );
-	
-protected:
-	QTabWidget * main_widget;
-private:
+	public:
+		RAW_BOARD_INFO( QWidget* _p );
+		virtual ~RAW_BOARD_INFO( );
+
+	protected:
+		QTabWidget* main_widget;
+	private:
 
 } ;
 

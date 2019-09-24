@@ -26,12 +26,12 @@
 
 class AI_RAW_VALUE : public QFrame
 {
-	Q_OBJECT;
-public:
-	AI_RAW_VALUE( );
-	void set_value( uint16_t _val );
-protected:
-	QLabel * value;
+		Q_OBJECT;
+	public:
+		AI_RAW_VALUE( );
+		void set_value( uint16_t _val );
+	protected:
+		QLabel* value;
 
 };
 

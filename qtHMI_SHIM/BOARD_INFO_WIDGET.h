@@ -39,46 +39,46 @@ class BOARD_INFO_WIDGET : public QFrame
 {
 		Q_OBJECT;
 	public:
-		BOARD_INFO_WIDGET(const QString& _board_id );
+		BOARD_INFO_WIDGET( const QString& _board_id );
 	protected:
-		QGridLayout * do_grid_layout;
-		QGridLayout * ai_grid_layout;
-		QGridLayout * pmic_grid_layout;
+		QGridLayout* do_grid_layout;
+		QGridLayout* ai_grid_layout;
+		QGridLayout* pmic_grid_layout;
 
 		void setup_do_stuff( void );
 		void setup_ai_stuff( void );
 		void setup_pmic_stuff( void );
 
 	private:
-		AI_VALUE * ai_values[AI_COUNT];
-		AI_RAW_VALUE * ai_raw_values[AI_COUNT];
-		DO_INDICATOR * do_values[DO_COUNT];
-		CAL_VALUE * cal_l1_values[AI_COUNT];
-		CAL_VALUE * cal_l2_values[AI_COUNT];
+		AI_VALUE* ai_values[AI_COUNT];
+		AI_RAW_VALUE* ai_raw_values[AI_COUNT];
+		DO_INDICATOR* do_values[DO_COUNT];
+		CAL_VALUE* cal_l1_values[AI_COUNT];
+		CAL_VALUE* cal_l2_values[AI_COUNT];
 
-		PMIC_INDICATOR * ai_pmic;
-		PMIC_INDICATOR * do_pmic;		
+		PMIC_INDICATOR* ai_pmic;
+		PMIC_INDICATOR* do_pmic;
 
-		QTimer * timer;
+		QTimer* timer;
 
-		QSignalMapper * do_button_mapper;
-		
+		QSignalMapper* do_button_mapper;
+
 		QString board_id;
-		
-		CLIENT_CONTEXT * ctx;
-		
+
+		CLIENT_CONTEXT* ctx;
+
 		bool update_l1_cal_values;
 		bool update_l2_cal_values;
-		
-		void update_cal_ui_values(const vector<string>& parts);
-		void update_cal_l1_ui_values(const vector<string>& parts);
-		void update_cal_l2_ui_values(const vector<string>& parts);
-		
-		void send_cal_values(CAL_VALUE ** _cal_values,unsigned char _level);
+
+		void update_cal_ui_values( const vector<string>& parts );
+		void update_cal_l1_ui_values( const vector<string>& parts );
+		void update_cal_l2_ui_values( const vector<string>& parts );
+
+		void send_cal_values( CAL_VALUE** _cal_values, unsigned char _level );
 
 	private slots:
 		void update_data( void );
-		MESSAGE_PTR update_data_and_return(void);
+		MESSAGE_PTR update_data_and_return( void );
 
 		void cmd_enable_do_pmic_clicked( void );
 		void cmd_enable_ai_pmic_clicked( void );
@@ -89,12 +89,12 @@ class BOARD_INFO_WIDGET : public QFrame
 		void cmd_enable_do_clicked( int _do );
 
 		void manage_pmic_status( uint8_t _mask );
-		
-		void update_l1_cal_values_clicked(void);
-		void update_l2_cal_values_clicked(void);
-		
-		void send_l1_cal_values_clicked(void);
-		void send_l2_cal_values_clicked(void);
+
+		void update_l1_cal_values_clicked( void );
+		void update_l2_cal_values_clicked( void );
+
+		void send_l1_cal_values_clicked( void );
+		void send_l2_cal_values_clicked( void );
 };
 
 

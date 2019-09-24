@@ -22,16 +22,13 @@
 #include "BOARD_INFO_WIDGET.h"
 #include <QVBoxLayout>
 
-RAW_BOARD_INFO::RAW_BOARD_INFO( QWidget * _p) : QFrame(_p)
+RAW_BOARD_INFO::RAW_BOARD_INFO( QWidget* _p ) : QFrame( _p )
 {
-	this->main_widget = new QTabWidget(this);
-	this->setLayout(new QVBoxLayout(this));
-	
-	this->layout()->addWidget(this->main_widget);
-	
-	this->main_widget->addTab( new BOARD_INFO_WIDGET( "BOARD1" ) , "BOARD1" );
+	this->main_widget = new QTabWidget( this );
+	this->setLayout( new QVBoxLayout( this ) );
+	this->layout()->addWidget( this->main_widget );
+	this->main_widget->addTab( new BOARD_INFO_WIDGET( "BOARD1" ), "BOARD1" );
 	this->main_widget->addTab( new BOARD_INFO_WIDGET( "BOARD2" ), "BOARD2" );
-
 }
 
 

@@ -27,33 +27,33 @@ class QPushButton;
 
 class PMIC_INDICATOR : public QFrame
 {
-	Q_OBJECT;
-public:
-	PMIC_INDICATOR( bool _enabled, bool _faulted );
+		Q_OBJECT;
+	public:
+		PMIC_INDICATOR( bool _enabled, bool _faulted );
 
-	void set_enabled( void );
-	void set_disabled( void );
-	void set_faulted( void );
-	void set_notfaulted( void );
+		void set_enabled( void );
+		void set_disabled( void );
+		void set_faulted( void );
+		void set_notfaulted( void );
 
-	bool get_is_faulted( void ) const;
-	bool get_is_enabled( void ) const;
+		bool get_is_faulted( void ) const;
+		bool get_is_enabled( void ) const;
 
-signals:
-	void reset_clicked( void );
-	void enable_clicked( void );
+	signals:
+		void reset_clicked( void );
+		void enable_clicked( void );
 
-public slots:
-	void update_status( void );
-	
-protected slots:
-	void __button_clicked(void);
+	public slots:
+		void update_status( void );
 
-protected:
-	QPushButton * cmd_button;
+	protected slots:
+		void __button_clicked( void );
 
-	bool is_faulted;
-	bool is_enabled;
+	protected:
+		QPushButton* cmd_button;
+
+		bool is_faulted;
+		bool is_enabled;
 } ;
 
 

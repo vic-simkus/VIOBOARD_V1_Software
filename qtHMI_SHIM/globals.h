@@ -27,7 +27,7 @@ using namespace std;
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::CLIENT;
 
-extern CLIENT_CONTEXT * ctx;
+extern CLIENT_CONTEXT* ctx;
 
 #endif /* GLOBALS_H */
 

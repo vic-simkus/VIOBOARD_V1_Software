@@ -29,26 +29,26 @@ class QWidget;
 
 class CAL_VALUE : public QFrame
 {
-	Q_OBJECT;
-public:
-	CAL_VALUE( );
-	
-	int get_value(void);
-	
-public slots:
-	void set_value(int);
-	void reset_status(void);
-	
-private:
-	QSpinBox * value;
-	QPushButton * cmd_submit;
+		Q_OBJECT;
+	public:
+		CAL_VALUE( );
 
-signals:
-	void clicked( void );
+		int get_value( void );
 
-protected slots:
-	void __value_changed( void );
-	void __submit_clicked( void );
+	public slots:
+		void set_value( int );
+		void reset_status( void );
+
+	private:
+		QSpinBox* value;
+		QPushButton* cmd_submit;
+
+	signals:
+		void clicked( void );
+
+	protected slots:
+		void __value_changed( void );
+		void __submit_clicked( void );
 } ;
 
 #endif /* CAL_VALUE_H */

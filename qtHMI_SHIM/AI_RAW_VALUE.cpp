@@ -23,13 +23,12 @@
 
 AI_RAW_VALUE::AI_RAW_VALUE( ) : QFrame( )
 {
-	QVBoxLayout * layout = new QVBoxLayout( this );
+	QVBoxLayout* layout = new QVBoxLayout( this );
 	this->setLayout( layout );
 	this->value = new QLabel( this );
 	layout->addWidget( this->value );
 	this->value->setText( "0000" );
 	this->value->setStyleSheet( "font-size: 20px" );
-
 	return;
 }
 

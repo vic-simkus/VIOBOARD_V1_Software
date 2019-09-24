@@ -31,7 +31,7 @@ public:
 	AI_VALUE( );
 	void set_value( float _val );
 protected:
-	QLabel * value;
+	QLabel* value;
 
 };
 
