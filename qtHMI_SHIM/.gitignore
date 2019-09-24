@@ -6,3 +6,4 @@ nbproject/private
 nbproject/*.mk
 nbproject/*.pro
 nbproject/*.bash
+Makefile
