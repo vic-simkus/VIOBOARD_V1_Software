@@ -1,6 +1,7 @@
 moc_*.*
 dist
 build
+debug
 nbproject/private
 nbproject/*.mk
 nbproject/*.pro
