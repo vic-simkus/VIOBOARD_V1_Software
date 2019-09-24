@@ -1,9 +1,9 @@
 release {
-	DESTDIR = release
+	DESTDIR = build/release
 }
 
 debug {
-	DESTDIR = debug	
+	DESTDIR = build/debug	
 }
 
 HEADERS = AI_RAW_VALUE.h \
