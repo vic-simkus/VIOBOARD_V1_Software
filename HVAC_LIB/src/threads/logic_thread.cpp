@@ -34,7 +34,7 @@
 #include <string.h>
 #include <algorithm>
 #include <iterator>
-
+#include <iostream>
 #include <float.h>
 
 using namespace BBB_HVAC;
@@ -230,6 +230,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 				}
 				else
 				{
+					//LOG_DEBUG_P( "Point " + point_name + " = " + num_to_str( volt_value ) + "v" );
 					calculated_value = calculate_420_value( volt_value, board_point.get_min_value(), board_point.get_max_value() );
 				}
 			}
@@ -355,7 +356,8 @@ double LOGIC_PROCESSOR_BASE::calculate_420_value( double _voltage, long _min, lo
 	x1000 in order to get milliamp value
 
 	*/
-	double current = ( ( _voltage / ( double ) 200 ) * 1000 );
+	double current = ( ( _voltage / ( double ) 240 ) * 1000 );
+	//std::cout <<  "Volts: " + num_to_str( _voltage ) +  " current: " + num_to_str( current ) + "mA min: " + num_to_str( _min ) + " max: " + num_to_str( _max )  << endl;
 	double value  = 0;
 	long min_max_delta = _max - _min;
 	const double i_delta = 20 - 4;		// durrr 16
