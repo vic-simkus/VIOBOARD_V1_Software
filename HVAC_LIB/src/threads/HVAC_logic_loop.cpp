@@ -33,6 +33,9 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 	 * for us before calling process_logic
 	 */
 	this->logic_status_core.iterations += 1;
+	/*
+	Space temperature set point
+	*/
 	double sp_space_temp = this->get_sp_value( "SPACE TEMP" );
 	//double sp_space_rh = this->get_sp_value("SPACE RH");
 	double sp_space_temp_d_high = this->get_sp_value( "SPACE TEMP DELTA HIGH" );
@@ -40,6 +43,7 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 	/*
 	double sp_space_rh_d = this->get_sp_value("SPACE RH DELTA");
 	double sp_space_rh_temp_d = this->get_sp_value("SPACE RH TEMP DELTA");
+	Get the temperature and relative humidity value and round it off to one decimal place.
 	*/
 	double temp_value = double( int( ( this->get_ai_value( "SPACE_1_TEMP" ) * 10 ) ) ) / 10;
 	double rh_value = double( int( ( this->get_ai_value( "SPACE_1_RH" ) * 10 ) ) ) / 10;
@@ -63,9 +67,9 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 	LOG_DEBUG( "****************************************" );
 	double delta_calc = temp_value + sp_space_temp_d_high;
 
-	if( delta_calc > sp_space_temp )
+	if ( delta_calc > sp_space_temp )
 	{
-		if( this->is_output_set( "AC_COMPRESSOR" ) == true )
+		if ( this->is_output_set( "AC_COMPRESSOR" ) == true )
 		{
 			LOG_DEBUG( "Space temp + delta: (" + num_to_str( delta_calc ) + ") is greater than SP: " + num_to_str( sp_space_temp ) + ".  Continuing to cool." );
 		}
@@ -80,9 +84,11 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 	{
 		delta_calc = temp_value + sp_space_temp_d_low;
 
-		if( delta_calc < sp_space_temp )
+		if ( delta_calc < sp_space_temp )
 		{
 			LOG_DEBUG( "Space temp + delta: (" + num_to_str( delta_calc ) + ") is less than SP: " + num_to_str( sp_space_temp ) + ".  Activating space heating." );
+			this->set_output( "AHU_FAN" );
+			this->set_output( "AHU_HEATER" );
 		}
 	}
 
