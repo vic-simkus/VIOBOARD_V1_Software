@@ -443,6 +443,7 @@ void LOGIC_PROCESSOR_BASE::set_output( const string& _name ) throw ( exception )
 		return;
 	}
 
+	LOG_DEBUG_P( "Setting point " + _name + " to ON" );
 	IOCOMM::SER_IO_COMM* thread_handle = THREAD_REGISTRY::get_serial_io_thread( board_point.get_board_tag() );
 	uint8_t v = ( uint8_t )( 1 << board_point.get_point_id() );
 	do_status |= v;
@@ -451,18 +452,29 @@ void LOGIC_PROCESSOR_BASE::set_output( const string& _name ) throw ( exception )
 }
 void LOGIC_PROCESSOR_BASE::clear_output( const string& _name ) throw ( exception )
 {
-	BOARD_POINT p;
+	BOARD_POINT board_point;
 
 	try
 	{
-		p = this->configurator->get_point_map().at( _name );
+		board_point = this->configurator->get_point_map().at( _name );
 	}
 	catch ( const exception& e )
 	{
 		THROW_EXCEPTION( invalid_argument, "Failed to find point: " + _name );
 	}
 
-	/*
-	TODO - need to implement
-	*/
+	uint8_t do_status = this->logic_status_core.current_state_map.at( board_point.get_board_tag() ).do_state.get_value();
+
+	if ( !( do_status & ( 1 << board_point.get_point_id() ) ) )
+	{
+		//Point is not set.
+		return;
+	}
+
+	LOG_DEBUG_P( "Setting point " + _name + " to OFF" );
+	IOCOMM::SER_IO_COMM* thread_handle = THREAD_REGISTRY::get_serial_io_thread( board_point.get_board_tag() );
+	uint8_t v = ( uint8_t )( 1 << board_point.get_point_id() );
+	do_status = do_status ^ v;
+	thread_handle->cmd_set_do_status( do_status );
+	return;
 }

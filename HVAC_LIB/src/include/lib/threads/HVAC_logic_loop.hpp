@@ -37,7 +37,8 @@ namespace BBB_HVAC
 		{
 			NONE = 0,
 			HEATING,
-			COOLING
+			COOLING,
+			DEHUMIDIFYING
 		};
 
 		/**
@@ -54,34 +55,37 @@ namespace BBB_HVAC
 		 */
 		class HVAC_LOGIC_LOOP : public LOGIC_PROCESSOR_BASE
 		{
-		public:
+			public:
 
-			/**
-			 * Constructor
-			 */
-			HVAC_LOGIC_LOOP( CONFIGURATOR* _config );
+				/**
+				 * Constructor
+				 */
+				HVAC_LOGIC_LOOP( CONFIGURATOR* _config );
 
-			/**
-			 * Destructor
-			 */
-			virtual ~HVAC_LOGIC_LOOP();
+				/**
+				 * Destructor
+				 */
+				virtual ~HVAC_LOGIC_LOOP();
 
-			/**
-			 * Method that is called to perform in-time processing.
-			 */
-			void process_logic( void ) throw( exception );
+				/**
+				 * Method that is called to perform in-time processing.
+				 */
+				void process_logic( void ) throw( exception );
 
-			void pre_process( void ) throw( exception );
+				void pre_process( void ) throw( exception );
 
-			void post_process( void ) throw( exception );
+				void post_process( void ) throw( exception );
 
 
-		protected:
-			/**
-			 * Logger
-			 */
-			DEF_LOGGER;
-		private:
+			protected:
+				/**
+				 * Logger
+				 */
+				DEF_LOGGER;
+				OPERATING_STATE op_state;
+
+				unsigned long ahu_delay_clicks;
+			private:
 		};
 	}
 }
