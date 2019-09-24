@@ -2,7 +2,7 @@
 #
 # This file is mechanically generated.  Any changes will most likely be lost.
 #
-# File generated on: 2018-08-05T08:46:46.221306
+# File generated on: 2019-09-22T21:16:29.987921
 #
 
 #
@@ -55,7 +55,7 @@ bin/bbb_hvac.o: src/bbb_hvac.cpp ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
  ../HVAC_LIB/src/include/lib/threads/serial_io_thread.hpp \
  ../HVAC_LIB/src/include/lib/threads/shim_listener_thread.hpp \
  ../HVAC_LIB/src/include/lib/threads/thread_registry.hpp
-	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -pthread  -c src/bbb_hvac.cpp -o bin/bbb_hvac.o
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/bbb_hvac.cpp -o bin/bbb_hvac.o
 
 #
 # EOF
