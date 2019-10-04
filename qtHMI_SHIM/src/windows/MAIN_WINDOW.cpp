@@ -23,7 +23,7 @@
 #include "BOARD_INFO_WIDGET.h"
 #include "RAW_BOARD_INFO.h"
 #include "LOGIC_INFO.h"
-
+#include "DEBUG_FRAME.h"
 #include <QDateTime>
 
 DEF_LOGGER_STAT( "QT_HMI" );
@@ -35,6 +35,7 @@ MAIN_WINDOW::MAIN_WINDOW( )
 	QWidget* logic_widget = nullptr;
 	this->main_widget->addTab( ( logic_widget = new LOGIC_INFO( nullptr ) ), "LOGIC INFO" );
 	this->main_widget->addTab( new RAW_BOARD_INFO( nullptr ), "RAW BOARD INFO" );
+	this->main_widget->addTab( new DEBUG_FRAME( nullptr ), "DEBUG" );
 	this->statusBar()->setSizeGripEnabled( true );
 	this->statusBar()->showMessage( "Application started." );
 	connect( logic_widget, SIGNAL( sig_update_start() ), this, SLOT( slot_update_start() ) );

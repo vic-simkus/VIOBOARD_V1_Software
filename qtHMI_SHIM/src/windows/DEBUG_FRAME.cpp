@@ -18,41 +18,22 @@
  * Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
  */
 
-#include <QApplication>
-#include "MAIN_WINDOW.h"
+#include "DEBUG_FRAME.h"
+#include "DEBUG_WIDGET.h"
 
-#include "globals.h"
+#include <QVBoxLayout>
 
-uint16_t
-checksum( uint16_t const data[], int nWords )
+DEBUG_FRAME::DEBUG_FRAME( QWidget* _p ) : QFrame( _p )
 {
-	uint32_t  sum = 0;
-
-	/*
-	 * IP headers always contain an even number of bytes.
-	 */
-	while ( nWords-- > 0 )
-	{
-		sum += *( data++ );
-	}
-
-	/*
-	 * Use carries to compute 1's complement sum.
-	 */
-	sum = ( sum >> 16 ) + ( sum & 0xFFFF );
-	sum += sum >> 16;
-	/*
-	 * Return the inverted 16-bit result.
-	 */
-	return ( ( unsigned short ) ~sum );
-}   /* NetIpChecksum() */
-
-int main( int argc, char* argv[] )
-{
-	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
-	GLOBALS::configure_signals( );
-	QApplication app( argc, argv );
-	MAIN_WINDOW main_window;
-	main_window.show( );
-	return app.exec( );
+	this->main_widget = new QTabWidget( this );
+	this->setLayout( new QVBoxLayout( this ) );
+	this->layout()->addWidget( this->main_widget );
+	this->main_widget->addTab( new DEBUG_WIDGET( "BOARD1" ), "BOARD1" );
+	this->main_widget->addTab( new DEBUG_WIDGET( "BOARD2" ), "BOARD2" );
 }
+
+
+DEBUG_FRAME::~DEBUG_FRAME( )
+{
+}
+

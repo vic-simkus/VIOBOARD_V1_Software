@@ -21,11 +21,11 @@
 #ifndef UI_COMPONENTS_H
 #define UI_COMPONENTS_H
 
-#include "AI_RAW_VALUE.h"
-#include "AI_VALUE.h"
-#include "DO_INDICATOR.h"
-#include "PMIC_INDICATOR.h"
-#include "CAL_VALUE.h"
+#include "widgets/AI_RAW_VALUE.h"
+#include "widgets/AI_VALUE.h"
+#include "widgets/DO_INDICATOR.h"
+#include "widgets/PMIC_INDICATOR.h"
+#include "widgets/CAL_VALUE.h"
 
 
 #endif /* UI_COMPONENTS_H */
