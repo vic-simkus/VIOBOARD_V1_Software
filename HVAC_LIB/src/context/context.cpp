@@ -73,7 +73,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 {
 	ENUM_MESSAGE_CALLBACK_RESULT ret;
 
-	if( BASE_CONTEXT::process_message( _direction, _ctx, _message ) == ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED )
+	if ( BASE_CONTEXT::process_message( _direction, _ctx, _message ) == ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED )
 	{
 		ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 	}
@@ -81,13 +81,13 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 	{
 		ENUM_MESSAGE_TYPE t = _message->get_message_type()->type;
 
-		if( t == ENUM_MESSAGE_TYPE::GET_LABELS )
+		if ( t == ENUM_MESSAGE_TYPE::GET_LABELS )
 		{
 			MESSAGE_PTR m = this->message_processor->create_get_labels_message_response( CONFIG_ENTRY::string_to_type( _message->get_part_as_s( 0 ) ) );
 			this->message_processor->send_message( m, this->remote_socket );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if( t == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG )
+		else if ( t == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG )
 		{
 			std::string board_tag = _message->get_part_as_s( 0 );
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
@@ -95,9 +95,9 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			comm_thread->get_dac_cache( dac_cache );
 			vector<string> parts;
 
-			for( unsigned int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
+			for ( unsigned int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
 			{
-				for( unsigned int j = 0; j < GC_IO_AI_COUNT; j++ )
+				for ( unsigned int j = 0; j < GC_IO_AI_COUNT; j++ )
 				{
 					parts.push_back( dac_cache[i][j].to_string() );
 				}
@@ -107,7 +107,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			this->message_processor->send_message( m, this->remote_socket );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if( t == ENUM_MESSAGE_TYPE::READ_STATUS )
+		else if ( t == ENUM_MESSAGE_TYPE::READ_STATUS )
 		{
 			IOCOMM::DO_CACHE_ENTRY do_cache;
 			IOCOMM::PMIC_CACHE_ENTRY pmic_cache;
@@ -134,7 +134,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			/*
 			Put the ADC values into the response.
 			*/
-			for( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
+			for ( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
 			{
 				parts.push_back( dac_cache[j].to_string() );
 			}
@@ -150,7 +150,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			/*
 			Put the L1 cal values into the response.
 			*/
-			for( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
+			for ( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
 			{
 				parts.push_back( l1_cal_cache[j].to_string() );
 			}
@@ -158,7 +158,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			/*
 			Put the L2 cal values into the response.
 			*/
-			for( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
+			for ( size_t j = 0; j < GC_IO_AI_COUNT; j++ )
 			{
 				parts.push_back( l2_cal_cache[j].to_string() );
 			}
@@ -172,7 +172,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			this->message_processor->send_message( m, this->remote_socket );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if( t == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS )
+		else if ( t == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS )
 		{
 			/*
 			 * Set PMIC Status
@@ -181,7 +181,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			comm_thread->cmd_set_pmic_status( ( uint8_t ) _message->get_part_as_ui( 1 ) );
 		}
-		else if( t == ENUM_MESSAGE_TYPE::SET_STATUS )
+		else if ( t == ENUM_MESSAGE_TYPE::SET_STATUS )
 		{
 			/*
 			 * Set DO Status
@@ -190,7 +190,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			comm_thread->cmd_set_do_status( ( uint8_t ) _message->get_part_as_ui( 1 ) );
 		}
-		else if( t == ENUM_MESSAGE_TYPE::ERROR )
+		else if ( t == ENUM_MESSAGE_TYPE::ERROR )
 		{
 			/*
 			Why is the client sending error messages to us.  Does it really thing we care.
@@ -198,13 +198,13 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			LOG_WARNING( "Client sent us an error message for some unknown reason.  Message: " + _message->to_string() );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if( t == ENUM_MESSAGE_TYPE::SET_L1_CAL_VALS )
+		else if ( t == ENUM_MESSAGE_TYPE::SET_L1_CAL_VALS )
 		{
 			std::string board_tag = _message->get_part_as_s( 0 );
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			CAL_VALUE_ARRAY cal_values;
 
-			for( unsigned int i = 1; i < _message->get_part_count(); i++ )
+			for ( unsigned int i = 1; i < _message->get_part_count(); i++ )
 			{
 				cal_values.push_back( _message->get_part_as_ui( i ) );
 			}
@@ -212,13 +212,13 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			comm_thread->cmd_set_l1_calibration_values( cal_values );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if( t == ENUM_MESSAGE_TYPE::SET_L2_CAL_VALS )
+		else if ( t == ENUM_MESSAGE_TYPE::SET_L2_CAL_VALS )
 		{
 			std::string board_tag = _message->get_part_as_s( 0 );
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			CAL_VALUE_ARRAY cal_values;
 
-			for( unsigned int i = 1; i < _message->get_part_count(); i++ )
+			for ( unsigned int i = 1; i < _message->get_part_count(); i++ )
 			{
 				cal_values.push_back( _message->get_part_as_ui( i ) );
 			}
@@ -226,9 +226,26 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			comm_thread->cmd_set_l2_calibration_values( cal_values );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 		}
-		else if( t == ENUM_MESSAGE_TYPE::READ_LOGIC_STATUS )
+		else if ( t == ENUM_MESSAGE_TYPE::FORCE_AI_VALUE )
 		{
-			if( GLOBALS::logic_instance == nullptr )
+			std::string board_tag = _message->get_part_as_s( 0 );
+			uint8_t input = ( uint8_t )_message->get_part_as_ui( 1 );
+			uint16_t value = _message->get_part_as_ui( 2 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
+			comm_thread->force_ai_value( input, value );
+			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
+		}
+		else if ( t == ENUM_MESSAGE_TYPE::UNFORCE_AI_VALUE )
+		{
+			std::string board_tag = _message->get_part_as_s( 0 );
+			uint8_t input = ( uint8_t )_message->get_part_as_ui( 1 );
+			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
+			comm_thread->unforce_ai_value( input );
+			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
+		}
+		else if ( t == ENUM_MESSAGE_TYPE::READ_LOGIC_STATUS )
+		{
+			if ( GLOBALS::logic_instance == nullptr )
 			{
 				LOG_ERROR( "Why is the logic thread instance null?" );
 			}
@@ -240,11 +257,11 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 				vector<string> parts;
 				std::map<std::string, LOGIC_POINT_STATUS> logic_status = GLOBALS::logic_instance->get_logic_status();
 
-				for( auto map_iterator = logic_status.begin(); map_iterator != logic_status.end(); ++map_iterator )
+				for ( auto map_iterator = logic_status.begin(); map_iterator != logic_status.end(); ++map_iterator )
 				{
 					parts.push_back( map_iterator->first );
 
-					if( map_iterator->second.is_double_value )
+					if ( map_iterator->second.is_double_value )
 					{
 						parts.push_back( num_to_str( map_iterator->second.double_value ) );
 					}

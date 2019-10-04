@@ -39,7 +39,9 @@ static std::string __message_type_list[] = { "INVALID", \
 											 "SET_L1_CAL_VALS", \
 											 "SET_L2_CAL_VALS", \
 											 "GET_BOOT_COUNT", \
-											 "READ_LOGIC_STATUS" \
+											 "READ_LOGIC_STATUS", \
+											 "FORCE_AI_VALUE", \
+											 "UNFORCE_AI_VALUE" \
 										   };
 
 using namespace BBB_HVAC;
@@ -53,7 +55,7 @@ __MESSAGE_TYPE::__MESSAGE_TYPE( ENUM_MESSAGE_TYPE _type, const std::string& _lab
 
 __MESSAGE_TYPES_INT::__MESSAGE_TYPES_INT()
 {
-	for( unsigned int i = 0; i != static_cast<unsigned int>( ENUM_MESSAGE_TYPE::__MSG_END__ ); i++ )
+	for ( unsigned int i = 0; i != static_cast<unsigned int>( ENUM_MESSAGE_TYPE::__MSG_END__ ); i++ )
 	{
 		MESSAGE_TYPE mt( new __MESSAGE_TYPE( static_cast<ENUM_MESSAGE_TYPE>( i ), __message_type_list[i] ) );
 		this->enum_to_type[static_cast<ENUM_MESSAGE_TYPE> ( i )] = mt;
@@ -84,7 +86,7 @@ void MESSAGE_TYPE_MAPPER::dump_supported_messages( std::ostream& out )
 	out << "Supported message types:" << std::endl;
 	out << "--- start of listing --" << std::endl;
 
-	for( unsigned int i = 0; i < MESSAGE_TYPE_MAPPER::get_message_type_count(); i++ )
+	for ( unsigned int i = 0; i < MESSAGE_TYPE_MAPPER::get_message_type_count(); i++ )
 	{
 		out.width( 2 );
 		out.fill( '0' );

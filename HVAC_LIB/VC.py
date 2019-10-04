@@ -50,6 +50,7 @@ class MyContext(Context):
 			SourceFile("exceptions.cpp"),
 			SourceFile("globals.cpp"),
 			SourceFile("logger.cpp"),
+			SourceFile("board_state_cache.cpp"),
 			SourceFile("message_callbacks.cpp"),
 			SourceFile("message_lib.cpp"),
 			SourceFile("message_processor.cpp"),

@@ -71,7 +71,7 @@ void MESSAGE_PROCESSOR::send_message( MESSAGE_PTR& _msg, int _fd ) throw( except
 	{
 		rc = write( _fd, buffer.get(), ( int ) payload.length() );
 
-		if( rc == -1 )
+		if ( rc == -1 )
 		{
 			throw EXCEPTIONS::MESSAGE_ERROR( create_perror_string( "Failed to write to client socket:" ) );
 		}
@@ -79,15 +79,15 @@ void MESSAGE_PROCESSOR::send_message( MESSAGE_PTR& _msg, int _fd ) throw( except
 		bytes_written += rc;
 		attempts += 1;
 
-		if( attempts > GC_WRITE_ATTEMPTS )
+		if ( attempts > GC_WRITE_ATTEMPTS )
 		{
-			if( ( size_t ) bytes_written != payload.length() )
+			if ( ( size_t ) bytes_written != payload.length() )
 			{
 				throw EXCEPTIONS::MESSAGE_ERROR( "Failed to write complete message after " + num_to_str( GC_WRITE_ATTEMPTS ) + "." );
 			}
 		}
 	}
-	while( ( size_t ) bytes_written < payload.length() );
+	while ( ( size_t ) bytes_written < payload.length() );
 
 	_msg->tag_sent();
 	this->outgoing_message_queue->add_message( _msg, ENUM_APPEND_MODE::LOSE_OVERFLOW );
@@ -99,9 +99,9 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	size_t sep_idx = 0;
 	sep_idx = _buffer.find_first_of( MESSAGE::sep_char );
 
-	if( sep_idx == string::npos )
+	if ( sep_idx == string::npos )
 	{
-		throw( EXCEPTIONS::PROTOCOL_ERROR( "Failed to find separator character in message buffer." ) );
+		throw ( EXCEPTIONS::PROTOCOL_ERROR( "Failed to find separator character in message buffer." ) );
 	}
 
 	string tstr = _buffer.substr( 0, sep_idx );
@@ -111,14 +111,14 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	{
 		msg_length = stoi( tstr );
 	}
-	catch( const exception& e )
+	catch ( const exception& e )
 	{
-		throw( EXCEPTIONS::PROTOCOL_ERROR( string( "Failed to convert [" + tstr + "] to a number:" + e.what() ) ) );
+		throw ( EXCEPTIONS::PROTOCOL_ERROR( string( "Failed to convert [" + tstr + "] to a number:" + e.what() ) ) );
 	}
 
-	if( msg_length != _buffer.length() )
+	if ( msg_length != _buffer.length() )
 	{
-		throw( EXCEPTIONS::PROTOCOL_ERROR( string( "Supplied length parameter [" + tstr + "] is not the length of the buffer [" + num_to_str( ( unsigned int ) _buffer.length() ) + "] [" + _buffer + "]" ) ) );
+		throw ( EXCEPTIONS::PROTOCOL_ERROR( string( "Supplied length parameter [" + tstr + "] is not the length of the buffer [" + num_to_str( ( unsigned int ) _buffer.length() ) + "] [" + _buffer + "]" ) ) );
 	}
 
 	/*
@@ -130,22 +130,22 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	size_t prev_idx = sep_idx + 1;
 	bool b = false;
 
-	while( 1 )
+	while ( 1 )
 	{
 		sep_idx = _buffer.find( MESSAGE::sep_char, prev_idx );
 
-		if( sep_idx == string::npos )
+		if ( sep_idx == string::npos )
 		{
 			sep_idx = _buffer.length() - 1;  //-1 to get rid of trailing new line.
 			b = true;
 		}
 
-		if( sep_idx - prev_idx > 0 )
+		if ( sep_idx - prev_idx > 0 )
 		{
 			parts.push_back( _buffer.substr( prev_idx, sep_idx - prev_idx ) );
 		}
 
-		if( b )
+		if ( b )
 		{
 			break;
 		}
@@ -157,9 +157,9 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	 * At this point we're expecting at least one element in the parts vector - the message type.
 	 */
 
-	if( parts.size() < 1 )
+	if ( parts.size() < 1 )
 	{
-		throw( EXCEPTIONS::PROTOCOL_ERROR( "Could not parse buffer into a valid message.  No message type specified." ) );
+		throw ( EXCEPTIONS::PROTOCOL_ERROR( "Could not parse buffer into a valid message.  No message type specified." ) );
 	}
 
 	const string message_type = parts.front();
@@ -169,34 +169,34 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	parts.erase( parts.begin() );
 	MESSAGE_TYPE mt = MESSAGE_TYPE_MAPPER::get_message_type_by_label( message_type );
 
-	if( mt.get() == nullptr )
+	if ( mt.get() == nullptr )
 	{
 		throw EXCEPTIONS::PROTOCOL_ERROR( "Invalid message type: [" + message_type + "]" );
 	}
 
-	if( mt->type == ENUM_MESSAGE_TYPE::HELLO )
+	if ( mt->type == ENUM_MESSAGE_TYPE::HELLO )
 	{
 		/*
 		 * The HELLO message should have two parts - VERSION|X
 		 */
-		if( parts.size() != 2 )
+		if ( parts.size() != 2 )
 		{
 			throw EXCEPTIONS::PROTOCOL_ERROR( "Invalid number of parts for a HELLO message.  Expecting 1, received " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
-	else if( mt->type == ENUM_MESSAGE_TYPE::PING || mt->type == ENUM_MESSAGE_TYPE::PONG )
+	else if ( mt->type == ENUM_MESSAGE_TYPE::PING || mt->type == ENUM_MESSAGE_TYPE::PONG )
 	{
-		if( parts.size() != 0 )
+		if ( parts.size() != 0 )
 		{
 			throw EXCEPTIONS::PROTOCOL_ERROR( "Invalid number of parts for a PING or PONG message.  Expecting 0, received " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
-	else if( mt->type == ENUM_MESSAGE_TYPE::GET_LABELS )
+	else if ( mt->type == ENUM_MESSAGE_TYPE::GET_LABELS )
 	{
 		/*
 		 * The GET_LABELS message should have at least two parts - XX|YY where XX is the type DO, DI, etc and YY is either RESP or REQ
 		 */
-		if( parts.size() < 2 )
+		if ( parts.size() < 2 )
 		{
 			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a GET_LABEL messages.  Expecting >=2, received < 2" );
 		}
@@ -204,39 +204,53 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	/*
 	All of the messages bellow require a board tag since we can have more than board attached to the system
 	*/
-	else if( mt->type == ENUM_MESSAGE_TYPE::SET_STATUS )
+	else if ( mt->type == ENUM_MESSAGE_TYPE::SET_STATUS )
 	{
-		if( parts.size() != 2 )
+		if ( parts.size() != 2 )
 		{
 			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a SET_STATUS message.  Expecting 2, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
-	else if( mt->type == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS )
+	else if ( mt->type == ENUM_MESSAGE_TYPE::SET_PMIC_STATUS )
 	{
-		if( parts.size() != 2 )
+		if ( parts.size() != 2 )
 		{
 			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a SET_PMIC_STATUS message.  Expecting 2, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
-	else if( mt->type == ENUM_MESSAGE_TYPE::READ_STATUS )
+	else if ( mt->type == ENUM_MESSAGE_TYPE::READ_STATUS )
 	{
-		if( parts.size() < 1 )
+		if ( parts.size() < 1 )
 		{
 			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a READ_STATUS message.  Expecting >1, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
-	else if( mt->type == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG )
+	else if ( mt->type == ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG )
 	{
-		if( parts.size() < 1 )
+		if ( parts.size() < 1 )
 		{
 			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a READ_STATUS_RAW_ANALOG message.  Expecting >1, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
-	else if( mt->type == ENUM_MESSAGE_TYPE::ERROR )
+	else if ( mt->type == ENUM_MESSAGE_TYPE::ERROR )
 	{
-		if( parts.size() < 2 )
+		if ( parts.size() < 2 )
 		{
 			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for an ERROR message.  Expecting >2, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
+		}
+	}
+	else if ( mt->type == ENUM_MESSAGE_TYPE::FORCE_AI_VALUE )
+	{
+		if ( parts.size() < 3 )
+		{
+			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for an FORCE_IN_VALUE message.  Expecting >3, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
+		}
+	}
+	else if ( mt->type == ENUM_MESSAGE_TYPE::UNFORCE_AI_VALUE )
+	{
+		if ( parts.size() < 2 )
+		{
+			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for an UNFORCE_IN_VALUE message.  Expecting >2, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
 
@@ -248,7 +262,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 
 void MESSAGE_PROCESSOR::process_hello_message( void ) throw( exception )
 {
-	if( this->incomming_message_queue->get_message_count() > 1 )
+	if ( this->incomming_message_queue->get_message_count() > 1 )
 	{
 		/*
 		 * The hello message is expected to be the first  message received.
@@ -263,12 +277,12 @@ void MESSAGE_PROCESSOR::process_hello_message( void ) throw( exception )
 	{
 		requested_protocol = msg->get_part_as_ui( 1 );
 	}
-	catch( const exception& e )
+	catch ( const exception& e )
 	{
 		throw EXCEPTIONS::PROTOCOL_ERROR( "Failed to get message part: " + string( e.what() ) );
 	}
 
-	if( requested_protocol > MESSAGE_PROCESSOR::MAX_SUPPORTED_PROTOCOL )
+	if ( requested_protocol > MESSAGE_PROCESSOR::MAX_SUPPORTED_PROTOCOL )
 	{
 		throw EXCEPTIONS::PROTOCOL_ERROR( "Protocol error.  Requested protocol version is higher than what we support.  Requested: " + num_to_str( requested_protocol ) + ".  We support: " + num_to_str( MESSAGE_PROCESSOR::MAX_SUPPORTED_PROTOCOL ) + "." );
 	}
@@ -286,7 +300,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_T
 	LOGIC_STATUS_FLUFF fluff;
 	GLOBALS::logic_instance->get_logic_status_fluff( fluff );
 
-	switch( _type )
+	switch ( _type )
 	{
 		case ENUM_CONFIG_TYPES::AI:
 			labels.resize( fluff.ai_labels.size() );
@@ -304,7 +318,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_T
 			break;
 
 		case ENUM_CONFIG_TYPES::MAP:
-			for( auto map_iterator = fluff.point_map.begin(); map_iterator != fluff.point_map.end(); ++map_iterator )
+			for ( auto map_iterator = fluff.point_map.begin(); map_iterator != fluff.point_map.end(); ++map_iterator )
 			{
 				labels.push_back( map_iterator->first );
 				labels.push_back( map_iterator->second.to_string() );
@@ -316,7 +330,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_T
 			THROW_EXCEPTION( runtime_error, "Can not respond to type specified: " + CONFIG_ENTRY::type_to_string( _type ) );
 	}
 
-	for( std::vector<std::string>::const_iterator i = labels.cbegin(); i != labels.cend(); ++i )
+	for ( std::vector<std::string>::const_iterator i = labels.cbegin(); i != labels.cend(); ++i )
 	{
 		parts.push_back( *i );
 	}
@@ -426,11 +440,27 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_boot_count( const std::string& _board_
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::GET_BOOT_COUNT ), parts ) );
 }
 
+MESSAGE_PTR MESSAGE_PROCESSOR::create_force_an( const std::string& _board_tag, uint8_t _input, uint16_t _value ) throw ( exception )
+{
+	vector<string> parts;
+	parts.push_back( _board_tag );
+	parts.push_back( num_to_str( _input ) );
+	parts.push_back( num_to_str( _value ) );
+	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::FORCE_AI_VALUE ), parts ) );
+}
+MESSAGE_PTR MESSAGE_PROCESSOR::create_unforce_force_an( const std::string& _board_tag, uint8_t _input ) throw ( exception )
+{
+	vector<string> parts;
+	parts.push_back( _board_tag );
+	parts.push_back( num_to_str( _input ) );
+	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::UNFORCE_AI_VALUE ), parts ) );
+}
+
 MESSAGE_PTR MESSAGE_PROCESSOR::get_latest_outgoing_ping( void )
 {
-	for( MESSAGE_VECTOR::reverse_iterator i = this->outgoing_message_queue->messages.rbegin(); i != this->outgoing_message_queue->messages.rend(); ++i )
+	for ( MESSAGE_VECTOR::reverse_iterator i = this->outgoing_message_queue->messages.rbegin(); i != this->outgoing_message_queue->messages.rend(); ++i )
 	{
-		if( ( *i )->get_message_type()->type == ENUM_MESSAGE_TYPE::PING )
+		if ( ( *i )->get_message_type()->type == ENUM_MESSAGE_TYPE::PING )
 		{
 			return *i;
 		}
@@ -448,9 +478,9 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_read_logic_status( void ) throw( exception
 MESSAGE_PTR MESSAGE_PROCESSOR::get_latest_incomming_of_type( ENUM_MESSAGE_TYPE _type )
 {
 	//cout << "IQ: [" + this->incomming_message_queue->to_string() + "]" << endl;
-	for( MESSAGE_VECTOR::reverse_iterator i = this->incomming_message_queue->messages.rbegin(); i != this->incomming_message_queue->messages.rend(); ++i )
+	for ( MESSAGE_VECTOR::reverse_iterator i = this->incomming_message_queue->messages.rbegin(); i != this->incomming_message_queue->messages.rend(); ++i )
 	{
-		if( ( *i )->get_message_type()->type == _type )
+		if ( ( *i )->get_message_type()->type == _type )
 		{
 			return *i;
 		}
@@ -498,7 +528,7 @@ size_t MESSAGE_QUEUE::get_message_count( void ) const
 
 bool MESSAGE_QUEUE::has_messages( void ) const
 {
-	if( this->messages.size() > 0 )
+	if ( this->messages.size() > 0 )
 	{
 		return true;
 	}
@@ -510,9 +540,9 @@ bool MESSAGE_QUEUE::has_messages( void ) const
 
 MESSAGE_PTR MESSAGE_QUEUE::pop_first( void ) throw( exception )
 {
-	if( !this->has_messages() )
+	if ( !this->has_messages() )
 	{
-		throw( EXCEPTIONS::MESSAGE_UNDERFLOW( "No messages available to pop." ) );
+		throw ( EXCEPTIONS::MESSAGE_UNDERFLOW( "No messages available to pop." ) );
 	}
 
 	MESSAGE_PTR ret = this->messages.front();
@@ -522,13 +552,13 @@ MESSAGE_PTR MESSAGE_QUEUE::pop_first( void ) throw( exception )
 
 void MESSAGE_QUEUE::add_message( MESSAGE_PTR& _message, ENUM_APPEND_MODE _mode ) throw( exception )
 {
-	if( this->messages.size() < this->size )
+	if ( this->messages.size() < this->size )
 	{
 		this->messages.push_back( _message );
 	}
 	else
 	{
-		switch( _mode )
+		switch ( _mode )
 		{
 			case ENUM_APPEND_MODE::LOSE_OVERFLOW:
 				this->messages.erase( this->messages.begin() );
@@ -546,14 +576,14 @@ void MESSAGE_QUEUE::add_message( MESSAGE_PTR& _message, ENUM_APPEND_MODE _mode )
 
 MESSAGE_PTR MESSAGE_QUEUE::get_message( unsigned int _idx ) throw( exception )
 {
-	if( _idx >= this->messages.size() )
+	if ( _idx >= this->messages.size() )
 	{
-		throw( EXCEPTIONS::MESSAGE_ERROR( "Index out of bounds; too high." ) );
+		throw ( EXCEPTIONS::MESSAGE_ERROR( "Index out of bounds; too high." ) );
 	}
 
-	if( this->messages.size() == 0 )
+	if ( this->messages.size() == 0 )
 	{
-		throw( EXCEPTIONS::MESSAGE_ERROR( "Index out of bounds; no messages in queue." ) );
+		throw ( EXCEPTIONS::MESSAGE_ERROR( "Index out of bounds; no messages in queue." ) );
 	}
 
 	return this->messages[_idx];
@@ -565,7 +595,7 @@ string MESSAGE_QUEUE::to_string( void ) const
 	ret << "[";
 	vector<string> v;
 
-	for( MESSAGE_VECTOR::const_iterator i = this->messages.cbegin(); i != this->messages.cend(); ++i )
+	for ( MESSAGE_VECTOR::const_iterator i = this->messages.cbegin(); i != this->messages.cend(); ++i )
 	{
 		v.push_back( "\n\t" + ( *i )->to_string() );
 	}

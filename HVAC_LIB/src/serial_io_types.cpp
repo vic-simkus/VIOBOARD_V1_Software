@@ -44,7 +44,7 @@ namespace BBB_HVAC
 		{
 			this->logger = new LOGGING::LOGGER( "BBB_HVAC::IOCOMM::OUTGOING_MESSAGE_QUEUE[" + this->tag + "]" );
 
-			if( pthread_cond_init( &this->conditional, nullptr ) != 0 )
+			if ( pthread_cond_init( &this->conditional, nullptr ) != 0 )
 			{
 				LOG_ERROR_P( "Failed to initializer conditional." );
 			}
@@ -55,12 +55,12 @@ namespace BBB_HVAC
 
 		OUTGOING_MESSAGE_QUEUE::~OUTGOING_MESSAGE_QUEUE()
 		{
-			if( pthread_cond_destroy( &this->conditional ) != 0 )
+			if ( pthread_cond_destroy( &this->conditional ) != 0 )
 			{
 				LOG_ERROR_P( "Failed to destroy conditional." );
 			}
 
-			while( !this->message_queue.empty() )
+			while ( !this->message_queue.empty() )
 			{
 				this->message_queue.pop();
 			}
@@ -75,7 +75,7 @@ namespace BBB_HVAC
 			/*
 			 * We're assuming that we hold the lock right now.
 			 */
-			if( pthread_cond_signal( &this->conditional ) != 0 )
+			if ( pthread_cond_signal( &this->conditional ) != 0 )
 			{
 				LOG_ERROR_P( "Failed to signal conditional." );
 			}
@@ -89,7 +89,7 @@ namespace BBB_HVAC
 			bool ret = true;
 			this->obtain_lock_ex();
 
-			if( this->message_queue.size() >= GC_OUTGOING_MESSAGE_QUEUE_SIZE )
+			if ( this->message_queue.size() >= GC_OUTGOING_MESSAGE_QUEUE_SIZE )
 			{
 				this->release_lock();
 				ret = false;
@@ -127,7 +127,7 @@ namespace BBB_HVAC
 
 		void OUTGOING_MESSAGE_QUEUE::put_lock( void ) throw( LOCK_ERROR )
 		{
-			if( this->release_lock() == false )
+			if ( this->release_lock() == false )
 			{
 				THROW_EXCEPTION( LOCK_ERROR, "Failed to release lock.  Check logs." );
 			}
@@ -144,9 +144,9 @@ namespace BBB_HVAC
 			timeout_time.tv_sec = time( nullptr ) + 2;
 			int rc = pthread_cond_timedwait( & ( this->conditional ), & ( this->mutex ), &timeout_time );
 
-			if( rc != 0 )
+			if ( rc != 0 )
 			{
-				if( rc == ETIMEDOUT )
+				if ( rc == ETIMEDOUT )
 				{
 					/*
 					 * Apparently even when a wait for a conditional times out the mutex is still acquired by us.
@@ -206,19 +206,19 @@ namespace BBB_HVAC
 			const char* source_buffer = _source.data();
 			size_t buffer_index = 0;
 
-			for( size_t i = 0; i < _source.length(); i++ )
+			for ( size_t i = 0; i < _source.length(); i++ )
 			{
-				if( source_buffer[i] == '.' )
+				if ( source_buffer[i] == '.' )
 				{
 					work_buffer = ( unsigned char* )( &buffer_right );
 					buffer_index = 0;
 				}
-				else if( source_buffer[i] >= 48 && source_buffer[i] <= 57 ) // 0 ... 9
+				else if ( source_buffer[i] >= 48 && source_buffer[i] <= 57 ) // 0 ... 9
 				{
 					work_buffer[buffer_index] = source_buffer[i];
 					buffer_index += 1;
 
-					if( buffer_index == MAX_BUFF_SIZE )
+					if ( buffer_index == MAX_BUFF_SIZE )
 					{
 						/*
 						 * Overflow.  Some dickhead passed bad data to us.
@@ -232,7 +232,7 @@ namespace BBB_HVAC
 					 * A character is neither a number or a period.
 					 * If we have found a first number already break out of the loop
 					 */
-					if( buffer_index > 0 )
+					if ( buffer_index > 0 )
 					{
 						break;
 					}
@@ -256,7 +256,7 @@ namespace BBB_HVAC
 			size_t col_sep_idx = _source.find_last_of( ':' );
 			size_t brac_sep_idx = _source.find_last_of( ']' );
 
-			if( brac_sep_idx <= col_sep_idx )
+			if ( brac_sep_idx <= col_sep_idx )
 			{
 				return;
 			}
@@ -441,223 +441,7 @@ namespace BBB_HVAC
 			return;
 		}
 
-		/************************************************************************
-		 *
-		 * BOARD_STATE_CACHE
-		 *
-		 ************************************************************************/
 
-		BOARD_STATE_CACHE::BOARD_STATE_CACHE()
-		{
-			this->pmic_cache_index = 0;
-			this->adc_cache_index = 0;
-			this->do_cache_index = 0;
-			this->l1_cal_cache_index = 0;
-			this->l2_cal_cache_index = 0;
-			return;
-		}
-
-		void BOARD_STATE_CACHE::add_pmic_status( uint8_t _value )
-		{
-			this->pmic_cache[this->pmic_cache_index] = PMIC_CACHE_ENTRY( _value );
-			this->pmic_cache_index += 1;
-
-			if( this->pmic_cache_index == GC_IO_STATE_BUFFER_DEPTH )
-			{
-				this->pmic_cache_index = 0;
-			}
-
-			return;
-		}
-
-		void BOARD_STATE_CACHE::add_do_status( uint8_t _value )
-		{
-			this->do_cache[this->do_cache_index] = DO_CACHE_ENTRY( _value );
-			this->do_cache_index += 1;
-
-			if( this->do_cache_index == GC_IO_STATE_BUFFER_DEPTH )
-			{
-				this->do_cache_index = 0;
-			}
-
-			return;
-		}
-
-		void BOARD_STATE_CACHE::add_adc_value( size_t _x_index, uint16_t _value ) throw( logic_error )
-		{
-			if( _x_index >= GC_IO_AI_COUNT )
-			{
-				throw out_of_range( "Supplied x_index " + num_to_str( _x_index ) + " is greater than number of defined analog inputs.  See GC_IO_AI_COUNT." );
-			}
-
-			this->adc_cache[this->adc_cache_index][_x_index] = ADC_CACHE_ENTRY( _value );
-
-			if( _x_index == GC_IO_AI_COUNT - 1 )
-			{
-				this->adc_cache_index += 1;
-			}
-
-			if( this->adc_cache_index == GC_IO_STATE_BUFFER_DEPTH )
-			{
-				this->adc_cache_index = 0;
-			}
-
-			return;
-		}
-
-		void BOARD_STATE_CACHE::add_l1_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error )
-		{
-			this->add_cal_value( _x_index, _value, this->l1_cal_cache_index, ( this->cal_l1_cache ) );
-		}
-		void BOARD_STATE_CACHE::add_l2_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error )
-		{
-			this->add_cal_value( _x_index, _value, this->l1_cal_cache_index, ( this->cal_l2_cache ) );
-		}
-
-		void BOARD_STATE_CACHE::add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] ) throw( logic_error )
-		{
-			if( _x_index >= GC_IO_AI_COUNT )
-			{
-				throw out_of_range( "Supplied x_index is greater than number of defined analog inputs.  See GC_IO_AI_COUNT." );
-			}
-
-			_dest[_idx][_x_index] = CAL_VALUE_ENTRY( _value );
-
-			if( _x_index == GC_IO_AI_COUNT - 1 )
-			{
-				_idx += 1;
-			}
-
-			if( _idx == GC_IO_STATE_BUFFER_DEPTH )
-			{
-				_idx = 0;
-			}
-
-			return;
-		}
-
-		void BOARD_STATE_CACHE::get_adc_cache( ADC_CACHE_ENTRY( &_dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] )
-		{
-			for( int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
-			{
-				for( int i2 = 0; i2 < GC_IO_AI_COUNT; i2++ )
-				{
-					_dest[i][i2] = this->adc_cache[i][i2];
-				}
-			}
-		}
-
-		void BOARD_STATE_CACHE::get_do_cache( DO_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
-		{
-			for( int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
-			{
-				_dest[i] = this->do_cache[i];
-			}
-		}
-
-		void BOARD_STATE_CACHE::get_pmic_cache( PMIC_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
-		{
-			for( int i = 0; i < GC_IO_STATE_BUFFER_DEPTH; i++ )
-			{
-				_dest[i] = this->pmic_cache[i];
-			}
-		}
-
-		void BOARD_STATE_CACHE::get_latest_adc_values( ADC_CACHE_ENTRY( & _dest ) [GC_IO_AI_COUNT] )
-		{
-			size_t index = 0;
-
-			if( this->adc_cache_index == 0 )
-			{
-				index = GC_IO_STATE_BUFFER_DEPTH - 1;
-			}
-			else
-			{
-				index = 0;
-			}
-
-			for( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
-			{
-				_dest[i] = this->adc_cache[index][i];
-			}
-
-			return;
-		}
-
-		void BOARD_STATE_CACHE::get_latest_do_status( DO_CACHE_ENTRY& _dest )
-		{
-			if( this->do_cache_index == 0 )
-			{
-				_dest = this->do_cache[GC_IO_STATE_BUFFER_DEPTH - 1 ];
-			}
-			else
-			{
-				_dest = this->do_cache[this->do_cache_index - 1];
-			}
-
-			return;
-		}
-
-		void BOARD_STATE_CACHE::get_latest_pmic_status( PMIC_CACHE_ENTRY& _dest )
-		{
-			if( this->pmic_cache_index == 0 )
-			{
-				_dest = this->pmic_cache[GC_IO_STATE_BUFFER_DEPTH - 1 ];
-			}
-			else
-			{
-				_dest = this->pmic_cache[this->pmic_cache_index - 1];
-			}
-
-			return;
-		}
-
-		uint16_t BOARD_STATE_CACHE::get_boot_count( void ) const
-		{
-			return this->boot_count;
-		}
-
-		void BOARD_STATE_CACHE::set_boot_count( uint16_t _value )
-		{
-			this->boot_count = _value;
-		}
-
-		void BOARD_STATE_CACHE::get_latest_l1_cal_values( CAL_VALUE_ENTRY( & _dest ) [GC_IO_AI_COUNT] ) const
-		{
-			size_t index = 0;
-
-			if( this->l1_cal_cache_index == 0 )
-			{
-				index = GC_IO_STATE_BUFFER_DEPTH - 1;
-			}
-			else
-			{
-				index = 0;
-			}
-
-			for( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
-			{
-				_dest[i] = this->cal_l1_cache[index][i];
-			}
-		}
-		void BOARD_STATE_CACHE::get_latest_l2_cal_values( CAL_VALUE_ENTRY( & _dest ) [GC_IO_AI_COUNT] ) const
-		{
-			size_t index = 0;
-
-			if( this->l2_cal_cache_index == 0 )
-			{
-				index = GC_IO_STATE_BUFFER_DEPTH - 1;
-			}
-			else
-			{
-				index = 0;
-			}
-
-			for( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
-			{
-				_dest[i] = this->cal_l2_cache[index][i];
-			}
-		}
 
 		/************************************************************************
 		 *

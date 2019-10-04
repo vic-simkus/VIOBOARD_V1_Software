@@ -115,6 +115,8 @@ namespace BBB_HVAC
 		SET_L2_CAL_VALS,			/// Set L2 calibration values
 		GET_BOOT_COUNT,				/// Get board boot count
 		READ_LOGIC_STATUS,			/// Gets the point statuses from the logic thread.  This will include all calculated analog values as the logic thread sees it.
+		FORCE_AI_VALUE,				/// Forces an input value.
+		UNFORCE_AI_VALUE,			/// Unfores an input value.
 		__MSG_END__					/// Terminator of the enum.  Used in iterating through the enum values.
 	} ;
 

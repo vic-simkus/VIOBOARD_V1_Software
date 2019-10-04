@@ -2,7 +2,7 @@
 #
 # This file is mechanically generated.  Any changes will most likely be lost.
 #
-# File generated on: 2019-09-22T21:13:59.425308
+# File generated on: 2019-10-02T19:35:24.683281
 #
 
 #
@@ -14,9 +14,9 @@ all: HVAC_LIB_all
 clean: HVAC_LIB_clean
 
 HVAC_LIB_all: HVAC_LIB_all_o
-	g++-6 -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -shared -pthread  -o bin/libHVAC_LIB.so  bin/context/base_context.o bin/context/client_context.o bin/context/context.o bin/threads/HVAC_logic_loop.o bin/threads/logic_thread.o bin/threads/serial_io_thread.o bin/threads/shim_listener_thread.o bin/threads/thread_base.o bin/threads/thread_registry.o bin/threads/tprotect_base.o bin/threads/watchdog_thread.o bin/config_entry.o bin/configurator.o bin/exceptions.o bin/globals.o bin/logger.o bin/message_callbacks.o bin/message_lib.o bin/message_processor.o bin/message_types.o bin/serial_io_types.o bin/socket_reader.o bin/string_lib.o bin/configurator/set_point.o bin/configurator/board_point.o bin/configurator/configurator_operators.o
+	g++ -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -shared -pthread  -o bin/libHVAC_LIB.so  bin/context/base_context.o bin/context/client_context.o bin/context/context.o bin/threads/HVAC_logic_loop.o bin/threads/logic_thread.o bin/threads/serial_io_thread.o bin/threads/shim_listener_thread.o bin/threads/thread_base.o bin/threads/thread_registry.o bin/threads/tprotect_base.o bin/threads/watchdog_thread.o bin/config_entry.o bin/configurator.o bin/exceptions.o bin/globals.o bin/logger.o bin/board_state_cache.o bin/message_callbacks.o bin/message_lib.o bin/message_processor.o bin/message_types.o bin/serial_io_types.o bin/socket_reader.o bin/string_lib.o bin/configurator/set_point.o bin/configurator/board_point.o bin/configurator/configurator_operators.o
 
-HVAC_LIB_all_o: HVAC_LIB_make_dirs bin/context/base_context.o  bin/context/client_context.o  bin/context/context.o  bin/threads/HVAC_logic_loop.o  bin/threads/logic_thread.o  bin/threads/serial_io_thread.o  bin/threads/shim_listener_thread.o  bin/threads/thread_base.o  bin/threads/thread_registry.o  bin/threads/tprotect_base.o  bin/threads/watchdog_thread.o  bin/config_entry.o  bin/configurator.o  bin/exceptions.o  bin/globals.o  bin/logger.o  bin/message_callbacks.o  bin/message_lib.o  bin/message_processor.o  bin/message_types.o  bin/serial_io_types.o  bin/socket_reader.o  bin/string_lib.o  bin/configurator/set_point.o  bin/configurator/board_point.o  bin/configurator/configurator_operators.o  
+HVAC_LIB_all_o: HVAC_LIB_make_dirs bin/context/base_context.o  bin/context/client_context.o  bin/context/context.o  bin/threads/HVAC_logic_loop.o  bin/threads/logic_thread.o  bin/threads/serial_io_thread.o  bin/threads/shim_listener_thread.o  bin/threads/thread_base.o  bin/threads/thread_registry.o  bin/threads/tprotect_base.o  bin/threads/watchdog_thread.o  bin/config_entry.o  bin/configurator.o  bin/exceptions.o  bin/globals.o  bin/logger.o  bin/board_state_cache.o  bin/message_callbacks.o  bin/message_lib.o  bin/message_processor.o  bin/message_types.o  bin/serial_io_types.o  bin/socket_reader.o  bin/string_lib.o  bin/configurator/set_point.o  bin/configurator/board_point.o  bin/configurator/configurator_operators.o  
 
 HVAC_LIB_clean: 
 	@echo Cleaning stuff.
@@ -36,6 +36,7 @@ HVAC_LIB_clean:
 	- @rm bin/exceptions.o 2> /dev/null || true
 	- @rm bin/globals.o 2> /dev/null || true
 	- @rm bin/logger.o 2> /dev/null || true
+	- @rm bin/board_state_cache.o 2> /dev/null || true
 	- @rm bin/message_callbacks.o 2> /dev/null || true
 	- @rm bin/message_lib.o 2> /dev/null || true
 	- @rm bin/message_processor.o 2> /dev/null || true
@@ -256,6 +257,16 @@ bin/logger.o: src/logger.cpp src/include/lib/logger.hpp \
  src/include/lib/hvac_types.hpp src/include/lib/tprotect_base.hpp \
  src/include/lib/exceptions.hpp src/include/lib/string_lib.hpp
 	g++ -Isrc/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/logger.cpp -o bin/logger.o
+
+bin/board_state_cache.o: src/board_state_cache.cpp \
+ src/include/lib/board_state_cache.hpp \
+ src/include/lib/serial_io_types.hpp src/include/lib/config.hpp \
+ src/include/lib/tprotect_base.hpp src/include/lib/exceptions.hpp \
+ src/include/lib/string_lib.hpp \
+ src/include/lib/outgoing_message_queue.hpp src/include/lib/logger.hpp \
+ src/include/lib/hvac_types.hpp \
+ src/include/lib/serial_io_type_operators.hpp
+	g++ -Isrc/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/board_state_cache.cpp -o bin/board_state_cache.o
 
 bin/message_callbacks.o: src/message_callbacks.cpp \
  src/include/lib/message_callbacks.hpp src/include/lib/logger.hpp \

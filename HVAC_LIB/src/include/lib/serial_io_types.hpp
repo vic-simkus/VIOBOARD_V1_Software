@@ -55,60 +55,60 @@ namespace BBB_HVAC
 		 */
 		class CACHE_ENTRY_BASE
 		{
-		public:
+			public:
 
-			/**
-			 * Constructor.
-			 */
-			CACHE_ENTRY_BASE();
+				/**
+				 * Constructor.
+				 */
+				CACHE_ENTRY_BASE();
 
-			/**
-			 * Copy constructor.
-			 * \param _src Source of the copy.
-			 */
-			CACHE_ENTRY_BASE( const CACHE_ENTRY_BASE& _src );
+				/**
+				 * Copy constructor.
+				 * \param _src Source of the copy.
+				 */
+				CACHE_ENTRY_BASE( const CACHE_ENTRY_BASE& _src );
 
-			/**
-			 * Destructor.
-			 */
-			virtual ~CACHE_ENTRY_BASE();
+				/**
+				 * Destructor.
+				 */
+				virtual ~CACHE_ENTRY_BASE();
 
-			/**
-			 * Constructor that initializes the instance from the string representation.
-			 * To put it in Java terms - deserialises an instance.
-			 * @param _source String representation of the object.
-			 */
-			explicit CACHE_ENTRY_BASE( const std::string& _source );
+				/**
+				 * Constructor that initializes the instance from the string representation.
+				 * To put it in Java terms - deserialises an instance.
+				 * @param _source String representation of the object.
+				 */
+				explicit CACHE_ENTRY_BASE( const std::string& _source );
 
-			/**
-			 * Converts the instance to a human readable string.  Used for debugging purposes and for serializing to the shims.
-			 */
-			std::string to_string( void ) const;
+				/**
+				 * Converts the instance to a human readable string.  Used for debugging purposes and for serializing to the shims.
+				 */
+				std::string to_string( void ) const;
 
-			/**
-			 * Provides a mechanism for the derived class to provide its value in string form.  Used for serializing and deserializing.
-			 * @return
-			 */
-			virtual std::string value_to_string( void ) const = 0;
+				/**
+				 * Provides a mechanism for the derived class to provide its value in string form.  Used for serializing and deserializing.
+				 * @return
+				 */
+				virtual std::string value_to_string( void ) const = 0;
 
-			/**
-			 * Provides a mechanism for the derived class to populate its value from a string representation.
-			 * This method is invoked by from_string with a cleaned up value portion of the serialized string representation.
-			 * \param _str String value
-			 */
-			virtual void value_from_string( const std::string& _str ) = 0;
+				/**
+				 * Provides a mechanism for the derived class to populate its value from a string representation.
+				 * This method is invoked by from_string with a cleaned up value portion of the serialized string representation.
+				 * \param _str String value
+				 */
+				virtual void value_from_string( const std::string& _str ) = 0;
 
-		protected:
-			/**
-			 * Timestamp of the instantiation of the class.  Initialized in the constructor.
-			 */
-			timespec time_spec;
+			protected:
+				/**
+				 * Timestamp of the instantiation of the class.  Initialized in the constructor.
+				 */
+				timespec time_spec;
 
-			/**
-			 * Bit of a hack to get around the fact that you can't call pure virtual functions from a constructor.
-			 * Derived classes should call this from from their string constructor to complete the deserialization process.
-			 */
-			void from_string( const std::string& _source );
+				/**
+				 * Bit of a hack to get around the fact that you can't call pure virtual functions from a constructor.
+				 * Derived classes should call this from from their string constructor to complete the deserialization process.
+				 */
+				void from_string( const std::string& _source );
 
 		};
 
@@ -117,52 +117,52 @@ namespace BBB_HVAC
 		 */
 		class CACHE_ENTRY_16BIT : public CACHE_ENTRY_BASE
 		{
-		public:
-			/**
-			 * Constructor.
-			 */
-			CACHE_ENTRY_16BIT();
+			public:
+				/**
+				 * Constructor.
+				 */
+				CACHE_ENTRY_16BIT();
 
-			/**
-			 * Constructor.
-			 * @param _val Value of the entry.
-			 */
-			CACHE_ENTRY_16BIT( uint16_t _val );
+				/**
+				 * Constructor.
+				 * @param _val Value of the entry.
+				 */
+				CACHE_ENTRY_16BIT( uint16_t _val );
 
-			/**
-			 * Constructor.
-			 * \param _source String representation of an instance.  The class will be desrialized from the string representation.
-			 */
-			CACHE_ENTRY_16BIT( const std::string& _source );
+				/**
+				 * Constructor.
+				 * \param _source String representation of an instance.  The class will be desrialized from the string representation.
+				 */
+				CACHE_ENTRY_16BIT( const std::string& _source );
 
-			/**
-			 * Destructor.
-			 */
-			virtual ~CACHE_ENTRY_16BIT();
+				/**
+				 * Destructor.
+				 */
+				virtual ~CACHE_ENTRY_16BIT();
 
-			/**
-			 * Returns the instances value.
-			 * \return Instances value.
-			 */
-			uint16_t get_value( void ) const;
+				/**
+				 * Returns the instances value.
+				 * \return Instances value.
+				 */
+				uint16_t get_value( void ) const;
 
-			/**
-			 * Converts the instances value to a string.  Used for serialization.
-			 * @return Instances value as a string.
-			 */
-			virtual std::string value_to_string( void ) const;
+				/**
+				 * Converts the instances value to a string.  Used for serialization.
+				 * @return Instances value as a string.
+				 */
+				virtual std::string value_to_string( void ) const;
 
-			/**
-			 * Converts the supplied string to classes value.
-			 * @param _str String representation of the instance.  Used for deserialization.
-			 */
-			virtual void value_from_string( const std::string& _str );
+				/**
+				 * Converts the supplied string to classes value.
+				 * @param _str String representation of the instance.  Used for deserialization.
+				 */
+				virtual void value_from_string( const std::string& _str );
 
-		protected:
-			/**
-			 * Instances value.
-			 */
-			uint16_t value;
+			protected:
+				/**
+				 * Instances value.
+				 */
+				uint16_t value;
 		};
 
 		/**
@@ -170,53 +170,53 @@ namespace BBB_HVAC
 		 */
 		class CACHE_ENTRY_8BIT : public CACHE_ENTRY_BASE
 		{
-		public:
-			/**
-			 * Constructor.
-			 */
-			CACHE_ENTRY_8BIT();
+			public:
+				/**
+				 * Constructor.
+				 */
+				CACHE_ENTRY_8BIT();
 
-			/**
-			 * Constructor.
-			 * @param _val Instances value.
-			 */
-			CACHE_ENTRY_8BIT( uint8_t _val );
+				/**
+				 * Constructor.
+				 * @param _val Instances value.
+				 */
+				CACHE_ENTRY_8BIT( uint8_t _val );
 
-			/**
-			 * Constructor.
-			 * @param _source String representation of the class.  Used in deserialization.
-			 */
-			CACHE_ENTRY_8BIT( const std::string& _source );
+				/**
+				 * Constructor.
+				 * @param _source String representation of the class.  Used in deserialization.
+				 */
+				CACHE_ENTRY_8BIT( const std::string& _source );
 
-			/**
-			 * Destructor.
-			 */
-			virtual ~CACHE_ENTRY_8BIT();
+				/**
+				 * Destructor.
+				 */
+				virtual ~CACHE_ENTRY_8BIT();
 
-			/**
-			 * Gets the value associated with the instance.
-			 * @return Instances value.
-			 */
-			uint8_t get_value( void ) const;
+				/**
+				 * Gets the value associated with the instance.
+				 * @return Instances value.
+				 */
+				uint8_t get_value( void ) const;
 
-			/**
-			 * Converts the instances value to a string.
-			 * @return String representation of the value.
-			 */
-			virtual std::string value_to_string( void ) const;
+				/**
+				 * Converts the instances value to a string.
+				 * @return String representation of the value.
+				 */
+				virtual std::string value_to_string( void ) const;
 
-			/**
-			 * Converts a string into a value suitable for the instance.
-			 * @param _str String representation of the value.
-			 */
-			virtual void value_from_string( const std::string& _str );
+				/**
+				 * Converts a string into a value suitable for the instance.
+				 * @param _str String representation of the value.
+				 */
+				virtual void value_from_string( const std::string& _str );
 
-		protected:
+			protected:
 
-			/**
-			 * Instance value.
-			 */
-			uint8_t value;
+				/**
+				 * Instance value.
+				 */
+				uint8_t value;
 		};
 
 		/**
@@ -226,10 +226,10 @@ namespace BBB_HVAC
 		 */
 		class DO_CACHE_ENTRY : public CACHE_ENTRY_8BIT
 		{
-		public:
-			DO_CACHE_ENTRY();
-			DO_CACHE_ENTRY( uint8_t _value );
-			DO_CACHE_ENTRY( const std::string& _source );
+			public:
+				DO_CACHE_ENTRY();
+				DO_CACHE_ENTRY( uint8_t _value );
+				DO_CACHE_ENTRY( const std::string& _source );
 		};
 
 		/**
@@ -239,10 +239,10 @@ namespace BBB_HVAC
 		 */
 		class PMIC_CACHE_ENTRY : public CACHE_ENTRY_8BIT
 		{
-		public:
-			PMIC_CACHE_ENTRY();
-			PMIC_CACHE_ENTRY( uint8_t _value );
-			PMIC_CACHE_ENTRY( const std::string& _source );
+			public:
+				PMIC_CACHE_ENTRY();
+				PMIC_CACHE_ENTRY( uint8_t _value );
+				PMIC_CACHE_ENTRY( const std::string& _source );
 		};
 
 		/*
@@ -251,25 +251,25 @@ namespace BBB_HVAC
 		 */
 		class ADC_CACHE_ENTRY : public CACHE_ENTRY_16BIT
 		{
-		public:
+			public:
 
-			/**
-			 * Constructor.  Exists solely to make the compiler happy.
-			 */
-			ADC_CACHE_ENTRY();
+				/**
+				 * Constructor.  Exists solely to make the compiler happy.
+				 */
+				ADC_CACHE_ENTRY();
 
-			/**
-			 * Instantiates an object from the supplied string representation.
-			 * The format is expected to be: [Xsec.Xnsec:Val]
-			 * @param _source
-			 */
-			explicit ADC_CACHE_ENTRY( const std::string& _source );
+				/**
+				 * Instantiates an object from the supplied string representation.
+				 * The format is expected to be: [Xsec.Xnsec:Val]
+				 * @param _source
+				 */
+				explicit ADC_CACHE_ENTRY( const std::string& _source );
 
-			/**
-			 * The real constructor.  Initializes the value to the supplied parameter.
-			 * \param _val ADC value
-			 */
-			ADC_CACHE_ENTRY( uint16_t _val );
+				/**
+				 * The real constructor.  Initializes the value to the supplied parameter.
+				 * \param _val ADC value
+				 */
+				ADC_CACHE_ENTRY( uint16_t _val );
 		};
 
 		/**
@@ -277,10 +277,10 @@ namespace BBB_HVAC
 		*/
 		class CAL_VALUE_ENTRY : public CACHE_ENTRY_16BIT
 		{
-		public:
-			CAL_VALUE_ENTRY();
-			CAL_VALUE_ENTRY( uint16_t _val );
-			explicit CAL_VALUE_ENTRY( const std::string& _source );
+			public:
+				CAL_VALUE_ENTRY();
+				CAL_VALUE_ENTRY( uint16_t _val );
+				explicit CAL_VALUE_ENTRY( const std::string& _source );
 		};
 
 
@@ -290,32 +290,32 @@ namespace BBB_HVAC
 		 */
 		class OUTGOING_MESSAGE
 		{
-		public:
+			public:
 
-			OUTGOING_MESSAGE();
-			OUTGOING_MESSAGE( const unsigned char* _buffer, const size_t _length );
-			OUTGOING_MESSAGE( const OUTGOING_MESSAGE& _src );
-			~OUTGOING_MESSAGE();
+				OUTGOING_MESSAGE();
+				OUTGOING_MESSAGE( const unsigned char* _buffer, const size_t _length );
+				OUTGOING_MESSAGE( const OUTGOING_MESSAGE& _src );
+				~OUTGOING_MESSAGE();
 
-			/**
-			 * Data buffer.
-			 */
-			std::shared_ptr<unsigned char> message;
+				/**
+				 * Data buffer.
+				 */
+				std::shared_ptr<unsigned char> message;
 
-			/**
-			 * Length of the data buffer.
-			 */
-			size_t message_length;
+				/**
+				 * Length of the data buffer.
+				 */
+				size_t message_length;
 
-			/**
-			 * Has the message been sent yet.  Set to true when the message is submitted for transmittal and cleared once the message is sent.
-			 */
-			bool is_new;
+				/**
+				 * Has the message been sent yet.  Set to true when the message is submitted for transmittal and cleared once the message is sent.
+				 */
+				bool is_new;
 
-			/**
-			 * Message ID.  A sequential number that is incremented with each message.
-			 */
-			unsigned long id;
+				/**
+				 * Message ID.  A sequential number that is incremented with each message.
+				 */
+				unsigned long id;
 		};
 
 		/**
@@ -337,45 +337,45 @@ namespace BBB_HVAC
 		 */
 		class LINE_TABLE
 		{
-		public:
+			public:
 
-			/**
-			 * \brief Constructor.
-			 */
-			inline LINE_TABLE() {
-				this->table = ( unsigned char** ) malloc( sizeof( unsigned char* ) * GC_SERIAL_LINE_TABLE_ENTRIES );
+				/**
+				 * \brief Constructor.
+				 */
+				inline LINE_TABLE() {
+					this->table = ( unsigned char** ) malloc( sizeof( unsigned char* ) * GC_SERIAL_LINE_TABLE_ENTRIES );
 
-				for( int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ ) {
-					this->table[i] = ( unsigned char* ) malloc( GC_SERIAL_BUFF_SIZE * sizeof( unsigned char ) );
-					memset( this->table[i], 0xFF, GC_SERIAL_BUFF_SIZE * sizeof( unsigned char ) );
+					for ( int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ ) {
+						this->table[i] = ( unsigned char* ) malloc( GC_SERIAL_BUFF_SIZE * sizeof( unsigned char ) );
+						memset( this->table[i], 0xFF, GC_SERIAL_BUFF_SIZE * sizeof( unsigned char ) );
+					}
+
+					this->index = 0;
 				}
 
-				this->index = 0;
-			}
+				/**
+				 * \brief Destructor.
+				 */
+				inline ~LINE_TABLE() {
+					for ( int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ ) {
+						free( this->table[i] );
+						this->table[i] = nullptr;
+					}
 
-			/**
-			 * \brief Destructor.
-			 */
-			inline ~LINE_TABLE() {
-				for( int i = 0; i < GC_SERIAL_LINE_TABLE_ENTRIES; i++ ) {
-					free( this->table[i] );
-					this->table[i] = nullptr;
+					free( this->table );
+					this->table = nullptr;
 				}
 
-				free( this->table );
-				this->table = nullptr;
-			}
+				/**
+				 * Table entries.
+				 */
+				unsigned char** table;
 
-			/**
-			 * Table entries.
-			 */
-			unsigned char** table;
-
-			/**
-			 * Index of the current entry.
-			 * XXX - management of this is ... interesting at best.
-			 */
-			size_t index;
+				/**
+				 * Index of the current entry.
+				 * XXX - management of this is ... interesting at best.
+				 */
+				size_t index;
 		};
 
 		/**

@@ -42,69 +42,69 @@ namespace BBB_HVAC
 	 */
 	class BASE_CONTEXT : public MESSAGE_CALLBACK_BASE, public THREAD_BASE
 	{
-	public:
-		DEF_LOGGER;
+		public:
+			DEF_LOGGER;
 
-		friend void BBB_HVAC::comm_thread_func( void* );
+			friend void BBB_HVAC::comm_thread_func( void* );
 
-		/**
-		 * Invoked by the comm_thread every time a new message comes in.  The base implementation handles the HELLO, PING, and PONG messages.  It ignores all other
-		 * types of messages.  The subclasses are expected to call the method in the base class and handle any messages that are not ignored any way they see fit.
-		 */
-		ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
+			/**
+			 * Invoked by the comm_thread every time a new message comes in.  The base implementation handles the HELLO, PING, and PONG messages.  It ignores all other
+			 * types of messages.  The subclasses are expected to call the method in the base class and handle any messages that are not ignored any way they see fit.
+			 */
+			ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
 
-		/**
-		 * Constructor
-		 */
-		BASE_CONTEXT( const string& _tag );
+			/**
+			 * Constructor
+			 */
+			BASE_CONTEXT( const string& _tag );
 
-		/**
-		 * Destructor
-		 */
-		virtual ~BASE_CONTEXT();
+			/**
+			 * Destructor
+			 */
+			virtual ~BASE_CONTEXT();
 
-		/**
-		 * File descriptor
-		 */
-		int remote_socket;
+			/**
+			 * File descriptor
+			 */
+			int remote_socket;
 
-		/**
-		 * Address struct.
-		 */
-		struct sockaddr_un socket_struct;
+			/**
+			 * Address struct.
+			 */
+			struct sockaddr_un socket_struct;
 
-		/**
-		 * Client thread context.
-		 */
-		pthread_t thread_ctx;
+			/**
+			 * Client thread context.
+			 */
+			pthread_t thread_ctx;
 
-		/**
-		 * Associated message processor.
-		 */
-		MESSAGE_PROCESSOR* message_processor;
+			/**
+			 * Associated message processor.
+			 */
+			MESSAGE_PROCESSOR* message_processor;
 
-		/**
-		 * Human readable instance tag intended for logging/debugging.
-		 */
-		string instance_tag;
+			/**
+			 * Human readable instance tag intended for logging/debugging.
+			 */
+			string instance_tag;
 
-		struct timeval select_timeout_tv;
+			struct timeval select_timeout_tv;
 
-		int timeout_counter;
+			int timeout_counter;
 
-		const unsigned int max_pp_timeout;
+			const unsigned int max_pp_timeout;
 
-		timespec curr_time;
+			timespec curr_time;
 
-	protected:
-		bool select_timeout_happened( void ) throw( exception );
-		bool send_initial_ping( void ) throw( exception );
+		protected:
+			bool select_timeout_happened( void ) throw( exception );
+			bool send_initial_ping( void ) throw( exception );
 
-		bool thread_func( void );
+			bool thread_func( void );
 
-		LOGGING::LOGGER* logger;
+			LOGGING::LOGGER* logger;
 
-		bool is_in_client_mode;
+			bool is_in_client_mode;
 
 	};
 
@@ -118,17 +118,17 @@ namespace BBB_HVAC
 		 */
 		class HS_SERVER_CONTEXT: public BASE_CONTEXT
 		{
-		public:
-			DEF_LOGGER;
-			/**
-			 * Constructor.
-			 */
-			HS_SERVER_CONTEXT();
+			public:
+				DEF_LOGGER;
+				/**
+				 * Constructor.
+				 */
+				HS_SERVER_CONTEXT();
 
-			/**
-			 * Destructor.
-			 */
-			~HS_SERVER_CONTEXT();
+				/**
+				 * Destructor.
+				 */
+				~HS_SERVER_CONTEXT();
 		};
 
 		/**
@@ -136,23 +136,23 @@ namespace BBB_HVAC
 		 */
 		class HS_CLIENT_CONTEXT: public BASE_CONTEXT
 		{
-		public:
-			DEF_LOGGER;
-			/**
-			 * Constructor
-			 * \param _client_socket Client file descriptor returned by the 'accept' call.
-			 */
-			HS_CLIENT_CONTEXT( int _client_socket );
+			public:
+				DEF_LOGGER;
+				/**
+				 * Constructor
+				 * \param _client_socket Client file descriptor returned by the 'accept' call.
+				 */
+				HS_CLIENT_CONTEXT( int _client_socket );
 
-			/**
-			 * Destructor.
-			 */
-			~HS_CLIENT_CONTEXT();
+				/**
+				 * Destructor.
+				 */
+				~HS_CLIENT_CONTEXT();
 
-			/**
-			 * Processes all incomming messages.  Message is first offered to BASE_CONTEXT implementation of the method.  If that method ignores it then this method will handle the message.
-			 */
-			virtual ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
+				/**
+				 * Processes all incoming messages.  Message is first offered to BASE_CONTEXT implementation of the method.  If that method ignores it then this method will handle the message.
+				 */
+				virtual ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
 
 		};
 	}
@@ -164,53 +164,53 @@ namespace BBB_HVAC
 	{
 		class CLIENT_CONTEXT: public BASE_CONTEXT
 		{
-		public:
-			/**
-			 * Logger.
-			 */
-			DEF_LOGGER;
+			public:
+				/**
+				 * Logger.
+				 */
+				DEF_LOGGER;
 
-			/**
-			 * Constructor.
-			 */
-			~CLIENT_CONTEXT();
+				/**
+				 * Constructor.
+				 */
+				~CLIENT_CONTEXT();
 
-			/**
-			 * Connets to the server process.
-			 */
-			void connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR );
+				/**
+				 * Connets to the server process.
+				 */
+				void connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR );
 
-			/**
-			 * Disconnects from the server process.
-			 */
-			void disconnect( void ) throw( EXCEPTIONS::PROTOCOL_ERROR );
+				/**
+				 * Disconnects from the server process.
+				 */
+				void disconnect( void ) throw( EXCEPTIONS::PROTOCOL_ERROR );
 
-			/**
-			 * Sends a message to the remote peer and waits for a response.
-			 * \return An instance of the reply message
-			 */
-			MESSAGE_PTR send_message_and_wait( MESSAGE_PTR& _message ) throw( exception );
+				/**
+				 * Sends a message to the remote peer and waits for a response.
+				 * \return An instance of the reply message
+				 */
+				MESSAGE_PTR send_message_and_wait( MESSAGE_PTR& _message ) throw( exception );
 
-			bool send_message( MESSAGE_PTR& _message ) throw( exception );
+				bool send_message( MESSAGE_PTR& _message ) throw( exception );
 
 
-			ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
+				ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
 
-			inline static CLIENT_CONTEXT* create_instance( void ) {
-				return new CLIENT_CONTEXT();
-			}
+				inline static CLIENT_CONTEXT* create_instance( void ) {
+					return new CLIENT_CONTEXT();
+				}
 
-		protected:
+			protected:
 
-			/**
-			 * Constructor.
-			 * We hide the constructor so that we can't just create instances on the stack because the comm_thread takes ownership of the pointer.
-			 */
-			CLIENT_CONTEXT();
+				/**
+				 * Constructor.
+				 * We hide the constructor so that we can't just create instances on the stack because the comm_thread takes ownership of the pointer.
+				 */
+				CLIENT_CONTEXT();
 
-			pthread_cond_t incomming_message_cond;
+				pthread_cond_t incomming_message_cond;
 
-		private:
+			private:
 
 		};
 	}
