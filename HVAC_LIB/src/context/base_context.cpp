@@ -106,7 +106,7 @@ bool BASE_CONTEXT::select_timeout_happened( void ) throw( exception )
 			/*
 			 * We have not received a PONG response ever  That includes the initial ping.
 			 */
-			if( ( curr_time.tv_sec - o_ping->get_message_sent_timestamp()->tv_sec ) >= this->max_pp_timeout )
+			if( ( curr_time.tv_sec - o_ping->get_message_sent_timestamp()->tv_sec ) >= (time_t)this->max_pp_timeout )
 			{
 				/*
 				 * If the alloted time for the initial PONG response has elapsed, drop the connection.
@@ -125,7 +125,7 @@ bool BASE_CONTEXT::select_timeout_happened( void ) throw( exception )
 			const timespec* pong_t = i_pong->get_message_received_timestamp();
 			time_t elapsed_time = ( pong_t->tv_sec - ping_t->tv_sec );
 
-			if( elapsed_time > this->max_pp_timeout )
+			if( elapsed_time > (time_t)this->max_pp_timeout )
 			{
 				LOG_ERROR( "Dropping connection; last PONG too old: " + num_to_str( ( i_pong->get_message_received_timestamp()->tv_sec - o_ping->get_message_sent_timestamp()->tv_sec ) ) + " seconds." );
 				rc = true;
