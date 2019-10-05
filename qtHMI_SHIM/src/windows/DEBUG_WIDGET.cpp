@@ -19,8 +19,43 @@
  */
 
 #include "DEBUG_WIDGET.h"
+#include "widgets/DEBUG_FORCE_WIDGET.h"
+
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSpacerItem>
+
+#include "globals.h"
 
 DEBUG_WIDGET::DEBUG_WIDGET( const QString& _board_id ) : QFrame( )
 {
 	this->board_tag = _board_id;
+	//this->setLayout( new QVBoxLayout() );
+	QHBoxLayout* h_layout = new QHBoxLayout();
+	QVBoxLayout* v_layout = new QVBoxLayout();
+	//this->layout()->addItem( h_layout );
+	h_layout->setContentsMargins( 4, 4, 4, 4 );
+	h_layout->setSpacing( 2 );
+
+	for ( size_t i = 0; i < AI_COUNT; i++ )
+	{
+		this->force_widget[i] = new DEBUG_FORCE_WIDGET( "AI" + QString::number( i ), i );
+		h_layout->addWidget( this->force_widget[i] );
+	}
+
+	v_layout->addItem( h_layout );
+	v_layout->addItem( new QSpacerItem( 1, 1, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding ) );
+	this->setLayout( v_layout );
+	connect( &message_bus, SIGNAL( sig_raw_adc_value_changed( const QString&, uint8_t , uint16_t ) ) , this, SLOT( slot_raw_adc_value_changed( const QString&, uint8_t , uint16_t ) ) ) ;
+}
+
+void DEBUG_WIDGET::slot_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value )
+{
+	if ( _board != this->board_tag )
+	{
+		return;
+	}
+
+	this->force_widget[_io]->slot_update_real_value( _value );
+	return;
 }

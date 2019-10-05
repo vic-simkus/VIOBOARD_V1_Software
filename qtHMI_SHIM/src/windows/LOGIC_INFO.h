@@ -46,6 +46,7 @@ class LOGIC_INFO : public QFrame
 		QTimer* timer;
 		QGroupBox* group_logic_points;
 		QGroupBox* group_io_points;
+		QGroupBox* group_point_map;
 
 		QSplitter* splitter_io_points;
 		QSplitter* splitter_main_window;
@@ -58,6 +59,8 @@ class LOGIC_INFO : public QFrame
 		QTableWidget* table_point_values;
 
 		void dump_message_parts( BBB_HVAC::MESSAGE_PTR& _message );
+
+		void setup_splitter_handle( QSplitter* _splitter );
 
 	private slots:
 		void slot_update_labels( void );

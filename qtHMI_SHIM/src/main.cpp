@@ -22,6 +22,11 @@
 #include "windows/MAIN_WINDOW.h"
 
 #include "globals.h"
+#include "board_info.h"
+
+DEF_LOGGER_STAT( "MAIN" );
+
+MESSAGE_BUS message_bus;
 
 uint16_t
 checksum( uint16_t const data[], int nWords )
@@ -51,6 +56,9 @@ int main( int argc, char* argv[] )
 {
 	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	GLOBALS::configure_signals( );
+	LOG_DEBUG_STAT( "ADC ref: " + num_to_str( AI_ADC_REF ) );
+	LOG_DEBUG_STAT( "ADC steps: " + num_to_str( AI_STEPS ) );
+	LOG_DEBUG_STAT( "ADC step: " + num_to_str( AI_ADC_STEP ) );
 	QApplication app( argc, argv );
 	MAIN_WINDOW main_window;
 	main_window.show( );

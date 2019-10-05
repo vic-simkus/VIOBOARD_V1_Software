@@ -17,21 +17,20 @@
  *
  * Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
  */
+#ifndef MESSAGE_BUS_H
+#define MESSAGE_BUS_H
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#include <QObject>
 
-#include "MESSAGE_BUS.h"
-#include "lib/bbb_hvac.hpp"
+class MESSAGE_BUS : public QObject
+{
+		Q_OBJECT;
+	public:
+		MESSAGE_BUS();
+	public slots:
+		void slot_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value );
+	signals:
+		void sig_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value );
+};
 
-using namespace std;
-using namespace BBB_HVAC;
-using namespace BBB_HVAC::CLIENT;
-
-extern CLIENT_CONTEXT* ctx;
-
-
-extern MESSAGE_BUS message_bus;
-
-#endif /* GLOBALS_H */
-
+#endif

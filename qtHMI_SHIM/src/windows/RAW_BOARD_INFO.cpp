@@ -21,14 +21,21 @@
 #include "RAW_BOARD_INFO.h"
 #include "BOARD_INFO_WIDGET.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSpacerItem>
 
 RAW_BOARD_INFO::RAW_BOARD_INFO( QWidget* _p ) : QFrame( _p )
 {
 	this->main_widget = new QTabWidget( this );
-	this->setLayout( new QVBoxLayout( this ) );
-	this->layout()->addWidget( this->main_widget );
+	QHBoxLayout* h_layout = new QHBoxLayout();
+	QVBoxLayout* v_layout = new QVBoxLayout();
+	h_layout->addWidget( this->main_widget );
+	h_layout->addItem( new QSpacerItem( 1, 1, QSizePolicy::MinimumExpanding, QSizePolicy::Fixed ) );
 	this->main_widget->addTab( new BOARD_INFO_WIDGET( "BOARD1" ), "BOARD1" );
 	this->main_widget->addTab( new BOARD_INFO_WIDGET( "BOARD2" ), "BOARD2" );
+	v_layout->addItem( h_layout );
+	v_layout->addItem( new QSpacerItem( 1, 1, QSizePolicy::Fixed, QSizePolicy::MinimumExpanding ) );
+	this->setLayout( v_layout );
 }
 
 

@@ -26,7 +26,7 @@
 #include <QLabel>
 #include <QTableWidgetItem>
 #include <QHeaderView>
-
+#include <QSplitterHandle>
 DEF_LOGGER_STAT( "LOGIC_INFO" );
 
 LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
@@ -34,17 +34,27 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	this->setLayout( new QVBoxLayout( this ) );
 	this->splitter_main_window = new QSplitter( Qt::Vertical, this );
 	this->layout( )->addWidget( this->splitter_main_window );
+	// Create group splitters
+	this->splitter_io_points = new QSplitter( Qt::Horizontal, nullptr );
+	this->splitter_logic_points = new QSplitter( Qt::Horizontal, nullptr );
+	// Create groups
+	// Create IO point group
 	this->group_io_points = new QGroupBox( "I/O Points", nullptr );
-	this->group_logic_points = new QGroupBox( "Logic/Runtime Points", nullptr );
-	this->splitter_main_window->addWidget( this->group_io_points );
-	this->splitter_main_window->addWidget( this->group_logic_points );
-	this->splitter_io_points = new QSplitter( Qt::Horizontal, this->group_io_points );
-	this->group_io_points->setLayout( new QHBoxLayout( nullptr ) );
+	this->group_io_points->setLayout( new QVBoxLayout( nullptr ) );
 	this->group_io_points->layout( )->addWidget( this->splitter_io_points );
-	QFrame* temp_frame = nullptr;
-	this->splitter_logic_points = new QSplitter( Qt::Horizontal, this->group_logic_points );
+	// Create point map group
+	this->group_point_map = new QGroupBox( "Point Mappings", nullptr );
+	this->group_point_map->setLayout( new QVBoxLayout( nullptr ) );
+	// Create logic point map
+	this->group_logic_points = new QGroupBox( "Logic/Runtime Points", nullptr );
 	this->group_logic_points->setLayout( new QVBoxLayout( nullptr ) );
 	this->group_logic_points->layout( )->addWidget( this->splitter_logic_points );
+	// Add groups to main window splitter
+	this->splitter_main_window->addWidget( this->group_io_points );
+	this->splitter_main_window->addWidget( this->group_point_map );
+	this->splitter_main_window->addWidget( this->group_logic_points );
+	// Temp variable
+	QFrame* temp_frame = nullptr;
 	/*
 	 * Setup the set point widgets
 	 */
@@ -80,11 +90,10 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	/*
 	 * Setup the MAP widgets
 	 */
-	temp_frame = new QFrame( this->group_io_points );
+	temp_frame = new QFrame( this->group_point_map );
 	temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
-	temp_frame->layout( )->addWidget( new QLabel( "<b>MAP Points" ) );
 	temp_frame->layout( )->addWidget( this->table_map_points = new QTableWidget( nullptr ) );
-	this->splitter_io_points->addWidget( temp_frame );
+	this->group_point_map->layout()->addWidget( temp_frame );
 	/*
 	 * Setup the TableWidget stuffs.
 	 */
@@ -145,9 +154,15 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	/*
 	 * Set splitter ratios
 	 */
-	this->splitter_io_points->setStretchFactor( 0, 2 );
-	this->splitter_io_points->setStretchFactor( 1, 2 );
-	this->splitter_io_points->setStretchFactor( 2, 5 );
+	this->splitter_main_window->setStretchFactor( 0, 6 );
+	this->splitter_main_window->setStretchFactor( 1, 1 );
+	this->splitter_main_window->setStretchFactor( 2, 6 );
+	/*
+	Setup splitter handles.
+	*/
+	this->setup_splitter_handle( this->splitter_main_window );
+	this->setup_splitter_handle( this->splitter_io_points );
+	this->setup_splitter_handle( this->splitter_logic_points );
 	/*
 	 * Finished with the UI setup/generation
 	 */
@@ -161,6 +176,43 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 
 LOGIC_INFO::~LOGIC_INFO( )
 {
+}
+
+void LOGIC_INFO::setup_splitter_handle( QSplitter* _splitter )
+{
+	Q_ASSERT( _splitter != NULL );
+	_splitter->setHandleWidth( 10 );
+
+	for ( int i = 1; i < _splitter->count() ; i++ )
+	{
+		QSplitterHandle* handle = _splitter->handle( i );
+		Q_ASSERT( handle != NULL );
+		QLayout* handle_layout = nullptr;
+		QFrame* line = new QFrame();
+		line->setFrameShadow( QFrame::Raised );
+		line->setLineWidth( 3 );
+		line->setMidLineWidth( 1 );
+
+		if ( _splitter->orientation() == Qt::Horizontal )
+		{
+			// If the splitter layout is horizontal then the splitter handle will be vertical
+			handle_layout = new QVBoxLayout();
+			line->setFrameShape( QFrame::VLine );
+		}
+		else
+		{
+			// splitter layout is vertical therefore the handle will be horizontal
+			handle_layout = new QHBoxLayout();
+			line->setFrameShape( QFrame::HLine );
+		}
+
+		handle_layout->addWidget( line );
+		handle->setLayout( handle_layout );
+		handle_layout->setSpacing( 0 );
+		handle_layout->setMargin( 0 );
+	}
+
+	return;
 }
 
 void LOGIC_INFO::dump_message_parts( BBB_HVAC::MESSAGE_PTR& _message )

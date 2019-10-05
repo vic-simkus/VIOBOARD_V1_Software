@@ -20,14 +20,19 @@
 
 
 #include "globals.h"
+#include "board_info.h"
 
 #include <QFrame>
+class DEBUG_FORCE_WIDGET;
 
 class DEBUG_WIDGET : public QFrame
 {
 		Q_OBJECT;
 	public:
 		DEBUG_WIDGET( const QString& _board_id );
+	protected slots:
+		void slot_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value );
 	protected:
 		QString board_tag;
+		DEBUG_FORCE_WIDGET* force_widget[AI_COUNT];
 };

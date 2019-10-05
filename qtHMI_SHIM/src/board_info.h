@@ -40,7 +40,9 @@
 #define PMIC_DO_ERR_MASK 0x08
 
 
-#define AI_STEPS 4096
+#define AI_STEPS (4096)
+#define AI_ADC_REF ((float)5.0)
+#define AI_ADC_STEP ((float)AI_ADC_REF / (float)AI_STEPS)
 
 
 

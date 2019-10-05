@@ -16,7 +16,9 @@ HEADERS = src/widgets/AI_RAW_VALUE.h \
 	src/widgets/PMIC_INDICATOR.h \
 	src/windows/RAW_BOARD_INFO.h \
 	src/windows/DEBUG_FRAME.h \
-	src/windows/DEBUG_WIDGET.h
+	src/windows/DEBUG_WIDGET.h \
+	src/widgets/DEBUG_FORCE_WIDGET.h\
+	src/MESSAGE_BUS.h
 
 SOURCES = src/widgets/AI_RAW_VALUE.cpp \
 	src/windows/BOARD_INFO_WIDGET.cpp \
@@ -29,11 +31,13 @@ SOURCES = src/widgets/AI_RAW_VALUE.cpp \
 	src/windows/RAW_BOARD_INFO.cpp \
 	src/widgets/AI_VALUE.cpp \
 	src/windows/DEBUG_FRAME.cpp \
-	src/windows/DEBUG_WIDGET.cpp
+	src/windows/DEBUG_WIDGET.cpp \
+	src/widgets/DEBUG_FORCE_WIDGET.cpp \
+	src/MESSAGE_BUS.cpp
 
 LIBS += -L../HVAC_LIB/bin -lHVAC_LIB
 INCLUDEPATH += "../HVAC_LIB/src/include" "./src/"
-CONFIG += qt
+CONFIG += qt debug
 
 QMAKE_CXXFLAGS += -Wno-deprecated 
 

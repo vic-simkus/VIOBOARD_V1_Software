@@ -17,21 +17,14 @@
  *
  * Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
  */
-
-#ifndef GLOBALS_H
-#define GLOBALS_H
-
 #include "MESSAGE_BUS.h"
-#include "lib/bbb_hvac.hpp"
 
-using namespace std;
-using namespace BBB_HVAC;
-using namespace BBB_HVAC::CLIENT;
+MESSAGE_BUS::MESSAGE_BUS() : QObject()
+{
+	return;
+}
 
-extern CLIENT_CONTEXT* ctx;
-
-
-extern MESSAGE_BUS message_bus;
-
-#endif /* GLOBALS_H */
-
+void MESSAGE_BUS::slot_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value )
+{
+	this->sig_raw_adc_value_changed( _board, _io, _value );
+}
