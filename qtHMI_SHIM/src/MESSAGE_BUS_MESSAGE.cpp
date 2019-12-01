@@ -55,3 +55,8 @@ MESSAGE_BUS::MESSAGE MESSAGE_BUS::MESSAGE::create_message_set_cal_vals( const QS
 
 	return MESSAGE( _board_id, COMMANDS::SET_CAL_VALS, QVariant( parms ) );
 }
+
+MESSAGE_BUS::MESSAGE MESSAGE_BUS::MESSAGE::create_message_set_do_status( const QString& _board_id, const uint8_t _do_status )
+{
+	return MESSAGE( _board_id, COMMANDS::SET_DO, QVariant( _do_status ) );
+}

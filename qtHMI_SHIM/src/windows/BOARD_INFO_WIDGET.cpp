@@ -420,48 +420,22 @@ void BOARD_INFO_WIDGET::cmd_reset_ai_pmic_clicked( void )
 void BOARD_INFO_WIDGET::cmd_enable_do_clicked( int _do )
 {
 	this->timer->stop( );
-	MESSAGE_PTR m;// = this->update_data_and_return( );
-	const vector<string>& parts = m->get_parts( );
-	IOCOMM::DO_CACHE_ENTRY do_value( parts[AI_COUNT] );
-	uint8_t mask;
-	uint8_t status = do_value.get_value( );
 
-	switch ( _do )
+	uint8_t do_bits = 0;
+
+	for ( auto i = 0; i < DO_COUNT; i++ )
 	{
-		case 0:
-			mask = DO_1_MASK;
-			break;
-
-		case 1:
-			mask = DO_2_MASK;
-			break;
-
-		case 2:
-			mask = DO_3_MASK;
-			break;
-
-		case 3:
-			mask = DO_4_MASK;
-			break;
+		if ( i == _do )
+		{
+			do_bits |= ( !( this->do_values[i]->get_enabled() ) << i ); // invert the current value if this is the DO that was clicked on.
+		}
+		else
+		{
+			do_bits |= ( ( this->do_values[i]->get_enabled() ) << i ); // leave everything alone.
+		}
 	}
 
-	if ( status & mask )
-	{
-		/*
-		 * Output is enabled
-		 */
-		status = status & ( ~mask );
-	}
-	else
-	{
-		/*
-		 * Output is disabled
-		 */
-		status = status | mask;
-	}
+	message_bus->add_message( MESSAGE_BUS::MESSAGE::create_message_set_do_status( this->board_id, do_bits ) );
 
-	//m = ctx->message_processor->create_set_status( this->board_id.toStdString(), status );
-	//ctx->send_message( m );
-	this->update_data( );
 	this->timer->start( DATA_UPDATE_TIMER );
 }

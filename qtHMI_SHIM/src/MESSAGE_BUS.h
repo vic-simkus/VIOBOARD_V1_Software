@@ -68,6 +68,7 @@ class MESSAGE_BUS : public QObject
 			GET_STATUS,
 			/// Sets the calibration values on a board.
 			SET_CAL_VALS,
+			SET_DO,
 			SET_PMIC
 		};
 
@@ -86,6 +87,7 @@ class MESSAGE_BUS : public QObject
 
 			public:
 				static MESSAGE create_message_set_cal_vals( const QString& _board_id, const QVector<uint16_t>& _cal_val_l1, const QVector<uint16_t>& _cal_val_l2 );
+				static MESSAGE create_message_set_do_status( const QString& _board_id, const uint8_t _do_status );
 		};
 
 		/**

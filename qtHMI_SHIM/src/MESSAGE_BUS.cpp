@@ -160,6 +160,11 @@ void MESSAGE_BUS::process_commands( void )
 				message = this->ctx->send_message_and_wait( message );
 				this->emit_logic_status_update_message( c.command, message );
 				break;
+
+			case COMMANDS::SET_DO:
+				message = this->ctx->message_processor->create_set_status( c.board_id.toStdString(), ( uint8_t )c.payload.toUInt() );
+				this->ctx->send_message( message );
+				break;
 		};
 	}
 }
@@ -188,13 +193,12 @@ void MESSAGE_BUS::set_cal_vals( const MESSAGE_BUS::MESSAGE& _message )
 	// At this point the calibration_values array contains all of the calibration values converted from the various QVariants.
 	message = this->ctx->message_processor->create_set_l1_cal_vals( _message.board_id.toStdString(), calibration_values );
 	this->ctx->send_message( message );
-	LOG_DEBUG_STAT( "L1 cal vals: " + message->to_string() );
+	//LOG_DEBUG_STAT( "L1 cal vals: " + message->to_string() );
 
 	variant_list_to_cal_array( calibration_values, payload.at( 1 ).toList() );
 	message = this->ctx->message_processor->create_set_l2_cal_vals( _message.board_id.toStdString(), calibration_values );
 	this->ctx->send_message( message );
-	LOG_DEBUG_STAT( "L2 cal vals: " + message->to_string() );
-
+	//LOG_DEBUG_STAT( "L2 cal vals: " + message->to_string() );
 
 	return;
 }
