@@ -58,6 +58,12 @@ char* trim_string_right( char* str );
 std::string join_vector( const std::vector<std::string>& _vect, char _char );
 
 /**
+	Converts the supplied byte (_n) into a binary string representation in little endian format.
+	\param _n Byte to be converted
+	\return A string containing binary representation.
+*/
+std::string byte_to_bit_string( uint8_t _n );
+/**
  * Converts a number to a string.
  * \param _i Number to be converted
  * \return An std::string instance containing the string representation of the number.

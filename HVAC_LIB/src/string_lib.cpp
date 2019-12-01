@@ -41,23 +41,23 @@
 
 char* trim_string_left( char* str )
 {
-	if( str == 0 )
+	if ( str == 0 )
 	{
 		return str;
 	}
 
 	size_t str_len = strlen( str );
 
-	if( str_len == 0 )
+	if ( str_len == 0 )
 	{
 		return str;
 	}
 
 	size_t i = 0;
 
-	for( i = 0; i < strlen( str ); i++ )
+	for ( i = 0; i < strlen( str ); i++ )
 	{
-		if( isspace( str[i] ) == 0 )
+		if ( isspace( str[i] ) == 0 )
 		{
 			break;
 		}
@@ -65,12 +65,12 @@ char* trim_string_left( char* str )
 
 	size_t i2 = 0;
 
-	if( i > 0 )
+	if ( i > 0 )
 	{
 		/*
 		 * Move the whole string before the begining white space.
 		 */
-		for( i2 = i; i2 < str_len; i2++ )
+		for ( i2 = i; i2 < str_len; i2++ )
 		{
 			char c = str[i2];
 			size_t ni = i2 - i;
@@ -85,23 +85,23 @@ char* trim_string_left( char* str )
 
 char* trim_string_right( char* str )
 {
-	if( str == 0 )
+	if ( str == 0 )
 	{
 		return str;
 	}
 
 	size_t str_len = strlen( str );
 
-	if( str_len == 0 )
+	if ( str_len == 0 )
 	{
 		return str;
 	}
 
 	size_t i = 0;
 
-	for( i = str_len; i > 0; i-- )
+	for ( i = str_len; i > 0; i-- )
 	{
-		if( str[i] != 0 && isspace( str[i] ) == 0 )
+		if ( str[i] != 0 && isspace( str[i] ) == 0 )
 		{
 			break;
 		}
@@ -120,11 +120,11 @@ std::string join_vector( const std::vector<std::string>& _vect, char _char )
 {
 	std::stringstream ret;
 
-	for( std::vector<std::string>::const_iterator it = _vect.begin(); it != _vect.end(); ++it )
+	for ( std::vector<std::string>::const_iterator it = _vect.begin(); it != _vect.end(); ++it )
 	{
 		ret << *it;
 
-		if( it + 1 != _vect.end() )
+		if ( it + 1 != _vect.end() )
 		{
 			ret << _char;
 		}
@@ -141,7 +141,7 @@ bool test_string_lib( void )
 	char* str = 0;
 	int i = 0;
 
-	while( TEST_STR[i] != 0 )
+	while ( TEST_STR[i] != 0 )
 	{
 		str = ( char* ) malloc( strlen( TEST_STR[i] ) );
 		strcpy( str, TEST_STR[i] );
@@ -192,7 +192,7 @@ std::string num_to_str( double _i )
 
 std::string num_to_str( bool _i )
 {
-	if( _i )
+	if ( _i )
 	{
 		return "TRUE";
 	}
@@ -284,18 +284,18 @@ std::string buffer_to_hex( const unsigned char* _buff, const size_t _length, boo
 {
 	std::stringstream out;
 
-	for( size_t i = 0; i < _length; i++ )
+	for ( size_t i = 0; i < _length; i++ )
 	{
 		out << "0x" << char_to_hex( _buff[i] );
 
-		if( i + 1 < _length )
+		if ( i + 1 < _length )
 		{
 			out << ":";
 		}
 
-		if( _fancy )
+		if ( _fancy )
 		{
-			if( i > 0 && i % 8 == 0 )
+			if ( i > 0 && i % 8 == 0 )
 			{
 				out << std::endl;
 			}
@@ -304,18 +304,18 @@ std::string buffer_to_hex( const unsigned char* _buff, const size_t _length, boo
 
 	out << std::endl;
 
-	for( size_t i = 0; i < _length; i++ )
+	for ( size_t i = 0; i < _length; i++ )
 	{
 		out << "0x" << char_to_hex( ( unsigned char ) i );
 
-		if( i + 1 < _length )
+		if ( i + 1 < _length )
 		{
 			out << ":";
 		}
 
-		if( _fancy )
+		if ( _fancy )
 		{
-			if( i > 0 && i % 8 == 0 )
+			if ( i > 0 && i % 8 == 0 )
 			{
 				out << std::endl;
 			}
@@ -329,9 +329,9 @@ ssize_t find_last_index_of( const unsigned char* _str, const char _chr, const ss
 {
 	ssize_t i = _str_len;
 
-	for( ; i != 0; i-- )
+	for ( ; i != 0; i-- )
 	{
-		if( _str[i] == _chr )
+		if ( _str[i] == _chr )
 		{
 			return ( ssize_t ) i;
 		}
@@ -342,16 +342,16 @@ ssize_t find_last_index_of( const unsigned char* _str, const char _chr, const ss
 
 ssize_t find_index_of( const unsigned char* _str, const char _chr, const ssize_t _start_idx, const ssize_t _str_len )
 {
-	if( _start_idx >= _str_len )
+	if ( _start_idx >= _str_len )
 	{
 		return -1;
 	}
 
 	ssize_t i = _start_idx;
 
-	for( ; i < _str_len; i++ )
+	for ( ; i < _str_len; i++ )
 	{
-		if( _str[i] == _chr )
+		if ( _str[i] == _chr )
 		{
 			return i;
 		}
@@ -362,7 +362,7 @@ ssize_t find_index_of( const unsigned char* _str, const char _chr, const ssize_t
 
 void convert_vector_to_string( const std::vector<int>& _source, std::vector<std::string>& _dest )
 {
-	for( std::vector<int>::const_iterator i = _source.begin(); i != _source.end(); ++i )
+	for ( std::vector<int>::const_iterator i = _source.begin(); i != _source.end(); ++i )
 	{
 		_dest.push_back( num_to_str( *i ) );
 	}
@@ -372,7 +372,7 @@ void convert_vector_to_string( const std::vector<int>& _source, std::vector<std:
 
 void convert_vector_to_string( const std::vector<uint16_t>& _source, std::vector<std::string>& _dest )
 {
-	for( std::vector<uint16_t>::const_iterator i = _source.begin(); i != _source.end(); ++i )
+	for ( std::vector<uint16_t>::const_iterator i = _source.begin(); i != _source.end(); ++i )
 	{
 		_dest.push_back( num_to_str( *i ) );
 	}
@@ -387,7 +387,7 @@ uint16_t checksum( const uint16_t* _buffer, size_t _length )
 	/*
 	 * IP headers always contain an even number of bytes.
 	 */
-	while( _length -- > 0 )
+	while ( _length -- > 0 )
 	{
 		sum += * ( _buffer++ );
 	}
@@ -409,11 +409,11 @@ void split_string_to_vector( const std::string& _string, char _split, std::vecto
 	size_t current_match = 0;
 	_vector.clear();
 
-	while( 1 )
+	while ( 1 )
 	{
 		current_match = _string.find( _split, previous_match );
 
-		if( current_match == std::string::npos )
+		if ( current_match == std::string::npos )
 		{
 			_vector.push_back( _string.substr( previous_match, std::string::npos ) );
 			break;
@@ -424,4 +424,29 @@ void split_string_to_vector( const std::string& _string, char _split, std::vecto
 	}
 
 	return;
+}
+
+std::string byte_to_bit_string( uint8_t _n )
+{
+	std::string ret;
+
+	for ( size_t i = ( ( ( ( size_t )sizeof( _n ) ) * 8 ) - 1 ); ; i-- )
+
+	{
+		if ( ( ( _n >> i ) & 1 ) )
+		{
+			ret += '1';
+		}
+		else
+		{
+			ret += '0';
+		}
+
+		if ( i == 0 )
+		{
+			break;
+		}
+	}
+
+	return ret;
 }
