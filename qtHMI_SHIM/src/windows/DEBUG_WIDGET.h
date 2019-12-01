@@ -32,6 +32,11 @@ class DEBUG_WIDGET : public QFrame
 		DEBUG_WIDGET( const QString& _board_id );
 	protected slots:
 		void slot_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value );
+		void slot_toggle_clicked( unsigned int, bool _state, uint16_t _value );
+		void slot_reset_clicked( unsigned int );
+	signals:
+		void sig_ai_forced( const QString& _board, uint8_t _port, uint16_t _value );
+		void sig_ai_unforced( const QString& _board, uint8_t _port );
 	protected:
 		QString board_tag;
 		DEBUG_FORCE_WIDGET* force_widget[AI_COUNT];

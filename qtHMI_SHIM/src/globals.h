@@ -28,10 +28,7 @@ using namespace std;
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::CLIENT;
 
-extern CLIENT_CONTEXT* ctx;
-
-
-extern MESSAGE_BUS message_bus;
+extern MESSAGE_BUS* message_bus;
 
 #endif /* GLOBALS_H */
 

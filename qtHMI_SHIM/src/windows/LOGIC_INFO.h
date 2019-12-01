@@ -21,15 +21,15 @@
 #ifndef LOGIC_INFO_H
 #define LOGIC_INFO_H
 
+#include <QFrame>
+
 #include "lib/bbb_hvac.hpp"
 
-#include <QFrame>
-#include <QTimer>
-#include <QGroupBox>
-#include <QListWidget>
-#include <QTableWidget>
-#include <QSplitter>
-#include <QPushButton>
+#include "MESSAGE_BUS.h"
+
+class QGroupBox;
+class QSplitter;
+class QTableWidget;
 
 class LOGIC_INFO : public QFrame
 {
@@ -39,11 +39,10 @@ class LOGIC_INFO : public QFrame
 		virtual ~LOGIC_INFO( );
 
 	protected:
-		BBB_HVAC::CLIENT::CLIENT_CONTEXT* ctx;
 
 		void update_status( void );
 	private:
-		QTimer* timer;
+
 		QGroupBox* group_logic_points;
 		QGroupBox* group_io_points;
 		QGroupBox* group_point_map;
@@ -63,14 +62,10 @@ class LOGIC_INFO : public QFrame
 		void setup_splitter_handle( QSplitter* _splitter );
 
 	private slots:
-		void slot_update_labels( void );
-		void slot_update_data_timer( void );
-
-	signals:
-		void sig_update_start( void );
-		void sig_update_finish( void );
-
-
+		void slot_mb_label_data( MESSAGE_BUS::COMMANDS, const QVector<QVector<QString>>& _data );
+		void slot_mb_map_data( MESSAGE_BUS::COMMANDS _cmd, const QMap<QString, QVector<QString>>& _data );
+		void slot_mb_logic_status_update( MESSAGE_BUS::COMMANDS _cmd, const QMap<QString, QString>& _data );
+		void slot_mb_set_point_update( MESSAGE_BUS::COMMANDS _cmd, const QMap<QString, QString>& _data );
 } ;
 
 #endif /* LOGIC_INFO_H */

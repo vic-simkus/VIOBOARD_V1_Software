@@ -26,7 +26,7 @@
 
 DEF_LOGGER_STAT( "MAIN" );
 
-MESSAGE_BUS message_bus;
+MESSAGE_BUS* message_bus;
 
 uint16_t
 checksum( uint16_t const data[], int nWords )
@@ -60,7 +60,9 @@ int main( int argc, char* argv[] )
 	LOG_DEBUG_STAT( "ADC steps: " + num_to_str( AI_STEPS ) );
 	LOG_DEBUG_STAT( "ADC step: " + num_to_str( AI_ADC_STEP ) );
 	QApplication app( argc, argv );
+	message_bus = new MESSAGE_BUS( 10 );
 	MAIN_WINDOW main_window;
 	main_window.show( );
-	return app.exec( );
+	app.exec( );
+	delete message_bus;
 }

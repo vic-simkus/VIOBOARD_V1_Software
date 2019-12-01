@@ -4,5 +4,15 @@
 		{
 			"path": "."
 		}
-	]
+	],
+
+	"settings":
+	{
+		"ecc_common_flags":
+		[
+			"-I./src",
+			"-I./src/widgets",
+			"-I./src/windows"
+		]
+	}
 }

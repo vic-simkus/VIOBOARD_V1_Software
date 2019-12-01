@@ -36,7 +36,7 @@ class DEBUG_FORCE_WIDGET: public QFrame
 
 	signals:
 		void sig_reset_clicked( unsigned int );
-		void sig_toggle_clicked( unsigned int, bool _state );
+		void sig_toggle_clicked( unsigned int, bool _state, uint16_t _value );
 };
 
 #endif

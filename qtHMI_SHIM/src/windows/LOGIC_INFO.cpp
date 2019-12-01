@@ -22,11 +22,18 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QTimer>
 #include <QLabel>
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QSplitterHandle>
+#include <QGroupBox>
+#include <QListWidget>
+#include <QTableWidget>
+#include <QSplitter>
+
+
+#include "lib/bbb_hvac.hpp"
+#include "globals.h"
 DEF_LOGGER_STAT( "LOGIC_INFO" );
 
 LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
@@ -164,14 +171,19 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	this->setup_splitter_handle( this->splitter_io_points );
 	this->setup_splitter_handle( this->splitter_logic_points );
 	/*
-	 * Finished with the UI setup/generation
-	 */
-	ctx = BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance( );
-	ctx->connect( );
-	this->timer = new QTimer( this );
-	connect( this->timer, SIGNAL( timeout( ) ), this, SLOT( slot_update_labels( ) ) );
-	this->timer->setSingleShot( true );
-	this->timer->start( 500 );
+	Connect the message bus listeners
+	*/
+	connect( message_bus, SIGNAL( sig_point_label_data( MESSAGE_BUS::COMMANDS , const QVector<QVector<QString>>& ) ), this, SLOT( slot_mb_label_data( MESSAGE_BUS::COMMANDS, const QVector<QVector<QString>>& ) ) );
+	connect( message_bus, SIGNAL( sig_point_map_data( MESSAGE_BUS::COMMANDS , const QMap<QString, QVector<QString>>& ) ), this, SLOT( slot_mb_map_data( MESSAGE_BUS::COMMANDS, const QMap<QString, QVector<QString>>& ) ) );
+	connect( message_bus, SIGNAL( sig_logic_status_data( MESSAGE_BUS::COMMANDS , const QMap<QString, QString>& ) ), this, SLOT( slot_mb_logic_status_update( MESSAGE_BUS::COMMANDS , const QMap<QString, QString>& ) ) );
+	connect( message_bus, SIGNAL( sig_set_point_data( MESSAGE_BUS::COMMANDS , const QMap<QString, QString>& ) ), this, SLOT( slot_mb_set_point_update( MESSAGE_BUS::COMMANDS , const QMap<QString, QString>& ) ) );
+	/*
+	Send the label request messages.
+	*/
+	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_DO, QVariant() ) );
+	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_AI, QVariant() ) );
+	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_MAP, QVariant() ) );
+	return;
 }
 
 LOGIC_INFO::~LOGIC_INFO( )
@@ -224,119 +236,93 @@ void LOGIC_INFO::dump_message_parts( BBB_HVAC::MESSAGE_PTR& _message )
 	}
 }
 
-static void populate_table_widget( QTableWidget* _table_widget, const BBB_HVAC::MESSAGE_PTR& _message )
+static void populate_table_widget( QTableWidget* _table_widget, const QVector<QVector<QString>> _data )
 {
 	_table_widget->clearContents( );
-	_table_widget->setRowCount( _message->get_part_count( ) );
+	_table_widget->setRowCount( _data.count( ) );
+	unsigned int idx = 0;
 
-	for ( size_t i = 0; i < _message->get_part_count( ); i++ )
+	for ( auto i = _data.begin(); i != _data.end(); ++i )
 	{
-		BBB_HVAC::BOARD_POINT board_point = BBB_HVAC::BOARD_POINT::from_string( _message->get_part_as_s( i ) );
-		_table_widget->setItem( i, 0, new QTableWidgetItem( QString( board_point.get_board_tag( ).data( ) ) ) );
-		_table_widget->setItem( i, 1, new QTableWidgetItem( QString::number( board_point.get_point_id( ) ) ) );
-		_table_widget->setItem( i, 2, new QTableWidgetItem( QString( board_point.get_description( ).data( ) ) ) );
+		_table_widget->setItem( idx, 0, new QTableWidgetItem( ( *i )[0] ) );
+		_table_widget->setItem( idx, 1, new QTableWidgetItem( ( *i )[1] ) );
+		_table_widget->setItem( idx, 2, new QTableWidgetItem( ( *i )[2] ) );
+		idx += 1;
 	}
 
 	_table_widget->resizeColumnsToContents( );
 }
 
-void LOGIC_INFO::slot_update_labels( void )
+void LOGIC_INFO::slot_mb_label_data( MESSAGE_BUS::COMMANDS _cmd, const QVector<QVector<QString>>& _data )
 {
-	LOG_DEBUG_STAT( "Updating labels." );
-	BBB_HVAC::MESSAGE_PTR message;
-	message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::DO );
-	message = this->ctx->send_message_and_wait( message );
-	LOG_DEBUG_STAT( "DO labels:" );
-	this->dump_message_parts( message );
-	populate_table_widget( this->table_do_points, message );
-	message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::AI );
-	message = this->ctx->send_message_and_wait( message );
-	LOG_DEBUG_STAT( "AI labels:" );
-	this->dump_message_parts( message );
-	populate_table_widget( this->table_ai_points, message );
-	message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::MAP );
-	message = this->ctx->send_message_and_wait( message );
+	if ( _cmd == MESSAGE_BUS::COMMANDS::GET_LABELS_DO )
+	{
+		LOG_DEBUG_STAT( "DO labels" );
+		populate_table_widget( this->table_do_points, _data );
+	}
+	else if ( _cmd == MESSAGE_BUS::COMMANDS::GET_LABELS_AI )
+	{
+		LOG_DEBUG_STAT( "AI labels" );
+		populate_table_widget( this->table_ai_points, _data );
+	}
+	else
+	{
+		LOG_ERROR_STAT( "Unrecognized command: " + num_to_str( ( int )_cmd ) );
+	}
+}
+void LOGIC_INFO::slot_mb_map_data( MESSAGE_BUS::COMMANDS, const QMap<QString, QVector<QString>>& _data )
+{
 	LOG_DEBUG_STAT( "MAP labels:" );
-	this->dump_message_parts( message );
-	std::map<std::string, std::string> map;
-	BBB_HVAC::MESSAGE::message_to_map( message, map );
 	this->table_map_points->clearContents( );
-	this->table_map_points->setRowCount( map.size( ) );
+	this->table_map_points->setRowCount( _data.size( ) );
 	int row_index = 0;
 
-	for ( auto map_iterator = map.cbegin( ); map_iterator != map.cend( ); ++map_iterator )
+	for ( auto map_iterator = _data.constBegin( ); map_iterator != _data.constEnd( ); ++map_iterator )
 	{
-		LOG_DEBUG_STAT( map_iterator->second );
-		BBB_HVAC::BOARD_POINT board_point = BBB_HVAC::BOARD_POINT::from_string( map_iterator->second );
-		this->table_map_points->setItem( row_index, 0, new QTableWidgetItem( QString( map_iterator->first.data( ) ) ) );
-		this->table_map_points->setItem( row_index, 1, new QTableWidgetItem( QString( board_point.get_board_tag( ).data( ) ) ) );
-		this->table_map_points->setItem( row_index, 2, new QTableWidgetItem( QString( BBB_HVAC::CONFIG_ENTRY::type_to_string( board_point.get_type( ) ).data( ) ) ) );
-		this->table_map_points->setItem( row_index, 3, new QTableWidgetItem( QString::number( board_point.get_point_id( ) ) ) );
-		this->table_map_points->setItem( row_index, 4, new QTableWidgetItem( QString( board_point.get_description( ).data( ) ) ) );
+		const QVector<QString>& value = map_iterator.value();
+		this->table_map_points->setItem( row_index, 0, new QTableWidgetItem( QString( map_iterator.key( ) ) ) );
+		this->table_map_points->setItem( row_index, 1, new QTableWidgetItem( value[0] ) );
+		this->table_map_points->setItem( row_index, 2, new QTableWidgetItem( value[1] ) );
+		this->table_map_points->setItem( row_index, 3, new QTableWidgetItem( value[2] ) );
+		this->table_map_points->setItem( row_index, 4, new QTableWidgetItem( value[3] ) );
 		row_index += 1;
 	}
 
 	this->table_map_points->resizeColumnsToContents( );
-	this->update_status( );
-	disconnect( this->timer, SIGNAL( timeout( ) ), this, SLOT( slot_update_labels( ) ) );
-	connect( this->timer, SIGNAL( timeout( ) ), this, SLOT( slot_update_data_timer( ) ) );
-	this->timer->setSingleShot( false );
-	this->timer->start( 1000 );
-	return;
 }
 
-void LOGIC_INFO::update_status( void )
+void LOGIC_INFO::slot_mb_logic_status_update( MESSAGE_BUS::COMMANDS, const QMap<QString, QString>& _data )
 {
-	//LOG_DEBUG_STAT( "Updating logic status." );
-	/*
-	 * Update the logic point values
-	 */
-	int current_row = this->table_point_values->currentRow( );
-	BBB_HVAC::MESSAGE_PTR message;
-	unsigned int row_idx = 0;
-	message = this->ctx->message_processor->create_read_logic_status( );
-	message = this->ctx->send_message_and_wait( message );
-	std::map<std::string, std::string> map;
-	BBB_HVAC::MESSAGE::message_to_map( message, map );
 	this->table_point_values->clearContents( );
-	this->table_point_values->setRowCount( map.size( ) );
-	row_idx = 0;
+	this->table_point_values->setRowCount( _data.count( ) );
+	int row_idx = 0;
 
-	for ( auto map_iterator = map.begin( ); map_iterator != map.end( ); ++map_iterator )
+	for ( auto map_iterator = _data.constBegin( ); map_iterator != _data.constEnd( ); ++map_iterator )
 	{
-		this->table_point_values->setItem( row_idx, 0, new QTableWidgetItem( QString( map_iterator->first.data( ) ) ) );
-		this->table_point_values->setItem( row_idx, 1, new QTableWidgetItem( QString( map_iterator->second.data( ) ) ) );
+		this->table_point_values->setItem( row_idx, 0, new QTableWidgetItem( map_iterator.key() ) );
+		this->table_point_values->setItem( row_idx, 1, new QTableWidgetItem( map_iterator.value() ) );
 		row_idx += 1;
 	}
 
 	this->table_point_values->resizeColumnsToContents( );
-	this->table_point_values->setCurrentCell( current_row, 0 );
-	/*
-	 * Update the set point values
-	 */
-	current_row = this->table_sp_points->currentRow( );
-	message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::SP );
-	message = this->ctx->send_message_and_wait( message );
-	this->table_sp_points->clearContents( );
-	this->table_sp_points->setRowCount( message->get_part_count( ) );
+	this->table_point_values->setCurrentCell( row_idx, 0 );
+}
 
-	for ( unsigned int row_idx = 0; row_idx < message->get_part_count( ); ++row_idx )
+void LOGIC_INFO::slot_mb_set_point_update( MESSAGE_BUS::COMMANDS, const QMap<QString, QString>& _data )
+{
+	int current_row = this->table_sp_points->currentRow( );
+	this->table_sp_points->clearContents( );
+	this->table_sp_points->setRowCount( _data.count() );
+	unsigned int row_idx = 0;
+
+	for ( auto mi = _data.begin(); mi != _data.end(); ++mi )
 	{
-		std::string message_part = message->get_part_as_s( row_idx );
-		//LOG_DEBUG_STAT(message_part);
-		BBB_HVAC::SET_POINT sp = BBB_HVAC::SET_POINT::from_string( message_part );
-		this->table_sp_points->setItem( row_idx, 0, new QTableWidgetItem( QString( sp.get_description( ).data( ) ) ) );
-		this->table_sp_points->setItem( row_idx, 1, new QTableWidgetItem( QString::number( sp.get_value( ) ) ) );
+		this->table_sp_points->setItem( row_idx, 0, new QTableWidgetItem( mi.key() ) );
+		this->table_sp_points->setItem( row_idx, 1, new QTableWidgetItem( mi.value() ) );
+		row_idx += 1;
 	}
 
 	this->table_sp_points->resizeColumnsToContents( );
 	this->table_sp_points->setCurrentCell( current_row, 0 );
 	return;
-}
-
-void LOGIC_INFO::slot_update_data_timer( void )
-{
-	this->sig_update_start( );
-	this->update_status( );
-	this->sig_update_finish( );
 }

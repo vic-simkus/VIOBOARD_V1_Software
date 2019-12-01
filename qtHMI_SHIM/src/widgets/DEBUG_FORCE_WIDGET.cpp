@@ -98,5 +98,5 @@ void DEBUG_FORCE_WIDGET::cmd_toggle_clicked( void )
 	}
 
 	this->update_widget();
-	this->sig_toggle_clicked( this->index, this->is_forced );
+	this->sig_toggle_clicked( this->index, this->is_forced, this->offset->value() );
 }

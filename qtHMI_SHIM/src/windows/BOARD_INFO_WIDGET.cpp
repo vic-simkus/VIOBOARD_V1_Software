@@ -239,7 +239,7 @@ MESSAGE_PTR BOARD_INFO_WIDGET::update_data_and_return( void )
 		IOCOMM::ADC_CACHE_ENTRY adc_val( parts[i] );
 		this->ai_raw_values[i]->set_value( adc_val.get_value( ) );
 		this->ai_values[i]->set_value( AI_ADC_STEP * ( float ) adc_val.get_value( ) );
-		message_bus.slot_raw_adc_value_changed( this->board_id, i, adc_val.get_value( ) );
+		message_bus->slot_raw_adc_value_changed( this->board_id, i, adc_val.get_value( ) );
 	}
 
 	IOCOMM::DO_CACHE_ENTRY do_value( parts[AI_COUNT] );
