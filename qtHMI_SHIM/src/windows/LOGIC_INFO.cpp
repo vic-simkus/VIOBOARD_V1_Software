@@ -180,9 +180,9 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	/*
 	Send the label request messages.
 	*/
-	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_DO, QVariant() ) );
-	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_AI, QVariant() ) );
-	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_MAP, QVariant() ) );
+	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_DO ) );
+	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_AI ) );
+	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_MAP ) );
 	return;
 }
 

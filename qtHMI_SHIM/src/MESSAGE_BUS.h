@@ -63,11 +63,41 @@ class MESSAGE_BUS : public QObject
 			/// Gets the set points
 			GET_SET_POINTS,
 			/// Gets the logic status
-			GET_LOGIC_STATUS
+			GET_LOGIC_STATUS,
+			///Gets the status of all analog inputs, digital outputs, and PMIC status.
+			GET_STATUS,
+			/// Sets the L1 calibration values on the board
+			SET_CAL_VALS_L1,
+			/// Sets the L2 calibration values on the board
+			SET_CAL_VALS_L2
 		};
 
 		/// Message typedef
-		typedef QPair<COMMANDS, QVariant> MESSAGE;
+		class MESSAGE
+		{
+			public:
+				MESSAGE( const QString& _board_id, COMMANDS _command, const QVariant& _payload ) {
+					this->board_id = _board_id;
+					this->command = _command;
+					this->payload = _payload;
+				}
+				MESSAGE( const QString& _board_id, COMMANDS _command ) {
+					this->board_id = _board_id;
+					this->command = _command;
+				}
+
+				MESSAGE( COMMANDS _command, const QVariant& _payload ) {
+					this->command = _command;
+					this->payload = _payload;
+				}
+
+				MESSAGE( COMMANDS _command ) {
+					this->command = _command;
+				}
+				QString board_id;
+				COMMANDS command;
+				QVariant payload;
+		};
 
 		/**
 		Constructor
@@ -101,6 +131,7 @@ class MESSAGE_BUS : public QObject
 		void slot_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value );
 
 	signals:
+		void sig_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault );
 		/**
 		Is emitted every time the slot_raw_adc_value_change is invoked.
 		\param _board board taq.
@@ -157,6 +188,8 @@ class MESSAGE_BUS : public QObject
 		Performs an automatic update of the various values once per second.
 		*/
 		void perform_major_update();
+
+		void emit_get_status_message( const MESSAGE& _message , const BBB_HVAC::MESSAGE_PTR& _data );
 
 		/**
 		Emits a point label inquiry result message.

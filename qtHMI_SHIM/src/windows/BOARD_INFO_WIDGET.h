@@ -78,7 +78,9 @@ class BOARD_INFO_WIDGET : public QFrame
 
 	private slots:
 		void update_data( void );
-		MESSAGE_PTR update_data_and_return( void );
+		//MESSAGE_PTR update_data_and_return( void );
+
+		void slot_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault );
 
 		void cmd_enable_do_pmic_clicked( void );
 		void cmd_enable_ai_pmic_clicked( void );

@@ -96,6 +96,8 @@ void BOARD_INFO_WIDGET::setup_ai_stuff( void )
 	tmp_cmd = new QPushButton( "Refresh L2 Calibration Values" );
 	connect( tmp_cmd, SIGNAL( clicked() ), this, SLOT( update_l2_cal_values_clicked() ) );
 	this->ai_grid_layout->addWidget( tmp_cmd, 10, 0, 1, 8 );
+
+	connect( message_bus, SIGNAL( sig_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool, bool ) ), this, SLOT( slot_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool , bool ) ) );
 }
 
 void BOARD_INFO_WIDGET::send_l1_cal_values_clicked( void )
@@ -208,84 +210,28 @@ BOARD_INFO_WIDGET::BOARD_INFO_WIDGET( const QString& _board_id ) : QFrame( )
 	return;
 }
 
-MESSAGE_PTR BOARD_INFO_WIDGET::update_data_and_return( void )
+void BOARD_INFO_WIDGET::slot_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault )
 {
-	bool first_run = false;
-
-	if ( this->ctx == nullptr )
+	if ( _board != this->board_id )
 	{
-		ctx = CLIENT_CONTEXT::create_instance( );
-		first_run = true;
-
-		try
-		{
-			ctx->connect( );
-		}
-		catch ( const exception& e )
-		{
-			QMessageBox::critical( nullptr, "Connection Error", QString( e.what( ) ) );
-			exit( -1 );
-		}
+		return;
 	}
 
-	MESSAGE_PTR m = ctx->message_processor->create_get_status( this->board_id.toStdString() );
-	m = ctx->send_message_and_wait( m );
-	const vector<string>& parts = m->get_parts( );
+	//LOG_DEBUG_STAT( "Updating status for: " + _board.toStdString() );
 
-	//float tick = ( float ) 5 / ( float ) AI_STEPS;
+	for ( size_t i = 0; i < ( size_t )_adc_values.size(); ++i )
+	{
+		this->ai_raw_values[i]->set_value( _adc_values[i] );
+		this->ai_values[i]->set_value( AI_ADC_STEP * ( float ) _adc_values[i] );
 
-	for ( size_t i = 0; i < AI_COUNT; ++i )
-	{
-		IOCOMM::ADC_CACHE_ENTRY adc_val( parts[i] );
-		this->ai_raw_values[i]->set_value( adc_val.get_value( ) );
-		this->ai_values[i]->set_value( AI_ADC_STEP * ( float ) adc_val.get_value( ) );
-		message_bus->slot_raw_adc_value_changed( this->board_id, i, adc_val.get_value( ) );
-	}
-
-	IOCOMM::DO_CACHE_ENTRY do_value( parts[AI_COUNT] );
-	IOCOMM::PMIC_CACHE_ENTRY pmic_value( parts[AI_COUNT + 1] );
-
-	if ( pmic_value.get_value( ) & PMIC_AI_EN_MASK )
-	{
-		this->ai_pmic->set_enabled( );
-	}
-	else
-	{
-		this->ai_pmic->set_disabled( );
-	}
-
-	if ( pmic_value.get_value( ) & PMIC_AI_ERR_MASK )
-	{
-		this->ai_pmic->set_faulted( );
-	}
-	else
-	{
-		this->ai_pmic->set_notfaulted( );
-	}
-
-	if ( pmic_value.get_value( ) & PMIC_DO_EN_MASK )
-	{
-		this->do_pmic->set_enabled( );
-	}
-	else
-	{
-		this->do_pmic->set_disabled( );
-	}
-
-	if ( pmic_value.get_value( ) & PMIC_DO_ERR_MASK )
-	{
-		this->do_pmic->set_faulted( );
-	}
-	else
-	{
-		this->do_pmic->set_notfaulted( );
+		message_bus->slot_raw_adc_value_changed( this->board_id, i, _adc_values[i] );
 	}
 
 	uint8_t mask = 1;
 
-	for ( size_t i = 0; i < 4; i++ )
+	for ( size_t i = 0; i < ( size_t )_do_states.size(); i++ )
 	{
-		if ( do_value.get_value( ) & mask )
+		if ( _do_states[i] )
 		{
 			this->do_values[i]->set_enabled( );
 		}
@@ -297,27 +243,68 @@ MESSAGE_PTR BOARD_INFO_WIDGET::update_data_and_return( void )
 		mask = mask << 1;
 	}
 
-	if ( first_run )
+	if ( _pmic_ai_en )
 	{
-		this->update_cal_ui_values( parts );
+		this->ai_pmic->set_enabled( );
 	}
 	else
 	{
-		if ( this->update_l1_cal_values )
-		{
-			this->update_l1_cal_values = false;
-			this->update_cal_l1_ui_values( parts );
-		}
-
-		if ( this->update_l2_cal_values )
-		{
-			this->update_l2_cal_values = false;
-			this->update_cal_l2_ui_values( parts );
-		}
+		this->ai_pmic->set_disabled( );
 	}
 
-	return m;
+	if ( _pmic_ai_fault )
+	{
+		this->ai_pmic->set_faulted( );
+	}
+	else
+	{
+		this->ai_pmic->set_notfaulted( );
+	}
+
+	if ( _pmic_do_en )
+	{
+		this->do_pmic->set_enabled( );
+	}
+	else
+	{
+		this->do_pmic->set_disabled( );
+	}
+
+	if ( _pmic_do_fault )
+	{
+		this->do_pmic->set_faulted( );
+	}
+	else
+	{
+		this->do_pmic->set_notfaulted( );
+	}
 }
+/*
+MESSAGE_PTR BOARD_INFO_WIDGET::update_data_and_return( void )
+{
+
+
+		if ( first_run )
+		{
+			this->update_cal_ui_values( parts );
+		}
+		else
+		{
+			if ( this->update_l1_cal_values )
+			{
+				this->update_l1_cal_values = false;
+				this->update_cal_l1_ui_values( parts );
+			}
+
+			if ( this->update_l2_cal_values )
+			{
+				this->update_l2_cal_values = false;
+				this->update_cal_l2_ui_values( parts );
+			}
+		}
+
+	return m;
+}*/
 void BOARD_INFO_WIDGET::update_cal_l1_ui_values( const vector<string>& parts )
 {
 	size_t offset = AI_COUNT + 2;	// Skip past the ADC values and the DO and PMIC statuses
@@ -370,7 +357,7 @@ void BOARD_INFO_WIDGET::update_cal_ui_values( const vector<string>& parts )
 
 void BOARD_INFO_WIDGET::update_data( void )
 {
-	this->update_data_and_return( );
+	message_bus->add_message( MESSAGE_BUS::MESSAGE( this->board_id , MESSAGE_BUS::COMMANDS::GET_STATUS ) );
 	return;
 }
 
@@ -378,7 +365,7 @@ void BOARD_INFO_WIDGET::manage_pmic_status( uint8_t _mask )
 {
 	this->timer->stop( );
 	LOG_DEBUG_STAT( "Manage PMIC status.  Mask: " + num_to_str( _mask ) );
-	MESSAGE_PTR m = this->update_data_and_return( );
+	MESSAGE_PTR m; // = this->update_data_and_return( );
 	const vector<string>& parts = m->get_parts( );
 	IOCOMM::PMIC_CACHE_ENTRY ai_value( parts[AI_COUNT + 1] );
 	uint8_t status = ai_value.get_value( );
@@ -446,7 +433,7 @@ void BOARD_INFO_WIDGET::cmd_reset_ai_pmic_clicked( void )
 void BOARD_INFO_WIDGET::cmd_enable_do_clicked( int _do )
 {
 	this->timer->stop( );
-	MESSAGE_PTR m = this->update_data_and_return( );
+	MESSAGE_PTR m;// = this->update_data_and_return( );
 	const vector<string>& parts = m->get_parts( );
 	IOCOMM::DO_CACHE_ENTRY do_value( parts[AI_COUNT] );
 	uint8_t mask;

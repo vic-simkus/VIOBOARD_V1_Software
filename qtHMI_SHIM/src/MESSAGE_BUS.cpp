@@ -18,6 +18,10 @@
  * Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
  */
 #include "MESSAGE_BUS.h"
+#include "board_info.h"
+
+#include "lib/bbb_hvac.hpp"
+
 #include <QTimer>
 
 
@@ -109,42 +113,48 @@ void MESSAGE_BUS::process_commands( void )
 	while ( !this->command_queue.isEmpty() )
 	{
 		MESSAGE_BUS::MESSAGE c = this->command_queue.dequeue();
-		DEF_LOGGER_STAT( "Processing message: " + num_to_str( ( int )c.first ) );
+		LOG_DEBUG_STAT( "Processing message: " + num_to_str( ( int )c.command ) );
 
-		switch ( c.first )
+		switch ( c.command )
 		{
 			case COMMANDS::NONE:
 				// Do nothing;
 				break;
 
+			case COMMANDS::GET_STATUS:
+				message = ctx->message_processor->create_get_status( c.board_id.toStdString() );
+				message = ctx->send_message_and_wait( message );
+				this->emit_get_status_message( c, message );
+				break;
+
 			case COMMANDS::GET_LABELS_DO:
 				message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::DO );
 				message = this->ctx->send_message_and_wait( message );
-				this->emit_point_label_message( c.first, message );
+				this->emit_point_label_message( c.command, message );
 				break;
 
 			case COMMANDS::GET_LABELS_AI:
 				message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::AI );
 				message = this->ctx->send_message_and_wait( message );
-				this->emit_point_label_message( c.first, message );
+				this->emit_point_label_message( c.command, message );
 				break;
 
 			case COMMANDS::GET_LABELS_MAP:
 				message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::MAP );
 				message = this->ctx->send_message_and_wait( message );
-				this->emit_map_data_mesage( c.first, message );
+				this->emit_map_data_mesage( c.command, message );
 				break;
 
 			case COMMANDS::GET_SET_POINTS:
 				message = this->ctx->message_processor->create_get_labels_message_request( BBB_HVAC::ENUM_CONFIG_TYPES::SP );
 				message = this->ctx->send_message_and_wait( message );
-				this->emit_set_point_data_message( c.first, message );
+				this->emit_set_point_data_message( c.command, message );
 				break;
 
 			case COMMANDS::GET_LOGIC_STATUS:
 				message = this->ctx->message_processor->create_read_logic_status( );
 				message = this->ctx->send_message_and_wait( message );
-				this->emit_logic_status_update_message( c.first, message );
+				this->emit_logic_status_update_message( c.command, message );
 				break;
 		};
 	}
@@ -179,6 +189,54 @@ void MESSAGE_BUS::slot_raw_adc_value_changed( const QString& _board, uint8_t _io
 	this->sig_raw_adc_value_changed( _board, _io, _value );
 }
 
+
+void MESSAGE_BUS::emit_get_status_message( const MESSAGE& _message , const BBB_HVAC::MESSAGE_PTR& _data )
+{
+
+	LOG_DEBUG_STAT( "Board: " + _message.board_id.toStdString() );
+	//DEF_LOGGER_STAT( "Processing message: " + num_to_str( ( int )c.command ) );
+	QVector<uint16_t> adc_values;
+	QVector<bool> do_states;
+	bool pmic_do_en;
+	bool pmic_do_fault;
+	bool pmic_ai_en;
+	bool pmic_ai_fault;
+
+	adc_values.resize( AI_COUNT );
+	do_states.resize( DO_COUNT );
+
+	const vector<string>& parts = _data->get_parts( );
+
+
+	for ( size_t i = 0; i < ( size_t )adc_values.size(); ++i )
+	{
+		BBB_HVAC::IOCOMM::ADC_CACHE_ENTRY adc_val( parts[i] );
+		adc_values[i] = adc_val.get_value();
+		//LOG_DEBUG_STAT( "AI:" + num_to_str( i ) + " -> " + num_to_str( adc_values[i] ) );
+	}
+
+	BBB_HVAC::IOCOMM::PMIC_CACHE_ENTRY pmic_value( parts[AI_COUNT + 1] );
+
+	pmic_ai_en =  pmic_value.get_value( ) & PMIC_AI_EN_MASK;
+	pmic_ai_fault =  pmic_value.get_value( ) & PMIC_AI_ERR_MASK;
+	pmic_do_en = pmic_value.get_value( ) & PMIC_DO_EN_MASK;
+	pmic_do_fault = pmic_value.get_value( ) & PMIC_DO_ERR_MASK;
+
+
+	BBB_HVAC::IOCOMM::DO_CACHE_ENTRY do_value( parts[AI_COUNT] );
+	uint8_t mask = 1;
+
+	for ( size_t i = 0; i < ( size_t )do_states.size(); i++ )
+	{
+		do_states[i]  = do_value.get_value( ) & mask;
+		//LOG_DEBUG_STAT( "DO:" + num_to_str( i ) + " -> " + num_to_str( do_states[i] ) );
+		mask = mask << 1;
+	}
+
+	this->sig_get_status( _message.board_id, adc_values, do_states, pmic_do_en, pmic_do_fault, pmic_ai_en, pmic_ai_fault );
+
+	return;
+}
 void MESSAGE_BUS::emit_point_label_message( COMMANDS _command, const BBB_HVAC::MESSAGE_PTR& _data )
 {
 	QVector<QVector<QString>> data( _data->get_part_count() );
