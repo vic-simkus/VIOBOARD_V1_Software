@@ -419,6 +419,11 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_l2_cal_vals( const std::string& _board
 
 MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l1_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals ) throw( exception )
 {
+	if ( _vals.size() != GC_IO_AI_COUNT )
+	{
+		throw EXCEPTIONS::MESSAGE_ERROR( "Invalid number of L1 calibration values supplied. Expecting " + num_to_str( GC_IO_AI_COUNT ) + ", received " + num_to_str( _vals.size() ) );
+	}
+
 	vector<string> parts;
 	parts.push_back( _board_tag );
 	convert_vector_to_string( _vals, parts );
@@ -427,6 +432,11 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l1_cal_vals( const std::string& _board
 
 MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l2_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals ) throw( exception )
 {
+	if ( _vals.size() != GC_IO_AI_COUNT )
+	{
+		throw EXCEPTIONS::MESSAGE_ERROR( "Invalid number of L2 calibration values supplied. Expecting " + num_to_str( GC_IO_AI_COUNT ) + ", received " + num_to_str( _vals.size() ) );
+	}
+
 	vector<string> parts;
 	parts.push_back( _board_tag );
 	convert_vector_to_string( _vals, parts );
@@ -440,7 +450,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_boot_count( const std::string& _board_
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::GET_BOOT_COUNT ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_force_an( const std::string& _board_tag, uint8_t _input, uint16_t _value ) throw ( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_force_ai( const std::string& _board_tag, uint8_t _input, uint16_t _value ) throw ( exception )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
@@ -448,7 +458,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_force_an( const std::string& _board_tag, u
 	parts.push_back( num_to_str( _value ) );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::FORCE_AI_VALUE ), parts ) );
 }
-MESSAGE_PTR MESSAGE_PROCESSOR::create_unforce_force_an( const std::string& _board_tag, uint8_t _input ) throw ( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_unforce_force_ai( const std::string& _board_tag, uint8_t _input ) throw ( exception )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );

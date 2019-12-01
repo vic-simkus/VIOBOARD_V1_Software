@@ -208,8 +208,8 @@ namespace BBB_HVAC
 
 			MESSAGE_PTR create_error( int _code, const std::string& _message ) throw( exception );
 
-			MESSAGE_PTR create_force_an( const std::string& _board_tag, uint8_t _input, uint16_t _value ) throw ( exception );
-			MESSAGE_PTR create_unforce_force_an( const std::string& _board_tag, uint8_t _input ) throw ( exception );
+			MESSAGE_PTR create_force_ai( const std::string& _board_tag, uint8_t _input, uint16_t _value ) throw ( exception );
+			MESSAGE_PTR create_unforce_force_ai( const std::string& _board_tag, uint8_t _input ) throw ( exception );
 
 			/**
 			 * Processes an incoming message of type HELLO
