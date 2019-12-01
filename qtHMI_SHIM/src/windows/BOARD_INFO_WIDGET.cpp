@@ -97,29 +97,30 @@ void BOARD_INFO_WIDGET::setup_ai_stuff( void )
 	connect( tmp_cmd, SIGNAL( clicked() ), this, SLOT( update_l2_cal_values_clicked() ) );
 	this->ai_grid_layout->addWidget( tmp_cmd, 10, 0, 1, 8 );
 
-	connect( message_bus, SIGNAL( sig_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool, bool ) ), this, SLOT( slot_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool , bool ) ) );
+	connect( message_bus, SIGNAL( sig_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool, bool, const QVector<uint16_t>&, const QVector<uint16_t>& ) ), this, SLOT( slot_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool , bool ) ) );
 }
 
 void BOARD_INFO_WIDGET::send_l1_cal_values_clicked( void )
 {
 	LOG_DEBUG_STAT( "Sending L1 cal values." );
-	send_cal_values( this->cal_l1_values, 1 );
+	send_cal_values( );
 }
 
 void BOARD_INFO_WIDGET::send_l2_cal_values_clicked( void )
 {
 	LOG_DEBUG_STAT( "Sending L2 cal values." );
-	send_cal_values( this->cal_l2_values, 2 );
+	send_cal_values( );
 }
 
-void BOARD_INFO_WIDGET::send_cal_values( CAL_VALUE** _cal_values, unsigned char _level )
+static void generate_cal_value_vector( QVector<uint16_t>& _cv, CAL_VALUE** _cal_ui )
 {
+	_cv.clear();
+
 	uint16_t cal_val = 0;
-	CAL_VALUE_ARRAY calibration_values;
 
 	for ( size_t i = 0; i < AI_COUNT; i++ )
 	{
-		int val = _cal_values[i]->get_value();
+		int val = _cal_ui[i]->get_value();
 
 		if ( val == 0 )
 		{
@@ -140,27 +141,42 @@ void BOARD_INFO_WIDGET::send_cal_values( CAL_VALUE** _cal_values, unsigned char 
 			cal_val = ( ( ( unsigned int )val ) << 8 ) & 0xFF00;
 		}
 
-		LOG_DEBUG_STAT( "Value [" + num_to_str( i ) + "] -> [" + num_to_str( val ) + "] -> [" + num_to_str( cal_val ) + "]" );
-		calibration_values.push_back( cal_val );
+		//LOG_DEBUG_STAT( "Value [" + num_to_str( i ) + "] -> [" + num_to_str( val ) + "] -> [" + num_to_str( cal_val ) + "]" );
+		_cv.push_back( cal_val );
 	}
 
-	MESSAGE_PTR m;
+	return;
 
-	if ( _level == 1 )
+}
+void BOARD_INFO_WIDGET::send_cal_values( void )
+{
+	QVector<uint16_t> cv_l1;
+	QVector<uint16_t> cv_l2;
+
+	generate_cal_value_vector( cv_l1, cal_l1_values );
+	generate_cal_value_vector( cv_l2, cal_l2_values );
+
+	for ( auto i = cv_l1.begin(); i != cv_l1.end(); ++i )
 	{
-		m = this->ctx->message_processor->create_set_l1_cal_vals( this->board_id.toStdString(), calibration_values );
-	}
-	else
-	{
-		m = this->ctx->message_processor->create_set_l2_cal_vals( this->board_id.toStdString(), calibration_values );
+		LOG_DEBUG_STAT( "L1 value: " + num_to_str( *i ) );
 	}
 
-	LOG_DEBUG_STAT( m->to_string() );
-	ctx->send_message( m );
+	for ( auto i = cv_l2.begin(); i != cv_l2.end(); ++i )
+	{
+		LOG_DEBUG_STAT( "L2 value: " + num_to_str( *i ) );
+	}
+
+	message_bus->add_message( MESSAGE_BUS::MESSAGE::create_message_set_cal_vals( this->board_id, cv_l1, cv_l2 ) );
+
+	return;
 }
 
 void BOARD_INFO_WIDGET::update_l1_cal_values_clicked( void )
 {
+
+	// We set the flag that we're interested in new calibration value and the periodic update logic will do the rest
+	// \see slot_get_status
+
 	this->update_l1_cal_values = true;
 }
 void BOARD_INFO_WIDGET::update_l2_cal_values_clicked( void )
@@ -185,32 +201,45 @@ void BOARD_INFO_WIDGET::setup_pmic_stuff( void )
 
 BOARD_INFO_WIDGET::BOARD_INFO_WIDGET( const QString& _board_id ) : QFrame( )
 {
+	this->update_l1_cal_values = true;
+	this->update_l2_cal_values = true;
+
 	this->board_id = _board_id;
+
 	QVBoxLayout* main_layout = new QVBoxLayout( );
 	this->setLayout( main_layout );
+
 	main_layout->addWidget( new QLabel( "<b>" + this->board_id ) );
 	main_layout->addWidget( new QLabel( "<b>Digital Outputs" ) );
+
 	this->do_grid_layout = new QGridLayout( );
 	main_layout->addLayout( do_grid_layout );
 	main_layout->addWidget( new QLabel( "<b>Analog Inputs" ) );
+
 	this->ai_grid_layout = new QGridLayout( );
 	main_layout->addLayout( ai_grid_layout );
 	main_layout->addWidget( new QLabel( "<b>PMIC Status" ) );
+
 	this->pmic_grid_layout = new QGridLayout( );
 	main_layout->addLayout( pmic_grid_layout );
 	this->do_button_mapper = new QSignalMapper( this );
+
 	connect( this->do_button_mapper, SIGNAL( mapped( int ) ), this, SLOT( cmd_enable_do_clicked( int ) ) );
+
 	this->setup_do_stuff( );
 	this->setup_ai_stuff( );
 	this->setup_pmic_stuff( );
-	ctx = nullptr;
+
 	this->timer = new QTimer( this );
 	connect( this->timer, SIGNAL( timeout( ) ), this, SLOT( update_data( ) ) );
+
 	this->timer->start( DATA_UPDATE_TIMER );
+
+	connect( message_bus, SIGNAL( sig_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool , bool , const QVector<uint16_t>&, const QVector<uint16_t>& ) ), this, SLOT( slot_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool , bool , const QVector<uint16_t>&, const QVector<uint16_t>& ) ) );
 	return;
 }
 
-void BOARD_INFO_WIDGET::slot_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault )
+void BOARD_INFO_WIDGET::slot_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault, const QVector<uint16_t>& _cal_vals_l1, const QVector<uint16_t>& _cal_vals_l2 )
 {
 	if ( _board != this->board_id )
 	{
@@ -278,82 +307,40 @@ void BOARD_INFO_WIDGET::slot_get_status( const QString& _board, const QVector<ui
 	{
 		this->do_pmic->set_notfaulted( );
 	}
-}
-/*
-MESSAGE_PTR BOARD_INFO_WIDGET::update_data_and_return( void )
-{
 
-
-		if ( first_run )
-		{
-			this->update_cal_ui_values( parts );
-		}
-		else
-		{
-			if ( this->update_l1_cal_values )
-			{
-				this->update_l1_cal_values = false;
-				this->update_cal_l1_ui_values( parts );
-			}
-
-			if ( this->update_l2_cal_values )
-			{
-				this->update_l2_cal_values = false;
-				this->update_cal_l2_ui_values( parts );
-			}
-		}
-
-	return m;
-}*/
-void BOARD_INFO_WIDGET::update_cal_l1_ui_values( const vector<string>& parts )
-{
-	size_t offset = AI_COUNT + 2;	// Skip past the ADC values and the DO and PMIC statuses
-	size_t j = 0;
-
-	for ( size_t i = offset; i < offset + AI_COUNT; ++i )
+	if ( this->update_l1_cal_values )
 	{
-		IOCOMM::CAL_VALUE_ENTRY cv( parts[i] );
-		uint16_t value = cv.get_value();
-		int add_val = ( ( value >> 8 ) & 0x00FF );
-		int sub_val = -( value & 0x00FF );
-		int cal_val = add_val + sub_val;
-		this->cal_l1_values[j]->set_value( cal_val );
-		this->cal_l1_values[j]->reset_status();
-		j += 1;
+		this->update_l1_cal_values = false;
+		this->update_cal_ui_values( cal_l1_values, _cal_vals_l1 );
+	}
+
+	if ( this->update_l2_cal_values )
+	{
+		this->update_l2_cal_values = false;
+		this->update_cal_ui_values( cal_l2_values, _cal_vals_l2 );
 	}
 
 	return;
 }
-void BOARD_INFO_WIDGET::update_cal_l2_ui_values( const vector<string>& parts )
-{
-	size_t offset = ( AI_COUNT * 2 ) + 2;			// Skip past the L1 cache values.
-	size_t j = 0;
 
-	for ( size_t i = offset; i < parts.size(); ++i )
+void BOARD_INFO_WIDGET::update_cal_ui_values( CAL_VALUE** _cal_ui, const QVector<uint16_t>& _val )
+{
+
+	for ( size_t i = 0; i < ( size_t )_val.size(); ++i )
 	{
-		IOCOMM::CAL_VALUE_ENTRY cv( parts[i] );
-		uint16_t value = cv.get_value();
+		uint16_t value = _val[i];
 		int add_val = ( ( value >> 8 ) & 0x00FF );
 		int sub_val = -( value & 0x00FF );
 		int cal_val = add_val + sub_val;
-		this->cal_l2_values[j]->set_value( cal_val );
-		this->cal_l2_values[j]->reset_status();
-		j += 1;
-
-		if ( j == AI_COUNT )
-		{
-			break;
-		}
+		_cal_ui[i]->set_value( cal_val );
+		_cal_ui[i]->reset_status();
 	}
 
 	return;
 }
-void BOARD_INFO_WIDGET::update_cal_ui_values( const vector<string>& parts )
-{
-	this->update_cal_l1_ui_values( parts );
-	this->update_cal_l2_ui_values( parts );
-	return;
-}
+uint16_t cal_val = 0;
+
+
 
 void BOARD_INFO_WIDGET::update_data( void )
 {
@@ -400,8 +387,8 @@ void BOARD_INFO_WIDGET::manage_pmic_status( uint8_t _mask )
 		}
 	}
 
-	m = ctx->message_processor->create_set_pmic_status( this->board_id.toStdString(), status );
-	ctx->send_message( m );
+	//m = ctx->message_processor->create_set_pmic_status( this->board_id.toStdString(), status );
+	//ctx->send_message( m );
 	this->update_data( );
 	this->timer->start( DATA_UPDATE_TIMER );
 }
@@ -473,8 +460,8 @@ void BOARD_INFO_WIDGET::cmd_enable_do_clicked( int _do )
 		status = status | mask;
 	}
 
-	m = ctx->message_processor->create_set_status( this->board_id.toStdString(), status );
-	ctx->send_message( m );
+	//m = ctx->message_processor->create_set_status( this->board_id.toStdString(), status );
+	//ctx->send_message( m );
 	this->update_data( );
 	this->timer->start( DATA_UPDATE_TIMER );
 }

@@ -113,12 +113,16 @@ void MESSAGE_BUS::process_commands( void )
 	while ( !this->command_queue.isEmpty() )
 	{
 		MESSAGE_BUS::MESSAGE c = this->command_queue.dequeue();
-		LOG_DEBUG_STAT( "Processing message: " + num_to_str( ( int )c.command ) );
+		//LOG_DEBUG_STAT( "Processing message: " + num_to_str( ( int )c.command ) );
 
 		switch ( c.command )
 		{
 			case COMMANDS::NONE:
 				// Do nothing;
+				break;
+
+			case COMMANDS::SET_CAL_VALS:
+				set_cal_vals( c );
 				break;
 
 			case COMMANDS::GET_STATUS:
@@ -159,6 +163,42 @@ void MESSAGE_BUS::process_commands( void )
 		};
 	}
 }
+
+static void variant_list_to_cal_array( BBB_HVAC::CAL_VALUE_ARRAY& _cal_vals, const QList<QVariant>& _v_l )
+{
+	_cal_vals.clear();
+
+	for ( auto i = _v_l.begin(); i != _v_l.end(); ++i )
+	{
+		_cal_vals.push_back( ( *i ).toUInt() );
+	}
+
+	return;
+}
+
+void MESSAGE_BUS::set_cal_vals( const MESSAGE_BUS::MESSAGE& _message )
+{
+	BBB_HVAC::MESSAGE_PTR message;
+
+	// This is an std::vector.
+	BBB_HVAC::CAL_VALUE_ARRAY calibration_values;
+	const QList<QVariant>& payload = _message.payload.toList();
+
+	variant_list_to_cal_array( calibration_values, payload.at( 0 ).toList() );
+	// At this point the calibration_values array contains all of the calibration values converted from the various QVariants.
+	message = this->ctx->message_processor->create_set_l1_cal_vals( _message.board_id.toStdString(), calibration_values );
+	this->ctx->send_message( message );
+	LOG_DEBUG_STAT( "L1 cal vals: " + message->to_string() );
+
+	variant_list_to_cal_array( calibration_values, payload.at( 1 ).toList() );
+	message = this->ctx->message_processor->create_set_l2_cal_vals( _message.board_id.toStdString(), calibration_values );
+	this->ctx->send_message( message );
+	LOG_DEBUG_STAT( "L2 cal vals: " + message->to_string() );
+
+
+	return;
+}
+
 void MESSAGE_BUS::perform_major_update( void )
 {
 	// Performs an automatic periodic update
@@ -193,26 +233,41 @@ void MESSAGE_BUS::slot_raw_adc_value_changed( const QString& _board, uint8_t _io
 void MESSAGE_BUS::emit_get_status_message( const MESSAGE& _message , const BBB_HVAC::MESSAGE_PTR& _data )
 {
 
-	LOG_DEBUG_STAT( "Board: " + _message.board_id.toStdString() );
+	//LOG_DEBUG_STAT( "Board: " + _message.board_id.toStdString() );
 	//DEF_LOGGER_STAT( "Processing message: " + num_to_str( ( int )c.command ) );
 	QVector<uint16_t> adc_values;
+	QVector<uint16_t> cal_vals_l1;
+	QVector<uint16_t> cal_vals_l2;
+
 	QVector<bool> do_states;
+
 	bool pmic_do_en;
 	bool pmic_do_fault;
 	bool pmic_ai_en;
 	bool pmic_ai_fault;
 
 	adc_values.resize( AI_COUNT );
+	cal_vals_l1.resize( AI_COUNT );
+	cal_vals_l2.resize( AI_COUNT );
+
 	do_states.resize( DO_COUNT );
 
 	const vector<string>& parts = _data->get_parts( );
-
 
 	for ( size_t i = 0; i < ( size_t )adc_values.size(); ++i )
 	{
 		BBB_HVAC::IOCOMM::ADC_CACHE_ENTRY adc_val( parts[i] );
 		adc_values[i] = adc_val.get_value();
-		//LOG_DEBUG_STAT( "AI:" + num_to_str( i ) + " -> " + num_to_str( adc_values[i] ) );
+
+		/*
+		In the message from the logic core, l1 cal values are after the AI_COUNT AI values, DO status and PMIC status.
+		l2 cal values are after the l1 cal values.
+		*/
+		BBB_HVAC::IOCOMM::CAL_VALUE_ENTRY cv_l1( parts[( AI_COUNT + 2 ) + i] );
+		BBB_HVAC::IOCOMM::CAL_VALUE_ENTRY cv_l2( parts[( ( AI_COUNT * 2 ) + 2 ) + i] );
+
+		cal_vals_l1[i] = cv_l1.get_value();
+		cal_vals_l2[i] = cv_l2.get_value();
 	}
 
 	BBB_HVAC::IOCOMM::PMIC_CACHE_ENTRY pmic_value( parts[AI_COUNT + 1] );
@@ -221,7 +276,6 @@ void MESSAGE_BUS::emit_get_status_message( const MESSAGE& _message , const BBB_H
 	pmic_ai_fault =  pmic_value.get_value( ) & PMIC_AI_ERR_MASK;
 	pmic_do_en = pmic_value.get_value( ) & PMIC_DO_EN_MASK;
 	pmic_do_fault = pmic_value.get_value( ) & PMIC_DO_ERR_MASK;
-
 
 	BBB_HVAC::IOCOMM::DO_CACHE_ENTRY do_value( parts[AI_COUNT] );
 	uint8_t mask = 1;
@@ -233,7 +287,7 @@ void MESSAGE_BUS::emit_get_status_message( const MESSAGE& _message , const BBB_H
 		mask = mask << 1;
 	}
 
-	this->sig_get_status( _message.board_id, adc_values, do_states, pmic_do_en, pmic_do_fault, pmic_ai_en, pmic_ai_fault );
+	this->sig_get_status( _message.board_id, adc_values, do_states, pmic_do_en, pmic_do_fault, pmic_ai_en, pmic_ai_fault, cal_vals_l1, cal_vals_l2 );
 
 	return;
 }

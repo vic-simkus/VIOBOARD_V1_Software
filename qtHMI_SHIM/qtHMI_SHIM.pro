@@ -33,7 +33,8 @@ SOURCES = src/widgets/AI_RAW_VALUE.cpp \
 	src/windows/DEBUG_FRAME.cpp \
 	src/windows/DEBUG_WIDGET.cpp \
 	src/widgets/DEBUG_FORCE_WIDGET.cpp \
-	src/MESSAGE_BUS.cpp
+	src/MESSAGE_BUS.cpp \
+	src/MESSAGE_BUS_MESSAGE.cpp
 
 LIBS += -L../HVAC_LIB/bin -lHVAC_LIB
 INCLUDEPATH += "../HVAC_LIB/src/include" "./src/"

@@ -65,22 +65,18 @@ class BOARD_INFO_WIDGET : public QFrame
 
 		QString board_id;
 
-		CLIENT_CONTEXT* ctx;
-
 		bool update_l1_cal_values;
 		bool update_l2_cal_values;
 
-		void update_cal_ui_values( const vector<string>& parts );
-		void update_cal_l1_ui_values( const vector<string>& parts );
-		void update_cal_l2_ui_values( const vector<string>& parts );
+		void update_cal_ui_values( CAL_VALUE** _cal_ui, const QVector<uint16_t>& _val );
 
-		void send_cal_values( CAL_VALUE** _cal_values, unsigned char _level );
+		void send_cal_values();
 
 	private slots:
 		void update_data( void );
 		//MESSAGE_PTR update_data_and_return( void );
 
-		void slot_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault );
+		void slot_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault, const QVector<uint16_t>& _cal_vals_l1, const QVector<uint16_t>& _cal_vals_l2 );
 
 		void cmd_enable_do_pmic_clicked( void );
 		void cmd_enable_ai_pmic_clicked( void );

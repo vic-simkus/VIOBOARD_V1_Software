@@ -64,39 +64,28 @@ class MESSAGE_BUS : public QObject
 			GET_SET_POINTS,
 			/// Gets the logic status
 			GET_LOGIC_STATUS,
-			///Gets the status of all analog inputs, digital outputs, and PMIC status.
+			/// Gets the status of all analog inputs, digital outputs, and PMIC status.
 			GET_STATUS,
-			/// Sets the L1 calibration values on the board
-			SET_CAL_VALS_L1,
-			/// Sets the L2 calibration values on the board
-			SET_CAL_VALS_L2
+			/// Sets the calibration values on a board.
+			SET_CAL_VALS,
+			SET_PMIC
 		};
 
-		/// Message typedef
+		/// Message for
 		class MESSAGE
 		{
 			public:
-				MESSAGE( const QString& _board_id, COMMANDS _command, const QVariant& _payload ) {
-					this->board_id = _board_id;
-					this->command = _command;
-					this->payload = _payload;
-				}
-				MESSAGE( const QString& _board_id, COMMANDS _command ) {
-					this->board_id = _board_id;
-					this->command = _command;
-				}
+				MESSAGE( const QString& _board_id, COMMANDS _command, const QVariant& _payload );
+				MESSAGE( const QString& _board_id, COMMANDS _command );
+				MESSAGE( COMMANDS _command, const QVariant& _payload );
+				MESSAGE( COMMANDS _command );
 
-				MESSAGE( COMMANDS _command, const QVariant& _payload ) {
-					this->command = _command;
-					this->payload = _payload;
-				}
-
-				MESSAGE( COMMANDS _command ) {
-					this->command = _command;
-				}
 				QString board_id;
 				COMMANDS command;
 				QVariant payload;
+
+			public:
+				static MESSAGE create_message_set_cal_vals( const QString& _board_id, const QVector<uint16_t>& _cal_val_l1, const QVector<uint16_t>& _cal_val_l2 );
 		};
 
 		/**
@@ -131,7 +120,7 @@ class MESSAGE_BUS : public QObject
 		void slot_raw_adc_value_changed( const QString& _board, uint8_t _io, uint16_t _value );
 
 	signals:
-		void sig_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault );
+		void sig_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault, const QVector<uint16_t>& _cal_vals_l1, const QVector<uint16_t>& _cal_vals_l2 );
 		/**
 		Is emitted every time the slot_raw_adc_value_change is invoked.
 		\param _board board taq.
@@ -210,6 +199,8 @@ class MESSAGE_BUS : public QObject
 		Emits a poind data inquiry results message
 		*/
 		void emit_set_point_data_message( COMMANDS _command, const  BBB_HVAC::MESSAGE_PTR& _data );
+
+		void set_cal_vals( const MESSAGE_BUS::MESSAGE& _message );
 	protected slots:
 		/**
 		Invoked by the timer every (1000/update_frequenct) milliseconds.

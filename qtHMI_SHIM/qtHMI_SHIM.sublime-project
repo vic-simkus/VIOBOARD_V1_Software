@@ -6,14 +6,4 @@
 			"file_exclude_patterns" : [".tags*",".dep.inc" ]
 		}
 	],
-
-	"settings":
-	{
-		"ecc_common_flags":
-		[
-			"-I./src",
-			"-I./src/widgets",
-			"-I./src/windows"
-		]
-	}
 }

@@ -1,0 +1,12 @@
+In progress:
+
+BOARD_INFO_WIDGET currently being worked on. 
+
+Next: Implement of getting of calibration values.
+
+Next: Implement forcing of values.
+
+
+TODO
+
+- Implement getting of DO and AI counts, ADC steps, etc from HVAC lib .
