@@ -35,11 +35,11 @@ MAIN_WINDOW::MAIN_WINDOW( )
 	QWidget* logic_widget = nullptr;
 	this->main_widget->addTab( ( logic_widget = new LOGIC_INFO( nullptr ) ), "LOGIC INFO" );
 	this->main_widget->addTab( new RAW_BOARD_INFO( nullptr ), "RAW BOARD INFO" );
-	//this->main_widget->addTab( new DEBUG_FRAME( nullptr ), "DEBUG" );
+	this->main_widget->addTab( new DEBUG_FRAME( nullptr ), "DEBUG" );
 	this->statusBar()->setSizeGripEnabled( true );
 	this->statusBar()->showMessage( "Application started." );
-	// XXX connect( logic_widget, SIGNAL( sig_update_start() ), this, SLOT( slot_update_start() ) );
-	// XXX connect( logic_widget, SIGNAL( sig_update_finish() ), this, SLOT( slot_update_finish() ) );
+	connect( message_bus, SIGNAL( sig_update_started() ), this, SLOT( slot_update_start() ) );
+	connect( message_bus, SIGNAL( sig_update_finished() ), this, SLOT( slot_update_finish() ) );
 	return;
 }
 
