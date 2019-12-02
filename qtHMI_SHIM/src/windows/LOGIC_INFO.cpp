@@ -31,8 +31,6 @@
 #include <QTableWidget>
 #include <QSplitter>
 
-
-#include "lib/bbb_hvac.hpp"
 #include "globals.h"
 DEF_LOGGER_STAT( "LOGIC_INFO" );
 
