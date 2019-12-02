@@ -22,11 +22,6 @@
 #define GLOBALS_H
 
 #include "MESSAGE_BUS.h"
-#include "lib/bbb_hvac.hpp"
-
-using namespace std;
-using namespace BBB_HVAC;
-using namespace BBB_HVAC::CLIENT;
 
 extern MESSAGE_BUS* message_bus;
 

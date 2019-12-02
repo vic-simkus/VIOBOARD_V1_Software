@@ -24,6 +24,8 @@
 #include "globals.h"
 #include "board_info.h"
 
+#include "lib/bbb_hvac.hpp"
+
 DEF_LOGGER_STAT( "MAIN" );
 
 MESSAGE_BUS* message_bus;
@@ -54,8 +56,8 @@ checksum( uint16_t const data[], int nWords )
 
 int main( int argc, char* argv[] )
 {
-	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
-	GLOBALS::configure_signals( );
+	BBB_HVAC::GLOBALS::configure_logging( BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
+	BBB_HVAC::GLOBALS::configure_signals( );
 	LOG_DEBUG_STAT( "ADC ref: " + num_to_str( AI_ADC_REF ) );
 	LOG_DEBUG_STAT( "ADC steps: " + num_to_str( AI_STEPS ) );
 	LOG_DEBUG_STAT( "ADC step: " + num_to_str( AI_ADC_STEP ) );

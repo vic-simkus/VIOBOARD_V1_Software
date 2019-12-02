@@ -31,6 +31,7 @@
 
 class QTimer;
 
+
 /**
 	Serves as the main communication interface between the application and the logic core instance.
 	Additionally, this class acts a message broker between various parts of the program allowing them to be decoupled from each other.
@@ -88,6 +89,7 @@ class MESSAGE_BUS : public QObject
 			public:
 				static MESSAGE create_message_set_cal_vals( const QString& _board_id, const QVector<uint16_t>& _cal_val_l1, const QVector<uint16_t>& _cal_val_l2 );
 				static MESSAGE create_message_set_do_status( const QString& _board_id, const uint8_t _do_status );
+				static MESSAGE create_message_set_pmic_status( const QString& _board_id, const uint8_t _pmic_status );
 		};
 
 		/**

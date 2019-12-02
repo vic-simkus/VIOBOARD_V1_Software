@@ -49,6 +49,8 @@ class BOARD_INFO_WIDGET : public QFrame
 		void setup_ai_stuff( void );
 		void setup_pmic_stuff( void );
 
+		uint8_t get_pmic_flags( void ) const;
+
 	private:
 		AI_VALUE* ai_values[AI_COUNT];
 		AI_RAW_VALUE* ai_raw_values[AI_COUNT];
@@ -74,7 +76,6 @@ class BOARD_INFO_WIDGET : public QFrame
 
 	private slots:
 		void update_data( void );
-		//MESSAGE_PTR update_data_and_return( void );
 
 		void slot_get_status( const QString& _board, const QVector<uint16_t>& _adc_values, const QVector<bool>& _do_states, bool _pmic_do_en, bool _pmic_do_fault, bool _pmic_ai_en, bool _pmic_ai_fault, const QVector<uint16_t>& _cal_vals_l1, const QVector<uint16_t>& _cal_vals_l2 );
 

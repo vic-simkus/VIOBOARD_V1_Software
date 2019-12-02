@@ -19,6 +19,7 @@
  */
 
 #include "DEBUG_WIDGET.h"
+
 #include "widgets/DEBUG_FORCE_WIDGET.h"
 
 #include <QVBoxLayout>

@@ -102,13 +102,13 @@ void BOARD_INFO_WIDGET::setup_ai_stuff( void )
 
 void BOARD_INFO_WIDGET::send_l1_cal_values_clicked( void )
 {
-	LOG_DEBUG_STAT( "Sending L1 cal values." );
+	//LOG_DEBUG_STAT( "Sending L1 cal values." );
 	send_cal_values( );
 }
 
 void BOARD_INFO_WIDGET::send_l2_cal_values_clicked( void )
 {
-	LOG_DEBUG_STAT( "Sending L2 cal values." );
+	//LOG_DEBUG_STAT( "Sending L2 cal values." );
 	send_cal_values( );
 }
 
@@ -156,15 +156,17 @@ void BOARD_INFO_WIDGET::send_cal_values( void )
 	generate_cal_value_vector( cv_l1, cal_l1_values );
 	generate_cal_value_vector( cv_l2, cal_l2_values );
 
-	for ( auto i = cv_l1.begin(); i != cv_l1.end(); ++i )
-	{
-		LOG_DEBUG_STAT( "L1 value: " + num_to_str( *i ) );
-	}
+	/*
+		for ( auto i = cv_l1.begin(); i != cv_l1.end(); ++i )
+		{
+			LOG_DEBUG_STAT( "L1 value: " + num_to_str( *i ) );
+		}
 
-	for ( auto i = cv_l2.begin(); i != cv_l2.end(); ++i )
-	{
-		LOG_DEBUG_STAT( "L2 value: " + num_to_str( *i ) );
-	}
+		for ( auto i = cv_l2.begin(); i != cv_l2.end(); ++i )
+		{
+			LOG_DEBUG_STAT( "L2 value: " + num_to_str( *i ) );
+		}
+	*/
 
 	message_bus->add_message( MESSAGE_BUS::MESSAGE::create_message_set_cal_vals( this->board_id, cv_l1, cv_l2 ) );
 
@@ -338,9 +340,6 @@ void BOARD_INFO_WIDGET::update_cal_ui_values( CAL_VALUE** _cal_ui, const QVector
 
 	return;
 }
-uint16_t cal_val = 0;
-
-
 
 void BOARD_INFO_WIDGET::update_data( void )
 {
@@ -351,11 +350,16 @@ void BOARD_INFO_WIDGET::update_data( void )
 void BOARD_INFO_WIDGET::manage_pmic_status( uint8_t _mask )
 {
 	this->timer->stop( );
-	LOG_DEBUG_STAT( "Manage PMIC status.  Mask: " + num_to_str( _mask ) );
-	MESSAGE_PTR m; // = this->update_data_and_return( );
-	const vector<string>& parts = m->get_parts( );
-	IOCOMM::PMIC_CACHE_ENTRY ai_value( parts[AI_COUNT + 1] );
-	uint8_t status = ai_value.get_value( );
+	//LOG_DEBUG_STAT( "Manage PMIC status.  Mask: " + num_to_str( _mask ) );
+	uint8_t pmic_bits = 0;
+
+	pmic_bits |= ( this->do_pmic->get_is_faulted() << 3 );
+	pmic_bits |= ( this->ai_pmic->get_is_faulted() << 2 );
+	pmic_bits |= ( this->do_pmic->get_is_enabled() << 1 );
+	pmic_bits |= ( this->ai_pmic->get_is_enabled() );
+
+	//	LOG_DEBUG_STAT( "Start PMIC bits: " + byte_to_bit_string( pmic_bits ) );
+
 
 	if ( _mask == PMIC_AI_ERR_MASK || _mask == PMIC_DO_ERR_MASK )
 	{
@@ -371,25 +375,27 @@ void BOARD_INFO_WIDGET::manage_pmic_status( uint8_t _mask )
 		/*
 		 * We're in the enable/disable mode
 		 */
-		if ( status & _mask )
+		if ( pmic_bits & _mask )
 		{
 			/*
 			 * Currently enabled.
 			 */
-			status = status & ( ~_mask );
+			pmic_bits = pmic_bits & ( ~_mask );
 		}
 		else
 		{
 			/*
 			 * Currently disabled.
 			 */
-			status = status | _mask;
+			pmic_bits = pmic_bits | _mask;
 		}
 	}
 
-	//m = ctx->message_processor->create_set_pmic_status( this->board_id.toStdString(), status );
-	//ctx->send_message( m );
-	this->update_data( );
+	//LOG_DEBUG_STAT( "Finish PMIC bits: " + byte_to_bit_string( pmic_bits ) );
+
+	message_bus->add_message( MESSAGE_BUS::MESSAGE::create_message_set_pmic_status( this->board_id, pmic_bits ) );
+	this->update_data();
+
 	this->timer->start( DATA_UPDATE_TIMER );
 }
 

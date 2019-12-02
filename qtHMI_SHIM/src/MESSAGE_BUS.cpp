@@ -17,13 +17,14 @@
  *
  * Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
  */
+
 #include "MESSAGE_BUS.h"
 #include "board_info.h"
 
-#include "lib/bbb_hvac.hpp"
-
 #include <QTimer>
 
+using namespace BBB_HVAC;
+using namespace BBB_HVAC::CLIENT;
 
 DEF_LOGGER_STAT( "MESSAGE_BUS" );
 MESSAGE_BUS::MESSAGE_BUS( uint8_t _update_frequency ) : QObject()
@@ -163,6 +164,11 @@ void MESSAGE_BUS::process_commands( void )
 
 			case COMMANDS::SET_DO:
 				message = this->ctx->message_processor->create_set_status( c.board_id.toStdString(), ( uint8_t )c.payload.toUInt() );
+				this->ctx->send_message( message );
+				break;
+
+			case COMMANDS::SET_PMIC:
+				message = this->ctx->message_processor->create_set_pmic_status( c.board_id.toStdString(), ( uint8_t )c.payload.toUInt() );
 				this->ctx->send_message( message );
 				break;
 		};

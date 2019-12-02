@@ -44,8 +44,5 @@
 #define AI_ADC_REF ((float)5.0)
 #define AI_ADC_STEP ((float)AI_ADC_REF / (float)AI_STEPS)
 
-
-
-
 #endif /* BOARD_INFO_H */
 

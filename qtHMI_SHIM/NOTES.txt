@@ -2,7 +2,7 @@ In progress:
 
 BOARD_INFO_WIDGET currently being worked on. 
 
-Next: Implement of getting of calibration values.
+Next: Convert management of PMIC stuff to use MESSAGE_BUS
 
 Next: Implement forcing of values.
 
