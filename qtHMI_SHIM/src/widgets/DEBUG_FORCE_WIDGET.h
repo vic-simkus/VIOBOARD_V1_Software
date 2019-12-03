@@ -20,7 +20,6 @@ class DEBUG_FORCE_WIDGET: public QFrame
 		QLabel* label;
 		QLabel* volt_reading;
 		QLabel* status;
-		QPushButton* cmd_reset;
 		QPushButton* cmd_toggle;
 		QSpinBox* offset;
 		bool is_forced;
@@ -28,15 +27,13 @@ class DEBUG_FORCE_WIDGET: public QFrame
 	public slots:
 		void slot_update_real_value( uint16_t _value );
 
-
 	private slots:
-		void cmd_reset_clicked( void );
 		void cmd_toggle_clicked( void );
 		void update_widget( void );
+		void slot_spinner_changed( void );
 
 	signals:
-		void sig_reset_clicked( unsigned int );
-		void sig_toggle_clicked( unsigned int, bool _state, uint16_t _value );
+		void sig_force_clicked( unsigned int, bool _state, uint16_t _value );
 };
 
 #endif

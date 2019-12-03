@@ -21,6 +21,7 @@
 #include "DEBUG_FRAME.h"
 #include "DEBUG_WIDGET.h"
 
+#include <QTabWidget>
 #include <QVBoxLayout>
 
 DEBUG_FRAME::DEBUG_FRAME( QWidget* _p ) : QFrame( _p )

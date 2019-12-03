@@ -22,7 +22,9 @@
 #define DEBUG_FRAME_H
 
 #include <QFrame>
-#include <QTabWidget>
+
+
+class QTabWidget;
 
 class DEBUG_FRAME : public QFrame
 {

@@ -121,13 +121,21 @@ void MESSAGE_BUS::process_commands( void )
 				// Do nothing;
 				break;
 
+			case COMMANDS::FORCE_AI_VALUE:
+				force_value( c );
+				break;
+
+			case COMMANDS::UNFORCE_AI_VALUE:
+				unforce_value( c );
+				break;
+
 			case COMMANDS::SET_CAL_VALS:
 				set_cal_vals( c );
 				break;
 
 			case COMMANDS::GET_STATUS:
-				message = ctx->message_processor->create_get_status( c.board_id.toStdString() );
-				message = ctx->send_message_and_wait( message );
+				message = this->ctx->message_processor->create_get_status( c.board_id.toStdString() );
+				message = this->ctx->send_message_and_wait( message );
 				this->emit_get_status_message( c, message );
 				break;
 
@@ -172,6 +180,28 @@ void MESSAGE_BUS::process_commands( void )
 				break;
 		};
 	}
+}
+
+void MESSAGE_BUS::force_value( const MESSAGE_BUS::MESSAGE& _message )
+{
+	BBB_HVAC::MESSAGE_PTR message;
+
+	uint8_t ai_idx = ( uint8_t )_message.payload.toList().at( 0 ).toUInt();
+	uint16_t ai_value = ( uint8_t )_message.payload.toList().at( 1 ).toUInt();
+	message = this->ctx->message_processor->create_force_ai( _message.board_id.toStdString(), ai_idx, ai_value );
+	this->ctx->send_message( message );
+
+	return;
+}
+void MESSAGE_BUS::unforce_value( const MESSAGE_BUS::MESSAGE& _message )
+{
+	BBB_HVAC::MESSAGE_PTR message;
+
+	uint8_t ai_idx = ( uint8_t )_message.payload.toUInt();
+	message = this->ctx->message_processor->create_unforce_ai( _message.board_id.toStdString(), ai_idx );
+	this->ctx->send_message( message );
+
+	return;
 }
 
 static void variant_list_to_cal_array( BBB_HVAC::CAL_VALUE_ARRAY& _cal_vals, const QList<QVariant>& _v_l )

@@ -65,12 +65,16 @@ class MESSAGE_BUS : public QObject
 			GET_SET_POINTS,
 			/// Gets the logic status
 			GET_LOGIC_STATUS,
-			/// Gets the status of all analog inputs, digital outputs, and PMIC status.
+			/// Gets the status of all analog inputs, digital outputs, and PMIC status
 			GET_STATUS,
-			/// Sets the calibration values on a board.
+			/// Sets the calibration values on a board
 			SET_CAL_VALS,
+			// Sets the DO output status on a board
 			SET_DO,
-			SET_PMIC
+			// Sets the PMIC status on a board
+			SET_PMIC,
+			FORCE_AI_VALUE,
+			UNFORCE_AI_VALUE
 		};
 
 		/// Message for
@@ -90,6 +94,8 @@ class MESSAGE_BUS : public QObject
 				static MESSAGE create_message_set_cal_vals( const QString& _board_id, const QVector<uint16_t>& _cal_val_l1, const QVector<uint16_t>& _cal_val_l2 );
 				static MESSAGE create_message_set_do_status( const QString& _board_id, const uint8_t _do_status );
 				static MESSAGE create_message_set_pmic_status( const QString& _board_id, const uint8_t _pmic_status );
+				static MESSAGE create_message_force_ai_value( const QString& _board_id, const uint8_t _ai_idx, const uint16_t _value );
+				static MESSAGE create_message_unforce_ai_value( const QString& _board_id, const uint8_t _ai_idx );
 		};
 
 		/**
@@ -205,6 +211,9 @@ class MESSAGE_BUS : public QObject
 		void emit_set_point_data_message( COMMANDS _command, const  BBB_HVAC::MESSAGE_PTR& _data );
 
 		void set_cal_vals( const MESSAGE_BUS::MESSAGE& _message );
+
+		void force_value( const MESSAGE_BUS::MESSAGE& _message );
+		void unforce_value( const MESSAGE_BUS::MESSAGE& _message );
 	protected slots:
 		/**
 		Invoked by the timer every (1000/update_frequenct) milliseconds.

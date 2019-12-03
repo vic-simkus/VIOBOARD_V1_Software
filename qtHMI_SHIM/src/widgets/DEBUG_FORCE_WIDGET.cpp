@@ -22,8 +22,7 @@ DEBUG_FORCE_WIDGET::DEBUG_FORCE_WIDGET( const QString& _label, unsigned int _ind
 	// Create the child widgets
 	this->label = new QLabel( "<b>" + _label, this );
 	this->status = new QLabel( "not forced", this );
-	this->cmd_reset = new QPushButton( "Reset", this );
-	this->cmd_toggle = new QPushButton( "Toggle", this );
+	this->cmd_toggle = new QPushButton( "Force", this );
 	// Create and molest the spin box
 	this->offset = new QSpinBox( this );
 	this->offset->setMinimum( 0 );
@@ -34,7 +33,6 @@ DEBUG_FORCE_WIDGET::DEBUG_FORCE_WIDGET( const QString& _label, unsigned int _ind
 	this->setLayout( main_layout );
 	this->layout()->addWidget( this->label );
 	this->layout()->addWidget( this->offset );
-	this->layout()->addWidget( cmd_reset );
 	this->layout()->addWidget( cmd_toggle );
 	temp_layout->addItem( new QSpacerItem( 1, 1, QSizePolicy::MinimumExpanding, QSizePolicy::Fixed ) );
 	temp_layout->addWidget( status );
@@ -43,7 +41,9 @@ DEBUG_FORCE_WIDGET::DEBUG_FORCE_WIDGET( const QString& _label, unsigned int _ind
 	this->layout()->setContentsMargins( 4, 4, 4, 4 );
 	// Connect signals
 	connect( this->cmd_toggle, SIGNAL( clicked() ), this, SLOT( cmd_toggle_clicked() ) );
-	connect( this->cmd_reset, SIGNAL( clicked() ), this, SLOT( cmd_reset_clicked() ) );
+	connect( this->offset, SIGNAL( valueChanged( int ) ), this, SLOT( slot_spinner_changed( ) ) );
+
+	this->update_widget();
 	return;
 }
 
@@ -51,11 +51,21 @@ DEBUG_FORCE_WIDGET::~DEBUG_FORCE_WIDGET()
 {
 }
 
+void DEBUG_FORCE_WIDGET::slot_spinner_changed( void )
+{
+	if ( this->is_forced )
+	{
+		this->sig_force_clicked( this->index, this->is_forced, this->offset->value() );
+	}
+}
 void DEBUG_FORCE_WIDGET::update_widget( void )
 {
 	if ( this->is_forced )
 	{
+		this->cmd_toggle->setText( "Unforce" );
 		this->status->setText( "FORCED" );
+		this->offset->setEnabled( true );
+
 		/*
 		What a hacky way of doing this...
 		*/
@@ -64,7 +74,9 @@ void DEBUG_FORCE_WIDGET::update_widget( void )
 	}
 	else
 	{
+		this->cmd_toggle->setText( "Force" );
 		this->status->setText( "not forced" );
+		this->offset->setEnabled( false );
 		this->setStyleSheet( "" );
 		this->status->setStyleSheet( "" );
 	}
@@ -79,13 +91,6 @@ void DEBUG_FORCE_WIDGET::slot_update_real_value( uint16_t _value )
 
 	this->offset->setValue( _value );
 }
-void DEBUG_FORCE_WIDGET::cmd_reset_clicked( void )
-{
-	this->offset->setValue( 0 );
-	this->is_forced = false;
-	this->update_widget();
-	sig_reset_clicked( this->index );
-}
 void DEBUG_FORCE_WIDGET::cmd_toggle_clicked( void )
 {
 	if ( this->is_forced )
@@ -98,5 +103,6 @@ void DEBUG_FORCE_WIDGET::cmd_toggle_clicked( void )
 	}
 
 	this->update_widget();
-	this->sig_toggle_clicked( this->index, this->is_forced, this->offset->value() );
+
+	this->sig_force_clicked( this->index, this->is_forced, this->offset->value() );
 }

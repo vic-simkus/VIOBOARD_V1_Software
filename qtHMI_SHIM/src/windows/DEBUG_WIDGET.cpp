@@ -44,8 +44,7 @@ DEBUG_WIDGET::DEBUG_WIDGET( const QString& _board_id ) : QFrame( )
 	{
 		this->force_widget[i] = new DEBUG_FORCE_WIDGET( "AI" + QString::number( i ), i );
 		h_layout->addWidget( this->force_widget[i] );
-		connect( this->force_widget[i], SIGNAL( sig_reset_clicked( unsigned int ) ), this, SLOT( slot_reset_clicked( unsigned int ) ) );
-		connect( this->force_widget[i], SIGNAL( sig_toggle_clicked( unsigned int, bool , uint16_t ) ), this, SLOT( slot_toggle_clicked( unsigned int, bool , uint16_t ) ) );
+		connect( this->force_widget[i], SIGNAL( sig_force_clicked( unsigned int, bool , uint16_t ) ), this, SLOT( slot_force_clicked( unsigned int, bool , uint16_t ) ) );
 	}
 
 	v_layout->addItem( h_layout );
@@ -65,9 +64,9 @@ void DEBUG_WIDGET::slot_raw_adc_value_changed( const QString& _board, uint8_t _i
 	return;
 }
 
-void DEBUG_WIDGET::slot_toggle_clicked( unsigned int _port, bool _state, uint16_t _value )
+void DEBUG_WIDGET::slot_force_clicked( unsigned int _port, bool _state, uint16_t _value )
 {
-	LOG_DEBUG_STAT( "FORCED: " + this->board_tag.toStdString() +  ": port: " + num_to_str( _port ) + ", forced: " + ( _state ? "yes" : "no" ) + ", value: " + num_to_str( _value ) );
+	LOG_DEBUG_STAT( "FORCE: " + this->board_tag.toStdString() +  ": port: " + num_to_str( _port ) + ", forced: " + ( _state ? "yes" : "no" ) + ", value: " + num_to_str( _value ) );
 
 	if ( _state )
 	{
@@ -78,11 +77,5 @@ void DEBUG_WIDGET::slot_toggle_clicked( unsigned int _port, bool _state, uint16_
 		sig_ai_unforced( this->board_tag,  _port );
 	}
 
-	return;
-}
-void DEBUG_WIDGET::slot_reset_clicked( unsigned int _port )
-{
-	LOG_DEBUG_STAT( "FORCED: " + this->board_tag.toStdString() +  ": port: " + num_to_str( _port ) + " has been reset" );
-	sig_ai_unforced( this->board_tag,  _port );
 	return;
 }

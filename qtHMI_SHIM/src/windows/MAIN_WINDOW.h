@@ -22,9 +22,8 @@
 #define _MAIN_WINDOW_H
 
 #include <QMainWindow>
-#include <QStatusBar>
 
-class QTabWidget;
+class MAIN_WIDGET;
 
 class MAIN_WINDOW : public QMainWindow
 {
@@ -33,7 +32,7 @@ class MAIN_WINDOW : public QMainWindow
 		MAIN_WINDOW( );
 
 	protected:
-		QTabWidget* main_widget;
+		MAIN_WIDGET* main_widget;
 		QWidget* update_beacon;
 
 	protected slots:
