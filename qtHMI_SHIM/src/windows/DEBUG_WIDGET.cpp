@@ -50,6 +50,7 @@ DEBUG_WIDGET::DEBUG_WIDGET( const QString& _board_id ) : QFrame( )
 	v_layout->addItem( h_layout );
 	v_layout->addItem( new QSpacerItem( 1, 1, QSizePolicy::Maximum, QSizePolicy::MinimumExpanding ) );
 	this->setLayout( v_layout );
+
 	connect( message_bus, SIGNAL( sig_raw_adc_value_changed( const QString&, uint8_t , uint16_t ) ) , this, SLOT( slot_raw_adc_value_changed( const QString&, uint8_t , uint16_t ) ) ) ;
 }
 
@@ -70,10 +71,12 @@ void DEBUG_WIDGET::slot_force_clicked( unsigned int _port, bool _state, uint16_t
 
 	if ( _state )
 	{
+		message_bus->add_message( MESSAGE_BUS::MESSAGE::create_message_force_ai_value( this->board_tag, _port, _value ) );
 		sig_ai_forced( this->board_tag, _port, _value );
 	}
 	else
 	{
+		message_bus->add_message( MESSAGE_BUS::MESSAGE::create_message_unforce_ai_value( this->board_tag, _port ) );
 		sig_ai_unforced( this->board_tag,  _port );
 	}
 

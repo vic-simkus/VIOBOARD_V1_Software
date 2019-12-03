@@ -187,8 +187,12 @@ void MESSAGE_BUS::force_value( const MESSAGE_BUS::MESSAGE& _message )
 	BBB_HVAC::MESSAGE_PTR message;
 
 	uint8_t ai_idx = ( uint8_t )_message.payload.toList().at( 0 ).toUInt();
-	uint16_t ai_value = ( uint8_t )_message.payload.toList().at( 1 ).toUInt();
+	uint16_t ai_value = ( uint16_t )_message.payload.toList().at( 1 ).toUInt();
+
 	message = this->ctx->message_processor->create_force_ai( _message.board_id.toStdString(), ai_idx, ai_value );
+
+	LOG_DEBUG_STAT( "Message: " + message->to_string() );
+
 	this->ctx->send_message( message );
 
 	return;

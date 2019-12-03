@@ -76,5 +76,5 @@ MESSAGE_BUS::MESSAGE MESSAGE_BUS::MESSAGE::create_message_force_ai_value( const 
 }
 MESSAGE_BUS::MESSAGE MESSAGE_BUS::MESSAGE::create_message_unforce_ai_value( const QString& _board_id, const uint8_t _ai_idx )
 {
-	return MESSAGE( _board_id, COMMANDS::FORCE_AI_VALUE, QVariant( _ai_idx ) );
+	return MESSAGE( _board_id, COMMANDS::UNFORCE_AI_VALUE, QVariant( _ai_idx ) );
 }
