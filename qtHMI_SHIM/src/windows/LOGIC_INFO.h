@@ -59,8 +59,6 @@ class LOGIC_INFO : public QFrame
 
 		void dump_message_parts( BBB_HVAC::MESSAGE_PTR& _message );
 
-		void setup_splitter_handle( QSplitter* _splitter );
-
 	private slots:
 		void slot_mb_label_data( MESSAGE_BUS::COMMANDS, const QVector<QVector<QString>>& _data );
 		void slot_mb_map_data( MESSAGE_BUS::COMMANDS _cmd, const QMap<QString, QVector<QString>>& _data );
