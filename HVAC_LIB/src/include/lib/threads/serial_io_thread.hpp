@@ -551,7 +551,7 @@ namespace BBB_HVAC
 				/**
 				Board state cache.
 				*/
-				BOARD_STATE_CACHE state_cache;
+				BOARD_STATE_CACHE* state_cache;
 
 				/**
 				Has the board reset.  True if it has, false otherwise.  We use this to make sure that the board is in a known state.

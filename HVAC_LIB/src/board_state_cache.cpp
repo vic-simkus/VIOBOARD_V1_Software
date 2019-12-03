@@ -24,7 +24,7 @@ namespace BBB_HVAC
 {
 	namespace IOCOMM
 	{
-		BOARD_STATE_CACHE::BOARD_STATE_CACHE()
+		BOARD_STATE_CACHE::BOARD_STATE_CACHE( const std::string& _board_id )
 		{
 			this->pmic_cache_index = 0;
 			this->adc_cache_index = 0;
@@ -36,6 +36,10 @@ namespace BBB_HVAC
 			{
 				this->forced_ai_value[i] = false;
 			}
+
+			this->board_id = _board_id;
+
+			INIT_LOGGER( "BBB_HVAC::BOARD_STATE_CACHE(" + this->board_id + ")" );
 
 			return;
 		}
@@ -80,21 +84,14 @@ namespace BBB_HVAC
 
 		bool BOARD_STATE_CACHE::force_ai_value( size_t _x_index, uint16_t _value )
 		{
-			if ( this->forced_ai_value[_x_index] == true )
-			{
-				return false;
-			}
-
+			LOG_DEBUG( "Forcing AI" + num_to_str( _x_index ) + " to " + num_to_str( _value ) );
+			this->forced_ai_value[_x_index] = true;
 			this->adc_cache[this->get_previous_cache_index()][_x_index] = ADC_CACHE_ENTRY( _value );
 			return true;
 		}
 		bool BOARD_STATE_CACHE::unforce_ai_value( size_t _x_index )
 		{
-			if ( this->forced_ai_value[_x_index] == false )
-			{
-				return false;
-			}
-
+			LOG_DEBUG( "Unforcing AI" + num_to_str( _x_index ) );
 			this->forced_ai_value[_x_index] = false;
 			return true;
 		}
@@ -118,6 +115,7 @@ namespace BBB_HVAC
 				/*
 				Value is forced.  Do not set value.  Updated timestamp.
 				*/
+
 				this->adc_cache[this->adc_cache_index][_x_index] = ADC_CACHE_ENTRY( this->adc_cache[this->get_previous_cache_index()][_x_index] );
 			}
 

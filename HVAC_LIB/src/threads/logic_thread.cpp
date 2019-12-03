@@ -191,7 +191,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 				}
 
 				BOARD_STATE_STRUCT* board_state_ptr = &board_state_iterator->second;
-				BBB_HVAC::IOCOMM::BOARD_STATE_CACHE board_state_cache;
+				BBB_HVAC::IOCOMM::BOARD_STATE_CACHE board_state_cache( ( *i ) + "[t]" );
 				thread_handle->get_latest_state_values( board_state_cache );
 				board_state_cache.get_latest_do_status( board_state_ptr->do_state );
 				board_state_cache.get_latest_do_status( board_state_ptr->do_state );

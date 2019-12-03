@@ -119,7 +119,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			/*
 			Rather than continually call into the serial IO thread and grabbing the lock we get the whole cache at once and tease out the individual components on our own time.
 			*/
-			IOCOMM::BOARD_STATE_CACHE state_cache;
+			IOCOMM::BOARD_STATE_CACHE state_cache( board_tag + "[t]" );
 			comm_thread->get_latest_state_values( state_cache );
 			state_cache.get_latest_adc_values( dac_cache );
 			state_cache.get_latest_do_status( do_cache );
@@ -231,6 +231,9 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			std::string board_tag = _message->get_part_as_s( 0 );
 			uint8_t input = ( uint8_t )_message->get_part_as_ui( 1 );
 			uint16_t value = _message->get_part_as_ui( 2 );
+
+			LOG_DEBUG( "Forcing (" + board_tag + ") AI" + num_to_str( input ) + " to value " + num_to_str( value ) + " -- " + _message->to_string() );
+
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			comm_thread->force_ai_value( input, value );
 			ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;

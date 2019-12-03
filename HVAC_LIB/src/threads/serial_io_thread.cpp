@@ -91,11 +91,15 @@ SER_IO_COMM::~SER_IO_COMM()
 		this->serial_port_close();
 	}
 
+	delete this->state_cache;
+	this->state_cache = nullptr;
+
 	unlink( this->lock_file.data() );
 	free( this->buffer );
 	this->buffer = nullptr;
 	delete this->outgoing_messages;
 	this->outgoing_messages = nullptr;
+
 	return;
 }
 
@@ -114,6 +118,8 @@ SER_IO_COMM::SER_IO_COMM( const char* _tty, const string& _tag, bool _debug ) :
 	this->board_has_reset = false;
 	this->in_debug_mode = _debug;
 	memset( this->buffer, 0xFF, GC_SERIAL_BUFF_SIZE );
+
+	this->state_cache = new BOARD_STATE_CACHE( _tag );
 	return;
 }
 
@@ -491,13 +497,13 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 
 bool SER_IO_COMM::add_do_status( size_t _idx )
 {
-	this->state_cache.add_do_status( this->active_table->table[_idx][RESP_HEAD_SIZE] );
+	this->state_cache->add_do_status( this->active_table->table[_idx][RESP_HEAD_SIZE] );
 	return true;
 }
 
 bool SER_IO_COMM::add_pmic_status( size_t _idx )
 {
-	this->state_cache.add_pmic_status( this->active_table->table[_idx][RESP_HEAD_SIZE] );
+	this->state_cache->add_pmic_status( this->active_table->table[_idx][RESP_HEAD_SIZE] );
 	return true;
 }
 
@@ -533,7 +539,7 @@ bool SER_IO_COMM::add_calibration_values( size_t _idx, unsigned char _level )
 
 	for ( size_t i = 0; ( i < length && result_index < GC_IO_AI_COUNT ); i += 2 )
 	{
-		adder_ptr( this->state_cache, result_index, ASSEMBLE_16INT( line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1] ) );
+		adder_ptr( *( this->state_cache ), result_index, ASSEMBLE_16INT( line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1] ) );
 		result_index += 1;
 	}
 
@@ -551,7 +557,7 @@ bool SER_IO_COMM::add_boot_count( size_t _idx )
 		return false;
 	}
 
-	this->state_cache.set_boot_count( ASSEMBLE_16INT( line[RESP_HEAD_SIZE], line[RESP_HEAD_SIZE + 1] ) );
+	this->state_cache->set_boot_count( ASSEMBLE_16INT( line[RESP_HEAD_SIZE], line[RESP_HEAD_SIZE + 1] ) );
 	return true;
 }
 
@@ -568,7 +574,7 @@ bool SER_IO_COMM::add_ai_result( size_t _line_index )
 
 	for ( size_t i = 0; ( i < length && result_index < GC_IO_AI_COUNT ); i += 2 )
 	{
-		this->state_cache.add_adc_value( result_index, ASSEMBLE_16INT( line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1] ) );
+		this->state_cache->add_adc_value( result_index, ASSEMBLE_16INT( line[RESP_HEAD_SIZE + i], line[RESP_HEAD_SIZE + i + 1] ) );
 		result_index = result_index + 1;
 	}
 
@@ -1475,7 +1481,7 @@ void SER_IO_COMM::reset_buffer_context( void )
 bool SER_IO_COMM::get_dac_cache( ADC_CACHE_ENTRY( &_dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] )
 {
 	this->obtain_lock();
-	this->state_cache.get_adc_cache( _dest );
+	this->state_cache->get_adc_cache( _dest );
 	this->release_lock();
 	return true;
 }
@@ -1483,7 +1489,7 @@ bool SER_IO_COMM::get_dac_cache( ADC_CACHE_ENTRY( &_dest ) [GC_IO_STATE_BUFFER_D
 bool SER_IO_COMM::get_do_cache( DO_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
 {
 	this->obtain_lock();
-	this->state_cache.get_do_cache( _dest );
+	this->state_cache->get_do_cache( _dest );
 	this->release_lock();
 	return true;
 }
@@ -1491,7 +1497,7 @@ bool SER_IO_COMM::get_do_cache( DO_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DE
 bool SER_IO_COMM::get_pmic_cache( PMIC_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
 {
 	this->obtain_lock();
-	this->state_cache.get_pmic_cache( _dest );
+	this->state_cache->get_pmic_cache( _dest );
 	this->release_lock();
 	return true;
 }
@@ -1499,7 +1505,7 @@ bool SER_IO_COMM::get_pmic_cache( PMIC_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFE
 bool SER_IO_COMM::get_latest_state_values( BOARD_STATE_CACHE& _target )
 {
 	this->obtain_lock();
-	_target = this->state_cache;
+	_target = *( this->state_cache );
 	this->release_lock();
 	return true;
 }
@@ -1507,7 +1513,7 @@ bool SER_IO_COMM::get_latest_state_values( BOARD_STATE_CACHE& _target )
 bool SER_IO_COMM::get_latest_adc_values( ADC_CACHE_ENTRY( & _dest ) [GC_IO_AI_COUNT] )
 {
 	this->obtain_lock();
-	this->state_cache.get_latest_adc_values( _dest );
+	this->state_cache->get_latest_adc_values( _dest );
 	this->release_lock();
 	return true;
 }
@@ -1515,7 +1521,7 @@ bool SER_IO_COMM::get_latest_adc_values( ADC_CACHE_ENTRY( & _dest ) [GC_IO_AI_CO
 bool SER_IO_COMM::get_latest_do_status( DO_CACHE_ENTRY& _dest )
 {
 	this->obtain_lock();
-	this->state_cache.get_latest_do_status( _dest );
+	this->state_cache->get_latest_do_status( _dest );
 	this->release_lock();
 	return true;
 }
@@ -1523,7 +1529,7 @@ bool SER_IO_COMM::get_latest_do_status( DO_CACHE_ENTRY& _dest )
 bool SER_IO_COMM::get_latest_pmic_status( PMIC_CACHE_ENTRY& _dest )
 {
 	this->obtain_lock();
-	this->state_cache.get_latest_pmic_status( _dest );
+	this->state_cache->get_latest_pmic_status( _dest );
 	this->release_lock();
 	return true;
 }
@@ -1617,9 +1623,9 @@ bool SER_IO_COMM::cmd_start_stream( void )
 
 bool SER_IO_COMM::force_ai_value( size_t _x_index, uint16_t _value )
 {
-	return this->state_cache.force_ai_value( _x_index, _value );
+	return this->state_cache->force_ai_value( _x_index, _value );
 }
 bool SER_IO_COMM::unforce_ai_value( size_t _x_index )
 {
-	return this->state_cache.unforce_ai_value( _x_index );
+	return this->state_cache->unforce_ai_value( _x_index );
 }

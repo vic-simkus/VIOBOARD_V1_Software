@@ -47,6 +47,9 @@ namespace BBB_HVAC
 		class BOARD_STATE_CACHE
 		{
 
+				DEF_LOGGER;
+
+
 			public:
 				/**
 				A function pointer we use in SER_IO_COMM::add_calibration_values in order to use a conditional once rather than with every value added.
@@ -56,7 +59,7 @@ namespace BBB_HVAC
 				/**
 				Constructor.
 				*/
-				BOARD_STATE_CACHE();
+				BOARD_STATE_CACHE( const std::string& _board_id );
 
 				/**
 				Adds a PMIC (power management IC) status value to the cache
@@ -144,6 +147,8 @@ namespace BBB_HVAC
 				size_t adc_cache_index;
 
 				bool forced_ai_value[GC_IO_AI_COUNT];
+
+				std::string board_id;
 			private:
 				void add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] ) throw( logic_error );
 		};
