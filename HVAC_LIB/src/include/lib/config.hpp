@@ -177,4 +177,22 @@ XXX - need to update to reflect changes in timing mechanism
 
 #define GC_IO_ADC_VREF_MAX ((double)5.0)
 #define GC_IO_ADC_STEPS	(4096)
+
+#define GC_IO_ADC_STEP ((float)((float)GC_IO_ADC_VREF_MAX / (float)GC_IO_ADC_STEPS))
+
+#define GC_PMIC_AI_EN_MASK 0x01
+#define GC_PMIC_DO_EN_MASK 0x02
+#define GC_PMIC_AI_ERR_MASK 0x04
+#define GC_PMIC_DO_ERR_MASK 0x08
+
+#define GC_DO_4_MASK 0x08
+#define GC_DO_3_MASK 0x04
+#define GC_DO_2_MASK 0x02
+#define GC_DO_1_MASK 0x01
+
+#define GC_PMIC_AI_EN_MASK 0x01
+#define GC_PMIC_DO_EN_MASK 0x02
+#define GC_PMIC_AI_ERR_MASK 0x04
+#define GC_PMIC_DO_ERR_MASK 0x08
+
 #endif /* CONFIG_H_ */
