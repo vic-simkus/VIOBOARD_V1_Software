@@ -458,7 +458,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_force_ai( const std::string& _board_tag, u
 	parts.push_back( num_to_str( _value ) );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::FORCE_AI_VALUE ), parts ) );
 }
-MESSAGE_PTR MESSAGE_PROCESSOR::create_unforce_force_ai( const std::string& _board_tag, uint8_t _input ) throw ( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_unforce_ai( const std::string& _board_tag, uint8_t _input ) throw ( exception )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
