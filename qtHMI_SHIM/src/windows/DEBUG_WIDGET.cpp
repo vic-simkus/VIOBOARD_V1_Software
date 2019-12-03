@@ -40,7 +40,7 @@ DEBUG_WIDGET::DEBUG_WIDGET( const QString& _board_id ) : QFrame( )
 	h_layout->setContentsMargins( 4, 4, 4, 4 );
 	h_layout->setSpacing( 2 );
 
-	for ( size_t i = 0; i < AI_COUNT; i++ )
+	for ( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 	{
 		this->force_widget[i] = new DEBUG_FORCE_WIDGET( "AI" + QString::number( i ), i );
 		h_layout->addWidget( this->force_widget[i] );

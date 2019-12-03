@@ -19,7 +19,6 @@
  */
 
 #include "MESSAGE_BUS.h"
-#include "board_info.h"
 
 #include <QTimer>
 
@@ -256,11 +255,11 @@ void MESSAGE_BUS::emit_get_status_message( const MESSAGE& _message , const BBB_H
 	bool pmic_ai_en;
 	bool pmic_ai_fault;
 
-	adc_values.resize( AI_COUNT );
-	cal_vals_l1.resize( AI_COUNT );
-	cal_vals_l2.resize( AI_COUNT );
+	adc_values.resize( GC_IO_AI_COUNT );
+	cal_vals_l1.resize( GC_IO_AI_COUNT );
+	cal_vals_l2.resize( GC_IO_AI_COUNT );
 
-	do_states.resize( DO_COUNT );
+	do_states.resize( GC_IO_DO_COUNT );
 
 	const vector<string>& parts = _data->get_parts( );
 
@@ -273,21 +272,21 @@ void MESSAGE_BUS::emit_get_status_message( const MESSAGE& _message , const BBB_H
 		In the message from the logic core, l1 cal values are after the AI_COUNT AI values, DO status and PMIC status.
 		l2 cal values are after the l1 cal values.
 		*/
-		BBB_HVAC::IOCOMM::CAL_VALUE_ENTRY cv_l1( parts[( AI_COUNT + 2 ) + i] );
-		BBB_HVAC::IOCOMM::CAL_VALUE_ENTRY cv_l2( parts[( ( AI_COUNT * 2 ) + 2 ) + i] );
+		BBB_HVAC::IOCOMM::CAL_VALUE_ENTRY cv_l1( parts[( GC_IO_AI_COUNT + 2 ) + i] );
+		BBB_HVAC::IOCOMM::CAL_VALUE_ENTRY cv_l2( parts[( ( GC_IO_AI_COUNT * 2 ) + 2 ) + i] );
 
 		cal_vals_l1[i] = cv_l1.get_value();
 		cal_vals_l2[i] = cv_l2.get_value();
 	}
 
-	BBB_HVAC::IOCOMM::PMIC_CACHE_ENTRY pmic_value( parts[AI_COUNT + 1] );
+	BBB_HVAC::IOCOMM::PMIC_CACHE_ENTRY pmic_value( parts[GC_IO_AI_COUNT + 1] );
 
-	pmic_ai_en =  pmic_value.get_value( ) & PMIC_AI_EN_MASK;
-	pmic_ai_fault =  pmic_value.get_value( ) & PMIC_AI_ERR_MASK;
-	pmic_do_en = pmic_value.get_value( ) & PMIC_DO_EN_MASK;
-	pmic_do_fault = pmic_value.get_value( ) & PMIC_DO_ERR_MASK;
+	pmic_ai_en =  pmic_value.get_value( ) & GC_PMIC_AI_EN_MASK;
+	pmic_ai_fault =  pmic_value.get_value( ) & GC_PMIC_AI_ERR_MASK;
+	pmic_do_en = pmic_value.get_value( ) & GC_PMIC_DO_EN_MASK;
+	pmic_do_fault = pmic_value.get_value( ) & GC_PMIC_DO_ERR_MASK;
 
-	BBB_HVAC::IOCOMM::DO_CACHE_ENTRY do_value( parts[AI_COUNT] );
+	BBB_HVAC::IOCOMM::DO_CACHE_ENTRY do_value( parts[GC_IO_AI_COUNT] );
 	uint8_t mask = 1;
 
 	for ( size_t i = 0; i < ( size_t )do_states.size(); i++ )

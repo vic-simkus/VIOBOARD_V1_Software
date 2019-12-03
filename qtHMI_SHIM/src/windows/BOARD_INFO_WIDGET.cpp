@@ -39,7 +39,7 @@ void BOARD_INFO_WIDGET::setup_do_stuff( void )
 	this->do_grid_layout->addWidget( new QLabel( "<i><center>DO03" ), 0, 2 );
 	this->do_grid_layout->addWidget( new QLabel( "<i><center>DO04" ), 0, 3 );
 
-	for ( size_t i = 0; i < DO_COUNT; i++ )
+	for ( size_t i = 0; i < GC_IO_DO_COUNT; i++ )
 	{
 		this->do_values[i] = new DO_INDICATOR( );
 		this->do_grid_layout->addWidget( this->do_values[i], 1, i );
@@ -59,21 +59,21 @@ void BOARD_INFO_WIDGET::setup_ai_stuff( void )
 	this->ai_grid_layout->addWidget( new QLabel( "<i><center>AI07<br/>(ICTD)</center></i>" ), 0, 6 );
 	this->ai_grid_layout->addWidget( new QLabel( "<i><center>AI08<br/>(ICTD)</center></i>" ), 0, 7 );
 
-	for ( size_t i = 0; i < AI_COUNT; i++ )
+	for ( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 	{
 		this->ai_grid_layout->addWidget( new QLabel( "<i><center>Volt Value</center></i>" ), 1, i );
 		this->ai_values[i] = new AI_VALUE( );
 		this->ai_grid_layout->addWidget( this->ai_values[i], 2, i );
 	}
 
-	for ( size_t i = 0; i < AI_COUNT; i++ )
+	for ( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 	{
 		this->ai_grid_layout->addWidget( new QLabel( "<i><center>Raw Value</center></i>" ), 3, i );
 		this->ai_raw_values[i] = new AI_RAW_VALUE( );
 		this->ai_grid_layout->addWidget( this->ai_raw_values[i], 4, i );
 	}
 
-	for ( size_t i = 0; i < AI_COUNT; i++ )
+	for ( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 	{
 		this->ai_grid_layout->addWidget( new QLabel( "<i><center>L1 Calibration</center></i>" ), 5, i );
 		this->cal_l1_values[i] = new CAL_VALUE( );
@@ -85,7 +85,7 @@ void BOARD_INFO_WIDGET::setup_ai_stuff( void )
 	connect( tmp_cmd, SIGNAL( clicked() ), this, SLOT( update_l1_cal_values_clicked() ) );
 	this->ai_grid_layout->addWidget( tmp_cmd, 7, 0, 1, 8 );
 
-	for ( size_t i = 0; i < AI_COUNT; i++ )
+	for ( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 	{
 		this->ai_grid_layout->addWidget( new QLabel( "<i><center>L2 Calibration</center></i>" ), 8, i );
 		this->cal_l2_values[i] = new CAL_VALUE( );
@@ -118,7 +118,7 @@ static void generate_cal_value_vector( QVector<uint16_t>& _cv, CAL_VALUE** _cal_
 
 	uint16_t cal_val = 0;
 
-	for ( size_t i = 0; i < AI_COUNT; i++ )
+	for ( size_t i = 0; i < GC_IO_AI_COUNT; i++ )
 	{
 		int val = _cal_ui[i]->get_value();
 
@@ -253,7 +253,7 @@ void BOARD_INFO_WIDGET::slot_get_status( const QString& _board, const QVector<ui
 	for ( size_t i = 0; i < ( size_t )_adc_values.size(); ++i )
 	{
 		this->ai_raw_values[i]->set_value( _adc_values[i] );
-		this->ai_values[i]->set_value( AI_ADC_STEP * ( float ) _adc_values[i] );
+		this->ai_values[i]->set_value( GC_IO_ADC_STEP * ( float ) _adc_values[i] );
 
 		message_bus->slot_raw_adc_value_changed( this->board_id, i, _adc_values[i] );
 	}
@@ -361,7 +361,7 @@ void BOARD_INFO_WIDGET::manage_pmic_status( uint8_t _mask )
 	//	LOG_DEBUG_STAT( "Start PMIC bits: " + byte_to_bit_string( pmic_bits ) );
 
 
-	if ( _mask == PMIC_AI_ERR_MASK || _mask == PMIC_DO_ERR_MASK )
+	if ( _mask == GC_PMIC_AI_ERR_MASK || _mask == GC_PMIC_DO_ERR_MASK )
 	{
 		/*
 		 * We're in reset mode
@@ -401,25 +401,25 @@ void BOARD_INFO_WIDGET::manage_pmic_status( uint8_t _mask )
 
 void BOARD_INFO_WIDGET::cmd_enable_do_pmic_clicked( void )
 {
-	this->manage_pmic_status( PMIC_DO_EN_MASK );
+	this->manage_pmic_status( GC_PMIC_DO_EN_MASK );
 	return;
 }
 
 void BOARD_INFO_WIDGET::cmd_enable_ai_pmic_clicked( void )
 {
-	this->manage_pmic_status( PMIC_AI_EN_MASK );
+	this->manage_pmic_status( GC_PMIC_AI_EN_MASK );
 	return;
 }
 
 void BOARD_INFO_WIDGET::cmd_reset_do_pmic_clicked( void )
 {
-	this->manage_pmic_status( PMIC_DO_ERR_MASK );
+	this->manage_pmic_status( GC_PMIC_DO_ERR_MASK );
 	return;
 }
 
 void BOARD_INFO_WIDGET::cmd_reset_ai_pmic_clicked( void )
 {
-	this->manage_pmic_status( PMIC_AI_ERR_MASK );
+	this->manage_pmic_status( GC_PMIC_AI_ERR_MASK );
 	return;
 }
 
@@ -429,7 +429,7 @@ void BOARD_INFO_WIDGET::cmd_enable_do_clicked( int _do )
 
 	uint8_t do_bits = 0;
 
-	for ( auto i = 0; i < DO_COUNT; i++ )
+	for ( auto i = 0; i < GC_IO_DO_COUNT; i++ )
 	{
 		if ( i == _do )
 		{

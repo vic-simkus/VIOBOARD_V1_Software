@@ -21,7 +21,6 @@
 #ifndef BOARD_INFO_WIDGET_H
 #define BOARD_INFO_WIDGET_H
 
-#include "board_info.h"
 #include "ui_components.h"
 #include "globals.h"
 
@@ -52,11 +51,11 @@ class BOARD_INFO_WIDGET : public QFrame
 		uint8_t get_pmic_flags( void ) const;
 
 	private:
-		AI_VALUE* ai_values[AI_COUNT];
-		AI_RAW_VALUE* ai_raw_values[AI_COUNT];
-		DO_INDICATOR* do_values[DO_COUNT];
-		CAL_VALUE* cal_l1_values[AI_COUNT];
-		CAL_VALUE* cal_l2_values[AI_COUNT];
+		AI_VALUE* ai_values[GC_IO_AI_COUNT];
+		AI_RAW_VALUE* ai_raw_values[GC_IO_AI_COUNT];
+		DO_INDICATOR* do_values[GC_IO_DO_COUNT];
+		CAL_VALUE* cal_l1_values[GC_IO_AI_COUNT];
+		CAL_VALUE* cal_l2_values[GC_IO_AI_COUNT];
 
 		PMIC_INDICATOR* ai_pmic;
 		PMIC_INDICATOR* do_pmic;

@@ -20,7 +20,7 @@
 
 
 #include "globals.h"
-#include "board_info.h"
+
 
 #include <QFrame>
 class DEBUG_FORCE_WIDGET;
@@ -39,5 +39,5 @@ class DEBUG_WIDGET : public QFrame
 		void sig_ai_unforced( const QString& _board, uint8_t _port );
 	protected:
 		QString board_tag;
-		DEBUG_FORCE_WIDGET* force_widget[AI_COUNT];
+		DEBUG_FORCE_WIDGET* force_widget[GC_IO_AI_COUNT];
 };

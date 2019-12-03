@@ -22,7 +22,6 @@
 #include "windows/MAIN_WINDOW.h"
 
 #include "globals.h"
-#include "board_info.h"
 
 #include "lib/bbb_hvac.hpp"
 
@@ -58,9 +57,9 @@ int main( int argc, char* argv[] )
 {
 	BBB_HVAC::GLOBALS::configure_logging( BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals( );
-	LOG_DEBUG_STAT( "ADC ref: " + num_to_str( AI_ADC_REF ) );
-	LOG_DEBUG_STAT( "ADC steps: " + num_to_str( AI_STEPS ) );
-	LOG_DEBUG_STAT( "ADC step: " + num_to_str( AI_ADC_STEP ) );
+	LOG_DEBUG_STAT( "ADC ref: " + num_to_str( GC_IO_ADC_VREF_MAX ) );
+	LOG_DEBUG_STAT( "ADC steps: " + num_to_str( GC_IO_ADC_STEPS ) );
+	LOG_DEBUG_STAT( "ADC step: " + num_to_str( GC_IO_ADC_STEP ) );
 	QApplication app( argc, argv );
 	message_bus = new MESSAGE_BUS( 10 );
 	MAIN_WINDOW main_window;
