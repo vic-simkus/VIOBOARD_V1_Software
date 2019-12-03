@@ -40,12 +40,12 @@ namespace BBB_HVAC
 	{
 		class LOG_CONFIGURATOR;
 		enum class ENUM_LOG_LEVEL : unsigned int;
-	}
+		}
 
-	/**
-	 * Namespace containing all global (to the program) variables.
-	 */
-	namespace GLOBALS
+		/**
+		 * Namespace containing all global (to the program) variables.
+		 */
+		namespace GLOBALS
 	{
 		/**
 		 * Global exit flag.
@@ -73,6 +73,7 @@ namespace BBB_HVAC
 		extern void destroy_watchdog();
 
 		extern void configure_signals( void );
+
 	}
 }
 
