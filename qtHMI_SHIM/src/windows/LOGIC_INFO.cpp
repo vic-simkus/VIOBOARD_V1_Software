@@ -137,26 +137,37 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	this->table_map_points->setSelectionBehavior( QAbstractItemView::SelectRows );
 	this->table_sp_points->setSelectionBehavior( QAbstractItemView::SelectRows );
 	this->table_point_values->setSelectionBehavior( QAbstractItemView::SelectRows );
+
+	this->table_do_points->setSelectionMode( QAbstractItemView::SingleSelection );
+	this->table_ai_points->setSelectionMode( QAbstractItemView::SingleSelection );
+	this->table_map_points->setSelectionMode( QAbstractItemView::SingleSelection );
+	this->table_sp_points->setSelectionMode( QAbstractItemView::SingleSelection );
+	this->table_point_values->setSelectionMode( QAbstractItemView::SingleSelection );
+
 	this->table_do_points->resizeColumnsToContents( );
 	this->table_ai_points->resizeColumnsToContents( );
 	this->table_map_points->resizeColumnsToContents( );
 	this->table_sp_points->resizeColumnsToContents( );
 	this->table_point_values->resizeColumnsToContents( );
+
 	this->table_do_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
 	this->table_ai_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
 	this->table_map_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
 	this->table_sp_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
 	this->table_point_values->setEditTriggers( QAbstractItemView::NoEditTriggers );
+
 	this->table_do_points->setAlternatingRowColors( true );
 	this->table_ai_points->setAlternatingRowColors( true );
 	this->table_map_points->setAlternatingRowColors( true );
 	this->table_sp_points->setAlternatingRowColors( true );
 	this->table_point_values->setAlternatingRowColors( true );
+
 	this->table_do_points->verticalHeader()->setVisible( false );
 	this->table_ai_points->verticalHeader()->setVisible( false );
 	this->table_map_points->verticalHeader()->setVisible( false );
 	this->table_sp_points->verticalHeader()->setVisible( false );
 	this->table_point_values->verticalHeader()->setVisible( false );
+
 	/*
 	 * Set splitter ratios
 	 */
@@ -169,6 +180,13 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	setup_splitter_handle( this->splitter_main_window );
 	setup_splitter_handle( this->splitter_io_points );
 	setup_splitter_handle( this->splitter_logic_points );
+
+	connect( this->table_do_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
+	connect( this->table_ai_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
+	connect( this->table_map_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
+	connect( this->table_sp_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
+	connect( this->table_point_values, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
+
 	/*
 	Connect the message bus listeners
 	*/
@@ -182,6 +200,7 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_DO ) );
 	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_AI ) );
 	message_bus->add_message( MESSAGE_BUS::MESSAGE( MESSAGE_BUS::COMMANDS::GET_LABELS_MAP ) );
+
 	return;
 }
 
@@ -256,6 +275,24 @@ void LOGIC_INFO::slot_mb_map_data( MESSAGE_BUS::COMMANDS, const QMap<QString, QV
 
 void LOGIC_INFO::slot_mb_logic_status_update( MESSAGE_BUS::COMMANDS, const QMap<QString, QString>& _data )
 {
+	QList<QTableWidgetItem*> selected_items = this->table_point_values->selectedItems();
+
+	auto current_row = -1;
+
+	if ( selected_items.count() == 2 )
+	{
+		current_row = selected_items.at( 0 )->row();
+	}
+
+	QString current_id;
+
+	if ( current_row >= 0 )
+	{
+		QTableWidgetItem* item = this->table_point_values->item( current_row, 0 );
+		current_id = item->text();
+	}
+
+
 	this->table_point_values->clearContents( );
 	this->table_point_values->setRowCount( _data.count( ) );
 	int row_idx = 0;
@@ -268,11 +305,26 @@ void LOGIC_INFO::slot_mb_logic_status_update( MESSAGE_BUS::COMMANDS, const QMap<
 	}
 
 	this->table_point_values->resizeColumnsToContents( );
-	this->table_point_values->setCurrentCell( row_idx, 0 );
+	//this->table_point_values->setCurrentCell( row_idx, 0 );
+
+	if ( current_row >= 0 )
+	{
+		QList<QTableWidgetItem*> search_results = this->table_point_values->findItems( current_id, Qt::MatchFixedString | Qt::MatchCaseSensitive );
+
+		if ( search_results.count() != 1 )
+		{
+			LOG_INFO_STAT( "Previously selected item [" + current_id.toStdString() + "] was not found." );
+		}
+		else
+		{
+			this->table_point_values->setCurrentItem( search_results.at( 0 ) );
+		}
+	}
 }
 
 void LOGIC_INFO::slot_mb_set_point_update( MESSAGE_BUS::COMMANDS, const QMap<QString, QString>& _data )
 {
+
 	int current_row = this->table_sp_points->currentRow( );
 	this->table_sp_points->clearContents( );
 	this->table_sp_points->setRowCount( _data.count() );
@@ -288,4 +340,10 @@ void LOGIC_INFO::slot_mb_set_point_update( MESSAGE_BUS::COMMANDS, const QMap<QSt
 	this->table_sp_points->resizeColumnsToContents( );
 	this->table_sp_points->setCurrentCell( current_row, 0 );
 	return;
+}
+
+void LOGIC_INFO::slot_item_doubleclicked( QTableWidgetItem* _item )
+{
+	_item->tableWidget()->setCurrentItem( nullptr , QItemSelectionModel::Clear );
+
 }

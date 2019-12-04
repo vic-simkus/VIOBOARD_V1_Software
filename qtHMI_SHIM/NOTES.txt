@@ -1,12 +1,6 @@
 In progress:
 
-BOARD_INFO_WIDGET currently being worked on. 
-
-Next: Convert management of PMIC stuff to use MESSAGE_BUS
-
-Next: Implement forcing of values.
+- Add a series of radio buttons x1, x10, x100, x1000 to the force widget so that the spinner adjusts the values by 1, 10, etc
+- Implement a thing where clicking on a 'Point Mapping' highlights the corresponding 'DO Points' or 'AI Points' item.
 
 
-TODO
-
-- Implement getting of DO and AI counts, ADC steps, etc from HVAC lib .
