@@ -32,31 +32,34 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 	 * for us before calling process_logic
 	 */
 	this->logic_status_core.iterations += 1;
+
 	/*
 	Space temperature set point
 	*/
-	double sp_space_temp = this->get_sp_value( "SPACE TEMP" );
-	double sp_space_rh = this->get_sp_value( "SPACE RH" );
-	double sp_space_temp_d_high = this->get_sp_value( "SPACE TEMP DELTA HIGH" );
-	double sp_space_temp_d_low = this->get_sp_value( "SPACE TEMP DELTA LOW" );
-	double sp_space_rh_d = this->get_sp_value( "SPACE RH DELTA" );
-	double sp_space_rh_temp_d = this->get_sp_value( "SPACE RH TEMP DELTA" );
-	unsigned int sp_ahu_delay_cooling_clicks = ( unsigned int )this->get_sp_value( "AHU FAN DELAY COOLING" );
-	unsigned int sp_ahu_delay_heating_clicks = ( unsigned int )this->get_sp_value( "AHU FAN DELAY HEATING" );
+	double sp_space_temp = this->get_sp_value( SP_SPACE_TEMP );
+	double sp_space_rh = this->get_sp_value( SP_SPACE_RH );
+	double sp_space_temp_d_high = this->get_sp_value( SP_SPACE_TEMP_DELTA_HIGH );
+	double sp_space_temp_d_low = this->get_sp_value( SP_SPACE_TEMP_DELTA_LOW );
+	double sp_space_rh_d = this->get_sp_value( SP_SPACE_RH_DELTA );
+	double sp_space_rh_temp_d = this->get_sp_value( SP_SPACE_RH_TEMP_DELTA );
+	unsigned int sp_ahu_delay_cooling_clicks = ( unsigned int )this->get_sp_value( SP_AHU_FAN_DELAY_COOLING );
+	unsigned int sp_ahu_delay_heating_clicks = ( unsigned int )this->get_sp_value( SP_AHU_FAN_DELAY_HEATING );
+
 	/*
 	Get the temperature and relative humidity value and round it off to one decimal place.
 	*/
-	double temp_value = double( int( ( this->get_ai_value( "SPACE_1_TEMP" ) * 10 ) ) ) / 10;
-	double rh_value = double( int( ( this->get_ai_value( "SPACE_1_RH" ) * 10 ) ) ) / 10;
+	double temp_value = double( int( ( this->get_ai_value( AI_SPACE_1_TEMP ) * 10 ) ) ) / 10;
+	double rh_value = double( int( ( this->get_ai_value( AI_SPACE_1_RH ) * 10 ) ) ) / 10;
+
 	//double ai_ahu_supply_temp = this->get_ai_value("AHU_SUPPLY_TEMP");
 	//double ai_ahu_return_temp = this->get_ai_value("AHU_RETURN_TEMP");
 	/*
-		LOG_DEBUG("sp_space_temp: " + num_to_str(sp_space_temp));
-		LOG_DEBUG("sp_space_rh: " + num_to_str(sp_space_rh));
-		LOG_DEBUG("sp_space_temp_d_high: " + num_to_str(sp_space_temp_d_high));
-		LOG_DEBUG("sp_space_temp_d_low: " + num_to_str(sp_space_temp_d_low));
-		LOG_DEBUG("sp_space_rh_d: " + num_to_str(sp_space_rh_d));
-		LOG_DEBUG("sp_space_rh_temp_d: " + num_to_str(sp_space_rh_temp_d));
+	LOG_DEBUG("sp_space_temp: " + num_to_str(sp_space_temp));
+	LOG_DEBUG("sp_space_rh: " + num_to_str(sp_space_rh));
+	LOG_DEBUG("sp_space_temp_d_high: " + num_to_str(sp_space_temp_d_high));
+	LOG_DEBUG("sp_space_temp_d_low: " + num_to_str(sp_space_temp_d_low));
+	LOG_DEBUG("sp_space_rh_d: " + num_to_str(sp_space_rh_d));
+	LOG_DEBUG("sp_space_rh_temp_d: " + num_to_str(sp_space_rh_temp_d));
 	*/
 	//LOG_DEBUG( "++++++++++++++++++++++++++++++++++++++++" );
 	//LOG_DEBUG("ai_space_1_temp: " + num_to_str(ai_space_1_temp));
@@ -64,9 +67,10 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 	//LOG_DEBUG("ai_ahu_supply_temp: " + num_to_str(ai_ahu_supply_temp));
 	//LOG_DEBUG("ai_ahu_return_temp: " + num_to_str(ai_ahu_return_temp));
 	//LOG_DEBUG( "Space temp: " + num_to_str( temp_value ) );
-	//LOG_DEBUG( "Space RH%: " + num_to_str( rh_value ) );
-	//LOG_DEBUG( "****************************************" );
-	//LOG_DEBUG( "Space temp: " + num_to_str( temp_value ) + "F, space RH: " + num_to_str( rh_value ) + "%" );
+	//LOG_DEBUG( "Space RH % : " + num_to_str( rh_value ) );
+	//LOG_DEBUG( "**************************************** " );
+	//LOG_DEBUG( "Space temp: " + num_to_str( temp_value ) + "F, space RH: " + num_to_str( rh_value ) + " % " );
+
 	double heating_point = sp_space_temp + sp_space_temp_d_low;
 	double cooling_point = sp_space_temp + sp_space_temp_d_high;
 	double dehum_action_point = sp_space_rh + sp_space_rh_d;
@@ -74,14 +78,15 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 
 	if ( this->op_state == OPERATING_STATE::NONE )
 	{
-		LOG_DEBUG( "op_state: NONE" );
-		this->clear_output( "AHU_HEATER" );
-		this->clear_output( "AC_COMPRESSOR" );
-		this->clear_output( "AHU_FAN" );
+		//LOG_DEBUG( "op_state: NONE" );
+		this->clear_output( PN_AHU_HEATER );
+		this->clear_output( PN_AC_COMPRESSOR );
+		this->clear_output( PN_AHU_FAN );
 		this->ahu_delay_clicks = 0;
 
 		if ( temp_value >= cooling_point )
 		{
+
 			LOG_DEBUG( "Space temp " + num_to_str( temp_value ) + " is greater than cooling switch over point: " + num_to_str( cooling_point ) + ".  Switching to cooling mode." );
 			this->op_state = OPERATING_STATE::COOLING;
 			goto _end_func;
@@ -100,7 +105,7 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 		}
 		else
 		{
-			LOG_DEBUG( "Leaving current operational state as NONE" );
+			//LOG_DEBUG( "Leaving current operational state as NONE" );
 			goto _end_func;
 		}
 	}
@@ -116,11 +121,11 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 		{
 			if ( this->ahu_delay_clicks >= sp_ahu_delay_heating_clicks )
 			{
-				this->set_output( "AHU_FAN" );
+				this->set_output( PN_AHU_FAN );
 			}
 			else
 			{
-				this->set_output( "AHU_HEATER" );
+				this->set_output( PN_AHU_HEATER );
 				this->ahu_delay_clicks += 1;
 			}
 		}
@@ -137,11 +142,11 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 		{
 			if ( this->ahu_delay_clicks >= sp_ahu_delay_cooling_clicks )
 			{
-				this->set_output( "AHU_FAN" );
+				this->set_output( PN_AHU_FAN );
 			}
 			else
 			{
-				this->set_output( "AC_COMPRESSOR" );
+				this->set_output( PN_AC_COMPRESSOR );
 				this->ahu_delay_clicks += 1;
 			}
 		}
@@ -158,11 +163,11 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 		{
 			if ( this->ahu_delay_clicks >= sp_ahu_delay_cooling_clicks )
 			{
-				this->set_output( "AHU_FAN" );
+				this->set_output( PN_AHU_FAN );
 			}
 			else
 			{
-				this->set_output( "AC_COMPRESSOR" );
+				this->set_output( PN_AC_COMPRESSOR );
 				this->ahu_delay_clicks += 1;
 			}
 		}

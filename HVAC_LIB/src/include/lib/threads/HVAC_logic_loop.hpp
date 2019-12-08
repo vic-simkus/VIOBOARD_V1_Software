@@ -87,6 +87,27 @@ namespace BBB_HVAC
 				unsigned long ahu_delay_clicks;
 			private:
 		};
+
+		/// Point name AHU_HEATER define
+#define PN_AHU_HEATER "AHU_HEATER"
+
+		/// Point name AC_COMPRESSOR define
+#define PN_AC_COMPRESSOR "AC_COMPRESSOR"
+
+		/// Point name AHU_FAN define
+#define PN_AHU_FAN "AHU_FAN"
+
+#define SP_SPACE_TEMP	"SPACE TEMP"
+#define SP_SPACE_RH	"SPACE RH"
+#define SP_SPACE_TEMP_DELTA_HIGH	"SPACE TEMP DELTA HIGH"
+#define SP_SPACE_TEMP_DELTA_LOW	"SPACE TEMP DELTA LOW"
+#define SP_SPACE_RH_DELTA	"SPACE RH DELTA"
+#define SP_SPACE_RH_TEMP_DELTA	"SPACE RH TEMP DELTA"
+#define SP_AHU_FAN_DELAY_COOLING	"AHU FAN DELAY COOLING"
+#define SP_AHU_FAN_DELAY_HEATING	"AHU FAN DELAY HEATING"
+#define AI_SPACE_1_TEMP "SPACE_1_TEMP"
+#define AI_SPACE_1_RH "SPACE_1_RH"
+
 	}
 }
 
