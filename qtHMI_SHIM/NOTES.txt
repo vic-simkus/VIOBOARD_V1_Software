@@ -1,6 +1,5 @@
 In progress:
 
-- Add a series of radio buttons x1, x10, x100, x1000 to the force widget so that the spinner adjusts the values by 1, 10, etc
 - Implement a thing where clicking on a 'Point Mapping' highlights the corresponding 'DO Points' or 'AI Points' item.
 
 

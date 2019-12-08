@@ -6,6 +6,7 @@
 class QPushButton;
 class QSpinBox;
 class QLabel;
+class QComboBox;
 
 class DEBUG_FORCE_WIDGET: public QFrame
 {
@@ -18,11 +19,14 @@ class DEBUG_FORCE_WIDGET: public QFrame
 	protected:
 		unsigned int index;
 		QLabel* label;
-		QLabel* volt_reading;
-		QLabel* status;
+		//QLabel* volt_reading;
+		//QLabel* status;
 		QPushButton* cmd_toggle;
 		QSpinBox* offset;
+		QComboBox* mult_select;
 		bool is_forced;
+
+		QString txt_label;
 
 	public slots:
 		void slot_update_real_value( uint16_t _value );
@@ -31,6 +35,7 @@ class DEBUG_FORCE_WIDGET: public QFrame
 		void cmd_toggle_clicked( void );
 		void update_widget( void );
 		void slot_spinner_changed( void );
+		void slot_mult_changed( int );
 
 	signals:
 		void sig_force_clicked( unsigned int, bool _state, uint16_t _value );

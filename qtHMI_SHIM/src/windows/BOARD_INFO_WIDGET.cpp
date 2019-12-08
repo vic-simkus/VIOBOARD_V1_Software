@@ -97,7 +97,7 @@ void BOARD_INFO_WIDGET::setup_ai_stuff( void )
 	connect( tmp_cmd, SIGNAL( clicked() ), this, SLOT( update_l2_cal_values_clicked() ) );
 	this->ai_grid_layout->addWidget( tmp_cmd, 10, 0, 1, 8 );
 
-	connect( message_bus, SIGNAL( sig_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool, bool, const QVector<uint16_t>&, const QVector<uint16_t>& ) ), this, SLOT( slot_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool , bool ) ) );
+	connect( message_bus, SIGNAL( sig_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool, bool, const QVector<uint16_t>&, const QVector<uint16_t>& ) ), this, SLOT( slot_get_status( const QString&, const QVector<uint16_t>&, const QVector<bool>&, bool , bool , bool , bool, const QVector<uint16_t>&, const QVector<uint16_t>& ) ) );
 }
 
 void BOARD_INFO_WIDGET::send_l1_cal_values_clicked( void )
