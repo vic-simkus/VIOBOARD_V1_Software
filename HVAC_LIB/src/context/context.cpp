@@ -232,7 +232,7 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
 			uint8_t input = ( uint8_t )_message->get_part_as_ui( 1 );
 			uint16_t value = _message->get_part_as_ui( 2 );
 
-			LOG_DEBUG( "Forcing (" + board_tag + ") AI" + num_to_str( input ) + " to value " + num_to_str( value ) + " -- " + _message->to_string() );
+			//LOG_DEBUG( "Forcing (" + board_tag + ") AI" + num_to_str( input ) + " to value " + num_to_str( value ) + " -- " + _message->to_string() );
 
 			IOCOMM::SER_IO_COMM* comm_thread = THREAD_REGISTRY::get_serial_io_thread( board_tag );
 			comm_thread->force_ai_value( input, value );

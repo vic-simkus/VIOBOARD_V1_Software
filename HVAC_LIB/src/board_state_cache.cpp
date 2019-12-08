@@ -84,7 +84,7 @@ namespace BBB_HVAC
 
 		bool BOARD_STATE_CACHE::force_ai_value( size_t _x_index, uint16_t _value )
 		{
-			LOG_DEBUG( "Forcing AI" + num_to_str( _x_index ) + " to " + num_to_str( _value ) );
+			//LOG_DEBUG( "Forcing AI" + num_to_str( _x_index ) + " to " + num_to_str( _value ) );
 			this->forced_ai_value[_x_index] = true;
 			this->adc_cache[this->get_previous_cache_index()][_x_index] = ADC_CACHE_ENTRY( _value );
 			return true;
