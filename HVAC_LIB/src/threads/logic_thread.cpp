@@ -472,7 +472,17 @@ void LOGIC_PROCESSOR_BASE::clear_output( const string& _name ) throw ( exception
 	}
 
 	LOG_DEBUG_P( "Setting point " + _name + " to OFF" );
-	IOCOMM::SER_IO_COMM* thread_handle = THREAD_REGISTRY::get_serial_io_thread( board_point.get_board_tag() );
+	IOCOMM::SER_IO_COMM* thread_handle = nullptr;
+
+	try
+	{
+		THREAD_REGISTRY::get_serial_io_thread( board_point.get_board_tag() );
+	}
+	catch ( const std::exception& _e )
+	{
+		THROW_EXCEPTION( invalid_argument, "Failed to find thread for board: " + board_point.get_board_tag() +  " -- " + _e.what() ) ;
+	}
+
 	uint8_t v = ( uint8_t )( 1 << board_point.get_point_id() );
 	do_status = do_status ^ v;
 	thread_handle->cmd_set_do_status( do_status );

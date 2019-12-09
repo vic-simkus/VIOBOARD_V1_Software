@@ -95,10 +95,15 @@ SER_IO_COMM::~SER_IO_COMM()
 	this->state_cache = nullptr;
 
 	unlink( this->lock_file.data() );
+
 	free( this->buffer );
 	this->buffer = nullptr;
+
 	delete this->outgoing_messages;
 	this->outgoing_messages = nullptr;
+
+	this->active_table = nullptr;
+	this->passive_table = nullptr;
 
 	return;
 }
