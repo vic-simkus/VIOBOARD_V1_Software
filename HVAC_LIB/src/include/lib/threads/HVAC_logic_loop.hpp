@@ -41,6 +41,23 @@ namespace BBB_HVAC
 			DEHUMIDIFYING
 		};
 
+		enum class HEAT_MODE : unsigned char
+		{
+			NONE = 0,
+			DELAY_ON,
+			HEATING,
+			DELAY_OFF
+		};
+
+		enum class COOL_MODE : unsigned char
+		{
+			NONE = 0,
+			DELAY_ON,
+			COOLING,
+			DELAY_OFF
+		};
+
+
 		/**
 		 * Class for controlling a basic home HVAC system.
 		 * Control consists of following outputs:
@@ -83,9 +100,58 @@ namespace BBB_HVAC
 				 */
 				DEF_LOGGER;
 				OPERATING_STATE op_state;
+				HEAT_MODE mode_heat;
+				COOL_MODE mode_cool;
 
-				unsigned long ahu_delay_clicks;
+				unsigned int heat_mode_clicks;
+				unsigned int cool_mode_clicks;
+				unsigned int switch_clicks;
+
+				class HVAC_LOOP_INVOCATION_CONTEXT
+				{
+					public:
+						HVAC_LOOP_INVOCATION_CONTEXT( HVAC_LOGIC_LOOP* _parent );
+
+						float sp_space_temp;
+						float sp_space_rh;
+						float sp_space_temp_d_high;
+						float sp_space_temp_d_low;
+						float sp_space_rh_d;
+						float sp_space_rh_temp_d;
+
+						unsigned int sp_ahu_delay_cooling;
+						unsigned int sp_ahu_delay_heating;
+
+						unsigned int sp_cooling_setpoint_delay;
+						unsigned int sp_heating_setpoint_delay;
+
+						unsigned int sp_mode_switch_delay;
+						unsigned int sp_heating_deadband;
+						unsigned int sp_cooling_deadband;
+
+						float temp_value;
+						float rh_value;
+
+						float heating_point;
+						float cooling_point;
+
+						float dehum_action_point;
+						float dehum_cancel_temp_point;
+				};
 			private:
+
+				void switch_op_state( OPERATING_STATE _new_state );
+				void switch_heating_mode( HEAT_MODE _new_mode );
+				void switch_cooling_mode( COOL_MODE _new_mode );
+
+				void process_logic_none( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx );
+				void process_logic_cooling( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx );
+				void process_logic_heating( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx );
+				void process_logic_dehumidification( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx );
+
+				void set_outputs_for_heating( const HEAT_MODE _mode );
+				void set_outputs_for_cooling( const COOL_MODE _mode );
+
 		};
 
 		/// Point name AHU_HEATER define
@@ -105,6 +171,12 @@ namespace BBB_HVAC
 #define SP_SPACE_RH_TEMP_DELTA	"SPACE RH TEMP DELTA"
 #define SP_AHU_FAN_DELAY_COOLING	"AHU FAN DELAY COOLING"
 #define SP_AHU_FAN_DELAY_HEATING	"AHU FAN DELAY HEATING"
+#define SP_MODE_SWITCH_DELAY "MODE SWITCH DELAY"
+#define SP_COOLING_DEADBAND "COOLING DEADBAND"
+#define SP_HEATING_DEADBAND "HEATING DEADBAND"
+#define SP_COOLING_SETPOINT_DELAY "COOLING SETPOINT DELAY"
+#define SP_HEATING_SETPOINT_DELAY "HEATING SETPOINT DELAY"
+
 #define AI_SPACE_1_TEMP "SPACE_1_TEMP"
 #define AI_SPACE_1_RH "SPACE_1_RH"
 
