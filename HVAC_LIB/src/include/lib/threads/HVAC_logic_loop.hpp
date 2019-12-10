@@ -100,11 +100,15 @@ namespace BBB_HVAC
 				 */
 				DEF_LOGGER;
 				OPERATING_STATE op_state;
+
 				HEAT_MODE mode_heat;
 				COOL_MODE mode_cool;
+				COOL_MODE mode_dehum;
 
 				unsigned int heat_mode_clicks;
 				unsigned int cool_mode_clicks;
+				unsigned int dehum_mode_clicks;
+
 				unsigned int switch_clicks;
 
 				class HVAC_LOOP_INVOCATION_CONTEXT
@@ -124,10 +128,12 @@ namespace BBB_HVAC
 
 						unsigned int sp_cooling_setpoint_delay;
 						unsigned int sp_heating_setpoint_delay;
+						unsigned int sp_dehum_setpoint_delay;
 
 						unsigned int sp_mode_switch_delay;
 						unsigned int sp_heating_deadband;
 						unsigned int sp_cooling_deadband;
+						unsigned int sp_dehum_deadband;
 
 						float temp_value;
 						float rh_value;
@@ -143,6 +149,7 @@ namespace BBB_HVAC
 				void switch_op_state( OPERATING_STATE _new_state );
 				void switch_heating_mode( HEAT_MODE _new_mode );
 				void switch_cooling_mode( COOL_MODE _new_mode );
+				void switch_dehumidification_mode( COOL_MODE _new_mode );
 
 				void process_logic_none( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx );
 				void process_logic_cooling( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx );
@@ -151,7 +158,7 @@ namespace BBB_HVAC
 
 				void set_outputs_for_heating( const HEAT_MODE _mode );
 				void set_outputs_for_cooling( const COOL_MODE _mode );
-
+				void set_outputs_for_dehumidification( const COOL_MODE _mode );
 		};
 
 		/// Point name AHU_HEATER define
@@ -163,22 +170,29 @@ namespace BBB_HVAC
 		/// Point name AHU_FAN define
 #define PN_AHU_FAN "AHU_FAN"
 
-#define SP_SPACE_TEMP	"SPACE TEMP"
-#define SP_SPACE_RH	"SPACE RH"
+#define SP_SPACE_TEMP 				"SPACE TEMP"
+#define SP_SPACE_RH					"SPACE RH"
+
 #define SP_SPACE_TEMP_DELTA_HIGH	"SPACE TEMP DELTA HIGH"
-#define SP_SPACE_TEMP_DELTA_LOW	"SPACE TEMP DELTA LOW"
-#define SP_SPACE_RH_DELTA	"SPACE RH DELTA"
-#define SP_SPACE_RH_TEMP_DELTA	"SPACE RH TEMP DELTA"
+#define SP_SPACE_TEMP_DELTA_LOW		"SPACE TEMP DELTA LOW"
+#define SP_SPACE_RH_DELTA 			"SPACE RH DELTA"
+
 #define SP_AHU_FAN_DELAY_COOLING	"AHU FAN DELAY COOLING"
 #define SP_AHU_FAN_DELAY_HEATING	"AHU FAN DELAY HEATING"
-#define SP_MODE_SWITCH_DELAY "MODE SWITCH DELAY"
-#define SP_COOLING_DEADBAND "COOLING DEADBAND"
-#define SP_HEATING_DEADBAND "HEATING DEADBAND"
-#define SP_COOLING_SETPOINT_DELAY "COOLING SETPOINT DELAY"
-#define SP_HEATING_SETPOINT_DELAY "HEATING SETPOINT DELAY"
+#define SP_MODE_SWITCH_DELAY 		"MODE SWITCH DELAY"
 
-#define AI_SPACE_1_TEMP "SPACE_1_TEMP"
-#define AI_SPACE_1_RH "SPACE_1_RH"
+#define SP_COOLING_DEADBAND 		"COOLING DEADBAND"
+#define SP_HEATING_DEADBAND 		"HEATING DEADBAND"
+#define SP_SPACE_RH_DEADBAND		"DEHUM DEADBAND"
+
+#define SP_COOLING_SETPOINT_DELAY 	"COOLING SETPOINT DELAY"
+#define SP_HEATING_SETPOINT_DELAY 	"HEATING SETPOINT DELAY"
+#define SP_DEHUM_SETPOINT_DELAY 	"DEHUM SETPOINT DELAY"
+
+#define SP_SPACE_RH_TEMP_DELTA		"SPACE RH TEMP DELTA"
+
+#define AI_SPACE_1_TEMP 			"SPACE_1_TEMP"
+#define AI_SPACE_1_RH 				"SPACE_1_RH"
 
 	}
 }
