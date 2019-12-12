@@ -37,6 +37,9 @@
  */
 #define GC_LOCAL_COMMAND_SOCKET "/tmp/bbb_hvac"
 
+#define GC_DEFAULT_TCPIP_PORT 6666
+#define GC_DEFAULT_LISTEN_INTERFACE "127.0.0.1"
+
 /**
  * Buffer size for various read/write operations.  Should not need to be changed.
  */

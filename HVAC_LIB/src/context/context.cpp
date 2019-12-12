@@ -57,7 +57,7 @@ using namespace BBB_HVAC::EXCEPTIONS;
  *************************************/
 
 HS_CLIENT_CONTEXT::HS_CLIENT_CONTEXT( int _client_socket ) :
-	BASE_CONTEXT( "HS_CLIENT_CONTEXT" )
+	BASE_CONTEXT( "HS_CLIENT_CONTEXT", SOCKET_TYPE::NONE, "", -1 )
 {
 	INIT_LOGGER( "BBB_HVAC::HS_CLIENT_CONTEXT" );
 	this->remote_socket = _client_socket;
@@ -296,8 +296,8 @@ ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DI
  *
  *************************************/
 
-HS_SERVER_CONTEXT::HS_SERVER_CONTEXT() :
-	BASE_CONTEXT( "HS_SERVER_CONTEXT" )
+HS_SERVER_CONTEXT::HS_SERVER_CONTEXT( SOCKET_TYPE _st, const string& _path, uint16_t _port ) :
+	BASE_CONTEXT( "HS_SERVER_CONTEXT", _st, _path, _port )
 {
 	INIT_LOGGER( "BBB_HVAC::HS_SERVER_CONTEXT" );
 	return;

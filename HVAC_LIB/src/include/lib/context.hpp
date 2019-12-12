@@ -23,6 +23,7 @@
 #define SRC_LIB_CONTEXT_HPP_
 
 #include <sys/un.h>
+#include <netinet/ip.h>
 #include <pthread.h>
 
 #include "lib/logger.hpp"
@@ -31,10 +32,18 @@
 #include "lib/tprotect_base.hpp"
 #include "lib/hvac_types.hpp"
 #include "lib/threads/thread_base.hpp"
+#include "lib/config.hpp"
 
 namespace BBB_HVAC
 {
 	class MESSAGE_PROCESSOR;
+
+	enum class SOCKET_TYPE : unsigned char
+	{
+		NONE = 0,
+		DOMAIN,
+		TCPIP
+	};
 
 	/**
 	 * Base class for all contexts.
@@ -56,7 +65,7 @@ namespace BBB_HVAC
 			/**
 			 * Constructor
 			 */
-			BASE_CONTEXT( const string& _tag );
+			BASE_CONTEXT( const string& _tag, SOCKET_TYPE _st, const string& _path, uint16_t _port );
 
 			/**
 			 * Destructor
@@ -71,7 +80,8 @@ namespace BBB_HVAC
 			/**
 			 * Address struct.
 			 */
-			struct sockaddr_un socket_struct;
+			struct sockaddr_un socket_struct_domain;
+			struct sockaddr_in socket_struct_inet;
 
 			/**
 			 * Client thread context.
@@ -95,6 +105,7 @@ namespace BBB_HVAC
 			const unsigned int max_pp_timeout;
 
 			timespec curr_time;
+			SOCKET_TYPE st;
 
 		protected:
 			bool select_timeout_happened( void ) throw( exception );
@@ -103,6 +114,8 @@ namespace BBB_HVAC
 			bool thread_func( void );
 
 			LOGGING::LOGGER* logger;
+
+
 
 			bool is_in_client_mode;
 
@@ -123,7 +136,7 @@ namespace BBB_HVAC
 				/**
 				 * Constructor.
 				 */
-				HS_SERVER_CONTEXT();
+				HS_SERVER_CONTEXT( SOCKET_TYPE _st, const string& _path, uint16_t _port );
 
 				/**
 				 * Destructor.
@@ -196,8 +209,8 @@ namespace BBB_HVAC
 
 				ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
 
-				inline static CLIENT_CONTEXT* create_instance( void ) {
-					return new CLIENT_CONTEXT();
+				inline static CLIENT_CONTEXT* create_instance( SOCKET_TYPE _st, const string& _path, uint16_t _port ) {
+					return new CLIENT_CONTEXT( _st, _path, _port );
 				}
 
 			protected:
@@ -206,7 +219,7 @@ namespace BBB_HVAC
 				 * Constructor.
 				 * We hide the constructor so that we can't just create instances on the stack because the comm_thread takes ownership of the pointer.
 				 */
-				CLIENT_CONTEXT();
+				CLIENT_CONTEXT( SOCKET_TYPE _st, const string& _path, uint16_t _port );
 
 				pthread_cond_t incomming_message_cond;
 

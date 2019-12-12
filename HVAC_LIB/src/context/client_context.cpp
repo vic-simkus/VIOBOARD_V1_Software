@@ -52,8 +52,8 @@ using namespace BBB_HVAC::CLIENT;
 using namespace BBB_HVAC::SERVER;
 using namespace BBB_HVAC::EXCEPTIONS;
 
-CLIENT_CONTEXT::CLIENT_CONTEXT() :
-	BASE_CONTEXT( "CLIENT_CONTEXT" )
+CLIENT_CONTEXT::CLIENT_CONTEXT( SOCKET_TYPE _st, const string& _path, uint16_t _port ) :
+	BASE_CONTEXT( "CLIENT_CONTEXT", _st, _path, _port )
 {
 	INIT_LOGGER( "BBB_HVAC::CLIENT_CONTEXT" );
 	this->is_in_client_mode = true;
@@ -67,7 +67,7 @@ ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DIREC
 	 */
 	ENUM_MESSAGE_CALLBACK_RESULT ret = ENUM_MESSAGE_CALLBACK_RESULT::IGNORED;
 
-	if( ( ret = BASE_CONTEXT::process_message( _direction, _ctx, _message ) ) != ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED )
+	if ( ( ret = BASE_CONTEXT::process_message( _direction, _ctx, _message ) ) != ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED )
 	{
 		/*
 		 * So here's how this goes.
@@ -95,9 +95,27 @@ CLIENT_CONTEXT::~CLIENT_CONTEXT()
 
 void CLIENT_CONTEXT::connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR )
 {
-	if( ::connect( this->remote_socket, ( sockaddr* )( &this->socket_struct ), sizeof( struct sockaddr_un ) ) == -1 )
+	switch ( this->st )
 	{
-		throw CONNECTION_ERROR( create_perror_string( "Failed to connect to server: " ) );
+		case SOCKET_TYPE::NONE:
+			throw EXCEPTIONS::NETWORK_ERROR( "Invalid socket type (NONE) specified." );
+			break;
+
+		case SOCKET_TYPE::DOMAIN:
+			if ( ::connect( this->remote_socket, ( sockaddr* )( &this->socket_struct_domain ), sizeof( struct sockaddr_un ) ) == -1 )
+			{
+				throw CONNECTION_ERROR( create_perror_string( "Failed to connect to server(domain): " ) );
+			}
+
+			break;
+
+		case SOCKET_TYPE::TCPIP:
+			if ( ::connect( this->remote_socket, ( sockaddr* )( &this->socket_struct_inet ), sizeof( struct sockaddr_in ) ) == -1 )
+			{
+				throw CONNECTION_ERROR( create_perror_string( "Failed to connect to server(TCP/IP): " ) );
+			}
+
+			break;
 	}
 
 	this->start_thread();
@@ -105,7 +123,7 @@ void CLIENT_CONTEXT::connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERR
 	timespec t;
 	memset( &t, 0, sizeof( struct timespec ) );
 
-	while( this->message_processor->is_protocol_negotiated() == false )
+	while ( this->message_processor->is_protocol_negotiated() == false )
 	{
 		t.tv_nsec = GC_NSEC_TIMEOUT;
 		this->nsleep( &t );
@@ -123,7 +141,7 @@ bool CLIENT_CONTEXT::send_message( MESSAGE_PTR& _message ) throw( exception )
 	{
 		this->message_processor->send_message( _message, this->remote_socket );
 	}
-	catch( const exception& _e )
+	catch ( const exception& _e )
 	{
 		this->release_lock();
 		throw runtime_error( string( "Failed to send message: " ) + _e.what() );
@@ -143,7 +161,7 @@ MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message ) throw
 	{
 		this->message_processor->send_message( _message, this->remote_socket );
 	}
-	catch( const exception& _e )
+	catch ( const exception& _e )
 	{
 		this->release_lock();
 		throw runtime_error( string( "Failed to send message: " ) + _e.what() );
@@ -158,11 +176,11 @@ MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message ) throw
 	timeout_time.tv_sec = time( nullptr ) + 2;
 	int rc = pthread_cond_timedwait( & ( this->incomming_message_cond ), & ( this->mutex ), &timeout_time );
 
-	if( rc != 0 )
+	if ( rc != 0 )
 	{
 		this->abort_thread = true;
 
-		if( rc == ETIMEDOUT )
+		if ( rc == ETIMEDOUT )
 		{
 			LOG_ERROR( "Timed out waiting on a conditional.  Suspect something hinky.  Aborting." );
 			THROW_EXCEPTION( runtime_error, "Time out on a conditional." );

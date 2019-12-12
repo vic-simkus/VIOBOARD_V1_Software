@@ -33,11 +33,15 @@ namespace BBB_HVAC
 {
 	using namespace SERVER;
 
-	SHIM_LISTENER::SHIM_LISTENER() : THREAD_BASE( "SHIM_LISTENER" )
+	SHIM_LISTENER::SHIM_LISTENER( SOCKET_TYPE _st, const string& _path, uint16_t _port ) : THREAD_BASE( "SHIM_LISTENER" )
 	{
 		this->logger = new LOGGING::LOGGER();
 		INIT_LOGGER_P( "BBB_HVAC::SHIM_LISTENER" );
 		this->server_ctx = nullptr;
+
+		this->socket_type = _st;
+		this->path = _path;
+		this->port  = _port;
 	}
 
 	SHIM_LISTENER::~SHIM_LISTENER()
@@ -49,11 +53,41 @@ namespace BBB_HVAC
 
 	void SHIM_LISTENER::init( void ) throw( exception )
 	{
-		this->server_ctx = new HS_SERVER_CONTEXT();
+		this->server_ctx = new HS_SERVER_CONTEXT( this->socket_type, this->path, this->port );
+		int reuse = 1;
 
-		if( bind( this->server_ctx->remote_socket, ( const struct sockaddr* ) & ( this->server_ctx->socket_struct ), sizeof( struct sockaddr_un ) ) == -1 )
+		switch ( this->server_ctx->st )
 		{
-			throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to bind to domain socket." ) );
+			case SOCKET_TYPE::NONE:
+				throw EXCEPTIONS::NETWORK_ERROR( "Invalid socket type (NONE) specified." );
+				break;
+
+			case SOCKET_TYPE::DOMAIN:
+				if ( bind( this->server_ctx->remote_socket, ( const struct sockaddr* ) & ( this->server_ctx->socket_struct_domain ), sizeof( struct sockaddr_un ) ) == -1 )
+				{
+					throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to bind to domain socket" ) );
+				}
+
+				break;
+
+			case SOCKET_TYPE::TCPIP:
+
+				if ( setsockopt( this->server_ctx->remote_socket, SOL_SOCKET, SO_REUSEPORT, ( const int* )&reuse, sizeof( reuse ) )  < 0 )
+				{
+					throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to set TPC/IP socket option (SO_REUSEPORT) on FD [" + num_to_str( this->server_ctx->remote_socket ) + "]" ) );
+				}
+
+				if ( setsockopt( this->server_ctx->remote_socket, SOL_SOCKET, SO_REUSEADDR, ( const int* )&reuse, sizeof( reuse ) )  < 0 )
+				{
+					throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to set TPC/IP socket options (SO_REUSEADDR) on FD [" + num_to_str( this->server_ctx->remote_socket ) + "]" ) );
+				}
+
+				if ( bind( this->server_ctx->remote_socket, ( const struct sockaddr* ) & ( this->server_ctx->socket_struct_inet ), sizeof( struct sockaddr_in ) ) == -1 )
+				{
+					throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to bind to TCP/IP socket" ) );
+				}
+
+				break;
 		}
 
 		return;
@@ -63,7 +97,7 @@ namespace BBB_HVAC
 	{
 		LOG_INFO_P( "Starting shim listening thread." );
 
-		if( listen( this->server_ctx->remote_socket, 10 ) == -1 )
+		if ( listen( this->server_ctx->remote_socket, 10 ) == -1 )
 		{
 			LOG_ERROR_P( create_perror_string( "Failed to listen on socket:" ) );
 			exit( -1 );
@@ -76,13 +110,13 @@ namespace BBB_HVAC
 		socklen_t client_addr_len = sizeof( struct sockaddr_un );
 		struct pollfd fds;
 
-		while( this->abort_thread == false )
+		while ( this->abort_thread == false )
 		{
 			fds.fd = this->server_ctx->remote_socket;
 			fds.events = POLLIN;
 			int fds_ready_num = poll( &fds, 1, 100 );
 
-			if( fds_ready_num == 0 )
+			if ( fds_ready_num == 0 )
 			{
 				continue;
 			}
@@ -90,7 +124,7 @@ namespace BBB_HVAC
 			memset( &client_addr, 0, client_addr_len );
 			client_fd = accept( this->server_ctx->remote_socket, ( sockaddr* ) & client_addr, &client_addr_len );
 
-			if( client_fd == -1 )
+			if ( client_fd == -1 )
 			{
 				LOG_ERROR_P( create_perror_string( "accept() failed" ) );
 				GLOBALS::global_exit_flag = true;

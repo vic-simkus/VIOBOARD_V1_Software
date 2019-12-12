@@ -24,26 +24,27 @@
 #include "lib/logger.hpp"
 #include "lib/threads/thread_base.hpp"
 #include "lib/exceptions.hpp"
+#include "lib/context.hpp"
 
 namespace BBB_HVAC
 {
-	namespace SERVER
-	{
-		class HS_SERVER_CONTEXT;
-	}
 	class SHIM_LISTENER : public THREAD_BASE
 	{
-	public:
-		SHIM_LISTENER();
-		~SHIM_LISTENER();
+		public:
+			SHIM_LISTENER( SOCKET_TYPE _st, const string& _path, uint16_t _port );
+			~SHIM_LISTENER();
 
-		void init( void ) throw( exception );
-	protected:
-		bool thread_func( void );
+			void init( void ) throw( exception );
+		protected:
+			bool thread_func( void );
 
-	private:
-		SERVER::HS_SERVER_CONTEXT* server_ctx;
-		LOGGING::LOGGER* logger;
+		private:
+			SERVER::HS_SERVER_CONTEXT* server_ctx;
+			LOGGING::LOGGER* logger;
+
+			string path;
+			SOCKET_TYPE socket_type;
+			uint16_t port;
 
 	};
 }
