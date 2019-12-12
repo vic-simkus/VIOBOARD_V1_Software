@@ -66,6 +66,193 @@ DEF_LOGGER_STAT( "BBB_HVAC(MAIN)" );
 
 static CONFIGURATOR* config = nullptr;
 
+class COMMAND_LINE_PARMS
+{
+	public:
+		COMMAND_LINE_PARMS( size_t _argc, const char** _argv ) {
+			this->argc = _argc;
+			this->argv = _argv;
+
+			this->verbose_flag = false;
+			this->server_mode = false;
+
+			address = "";
+			port_s = "";
+
+			port_i =  GC_DEFAULT_TCPIP_PORT;
+
+			this->st = SOCKET_TYPE::NONE;
+
+			this->exe = string( argv[0] );
+
+			return;
+		}
+
+		void process( void ) {
+			for ( size_t i = 1; i < argc; i++ ) {
+				string p = trimmed( argv[i] );
+
+				if ( p == "-d" ) {
+					if ( st != SOCKET_TYPE::NONE ) {
+						print_cmd_error( exe, "Confusing command line.  Connection method specified more than once?" );
+					}
+
+					st = SOCKET_TYPE::DOMAIN;
+				}
+				else if ( p == "-i" ) {
+					if ( st != SOCKET_TYPE::NONE ) {
+						print_cmd_error( exe, "Confusing command line.  Connection method specified more than once?" );
+					}
+
+					st = SOCKET_TYPE::TCPIP;
+				}
+				else if ( p == "-h" ) {
+					print_help( exe );
+					exit( 0 );
+				}
+				else if ( p == "-v" ) {
+					verbose_flag = true;
+				}
+				else if ( p == "-p" ) {
+					if ( i == ( argc - 1 ) ) {
+						print_cmd_error( exe, "No port specified for the -p parameter." );
+					}
+					else {
+						port_s = string( argv[i + 1] );
+						i += 1;
+					}
+				}
+				else if ( p == "-a" ) {
+					if ( i == ( argc - 1 ) ) {
+						print_cmd_error( exe, "No address specified for the -a parameter." );
+					}
+					else {
+						address = string( argv[i + 1] );
+						i += 1;
+					}
+				}
+				else if ( p == "-s" ) {
+					server_mode = true;
+				}
+				else {
+					print_cmd_error( exe, "Unrecognized command line parameter: " + p );
+				}
+			}
+
+			if ( st == SOCKET_TYPE::NONE ) {
+				print_cmd_error( exe, "Need to specify connection method.  See {-d|-i} parameters." );
+			}
+
+			switch ( st ) {
+				case SOCKET_TYPE::NONE:
+					// do nothing.
+					break;
+
+				case SOCKET_TYPE::DOMAIN:
+					if ( address.length() == 0 ) {
+						address = GC_LOCAL_COMMAND_SOCKET;
+					}
+
+					break;
+
+				case SOCKET_TYPE::TCPIP:
+					if ( address.length() == 0 ) {
+						address = GC_DEFAULT_LISTEN_INTERFACE;
+					}
+
+					break;
+			}
+
+			if ( verbose_flag ) {
+				cout << "Verbose flag (-v) has been set via command line." << endl;
+				cout << "    Connection type {-d|-i}: ";
+
+				switch ( st ) {
+					case SOCKET_TYPE::NONE:
+						cout << "NONE";
+						break;
+
+					case SOCKET_TYPE::DOMAIN:
+						cout << "DOMAIN";
+						break;
+
+					case SOCKET_TYPE::TCPIP:
+						cout << "TCPIP";
+						break;
+				}
+
+				cout << endl;
+
+				cout << "    Address [-a]: [" << address << "]" << endl;
+				cout << "    Port [-p]: [" << port_i << "]" << endl;
+				cout << "    Server mode [-s]: [" << ( server_mode ? "TRUE" : "FALSE" ) << "]" << endl;
+			}
+
+		}
+
+		bool is_verbose_flag( void ) const {
+			return this->verbose_flag;
+		}
+
+		bool is_server_mode( void ) const {
+			return this->server_mode;
+		}
+
+		const string& get_address( void ) const {
+			return this->address;
+		}
+
+		uint16_t get_port( void ) const {
+			return this->port_i;
+		}
+
+		SOCKET_TYPE get_socket_type( void ) const {
+			return this->st;
+		}
+
+		const string& get_exe( void ) const {
+			return this->exe;
+		}
+	protected:
+
+		void print_help( const string& _c ) {
+			cout << "Usage: " << endl;
+			cout << _c << " {-d|i} [-a <address>] [-p <port>] [-s] [-v]" << endl;
+			cout << "Where: " << endl;
+			cout << "\t-d - Listen on domain socket (mutually exclusive with -i)" << endl;
+			cout << "\t-i - Listen on TCP/IP socket (mutually exclusive with -d)" << endl;
+			cout << "\t-a <address> - Address to listen on.  File name (optional) if -d is specified.  Interface to bind to if -i is specified." << endl;
+			cout << "\t  For -i, the interface should be specified in x.x.x.x notation. Default is 127.0.0.1." << endl;
+			cout << "\t-p <port> - Port to listen to.  Relevant only if -i is specified.  Defaults to 6666" << endl;
+			cout << "\t-s - Server mode.  If not specified application runs in console." << endl;
+			cout << "\t-v - Verbose mode.  Produces extra debugging information to the console." << endl;
+			cout << "\t-h - This help" << endl;
+			exit( -1 );
+
+			return;
+		}
+
+		void print_cmd_error( const string& _c, const string& _failure ) {
+			cerr << "Command line error: " << endl;
+			cerr << _failure << endl;
+			print_help( _c );
+		}
+
+
+		size_t argc;
+		const char** argv;
+	private:
+		bool verbose_flag;
+		bool server_mode;
+		string address;
+		string port_s;
+		uint16_t port_i;
+		SOCKET_TYPE st;
+		string exe;
+
+
+};
+
 /**
  * Checks to see if privileges need to be dropped.
  * \return 1 if the process has a GID or UID of 0
@@ -189,9 +376,9 @@ bool start_io_threads( CONFIGURATOR* config )
 	return true;
 }
 
-bool start_shim_thread( void )
+bool start_shim_thread( const COMMAND_LINE_PARMS& _clp )
 {
-	SHIM_LISTENER* listener = new SHIM_LISTENER();
+	SHIM_LISTENER* listener = new SHIM_LISTENER( _clp.get_socket_type(), _clp.get_address(), _clp.get_port() );
 
 	try
 	{
@@ -218,11 +405,11 @@ bool start_logic_thread( CONFIGURATOR* )
 	return true;
 }
 
-bool start_threads( CONFIGURATOR* config )
+bool start_threads( CONFIGURATOR* config, const COMMAND_LINE_PARMS& _clp )
 {
 	GLOBALS::configure_watchdog();
 
-	if ( !start_shim_thread() )
+	if ( !start_shim_thread( _clp ) )
 	{
 		LOG_ERROR_STAT( "Failed to start shim listener thread." );
 		return false;
@@ -267,7 +454,8 @@ void io_death_listener( const std::string& _tag )
 
 	return;
 }
-int main( void )
+
+int do_main( const COMMAND_LINE_PARMS& _clp )
 {
 	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	LOG_INFO_STAT( "Starting up BBB HVAC server." );
@@ -277,7 +465,7 @@ int main( void )
 	config->read_file();
 	//start_io_threads(config);
 
-	if ( !start_threads( config ) )
+	if ( !start_threads( config, _clp ) )
 	{
 		LOG_ERROR_STAT( "Failed to start threads." );
 		GLOBALS::global_exit_flag = true;
@@ -299,4 +487,14 @@ int main( void )
 	LOG_INFO_STAT( "Main process is exiting." );
 	LOGGING::LOG_CONFIGURATOR::destroy_root_configurator();
 	return EXIT_SUCCESS;
+}
+
+
+
+
+int main( int argc, const char** argv )
+{
+	COMMAND_LINE_PARMS clp( argc, argv );
+	clp.process();
+	do_main( clp );
 }
