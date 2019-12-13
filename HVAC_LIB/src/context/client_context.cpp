@@ -104,7 +104,7 @@ void CLIENT_CONTEXT::connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERR
 		case SOCKET_TYPE::DOMAIN:
 			if ( ::connect( this->remote_socket, ( sockaddr* )( &this->socket_struct_domain ), sizeof( struct sockaddr_un ) ) == -1 )
 			{
-				throw CONNECTION_ERROR( create_perror_string( "Failed to connect to server(domain): " ) );
+				throw CONNECTION_ERROR( create_perror_string( "Failed to connect to server(domain) [" + string( this->socket_struct_domain.sun_path ) + "] : " ) );
 			}
 
 			break;
