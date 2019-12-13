@@ -7,3 +7,4 @@ nbproject/*.mk
 nbproject/*.pro
 nbproject/*.bash
 Makefile
+*.stash
