@@ -26,7 +26,7 @@ using namespace BBB_HVAC;
 using namespace BBB_HVAC::CLIENT;
 
 DEF_LOGGER_STAT( "MESSAGE_BUS" );
-MESSAGE_BUS::MESSAGE_BUS( uint8_t _update_frequency ) : QObject()
+MESSAGE_BUS::MESSAGE_BUS( uint8_t _update_frequency, SOCKET_TYPE _st, const QString& _address, uint16_t _port ) : QObject()
 {
 	// The timer that will periodically invoke the message processing logic
 	this->timer_update = new QTimer( this );
@@ -36,7 +36,11 @@ MESSAGE_BUS::MESSAGE_BUS( uint8_t _update_frequency ) : QObject()
 	connect( this->timer_update, SIGNAL( timeout() ), this, SLOT( do_update() ) );
 	this->ctx = nullptr;
 	this->failure_count = 0;
-	this->timer_update->start( 1000 / update_frequency );
+
+	this->st = _st;
+	this->address = _address;
+	this->port = _port;
+
 	return;
 }
 
@@ -56,20 +60,16 @@ MESSAGE_BUS::~MESSAGE_BUS()
 	return;
 }
 
-void MESSAGE_BUS::do_update( void )
+void MESSAGE_BUS::connect_to_remote( void ) throw( exception )
 {
 	/*
-	Invoked by the timer this->update_frequency times per second.
-	*/
-
-	/*
-	Check if we're connected
-	*/
+		Check if we're connected
+		*/
 	if ( this->ctx == nullptr )
 	{
 
 		// If not, connect.
-		this->ctx = BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance( );
+		this->ctx = BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance( this->st, this->address.toStdString(), this->port );
 
 		try
 		{
@@ -81,10 +81,31 @@ void MESSAGE_BUS::do_update( void )
 			delete this->ctx;
 			this->ctx = nullptr;
 			this->failure_count += 1;
+
+			throw std::runtime_error( std::string( "Failed to connect to remote: " ) + _e.what() );
 		}
 
 		LOG_DEBUG_STAT( "MESSAGE_BUS connected to remote point." );
 	}
+	else
+	{
+		throw std::logic_error( "Instance appears to already be connected.  Can not connect twice." );
+	}
+
+	this->timer_update->start( 1000 / update_frequency );
+}
+
+void MESSAGE_BUS::do_update( void ) throw( exception )
+{
+	/*
+	Invoked by the timer this->update_frequency times per second.
+	*/
+
+	if ( this->ctx == nullptr )
+	{
+		throw std::logic_error( "Instance not connected.  Call connect() first." );
+	}
+
 
 	// The various automatic updates are performed once a second
 	if ( this->update_counter == this->update_frequency )

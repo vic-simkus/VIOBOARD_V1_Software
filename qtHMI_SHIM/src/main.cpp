@@ -19,9 +19,13 @@
  */
 
 #include <QApplication>
+#include <QMessageBox>
+#include <QCommandLineParser>
+#include <iostream>
 #include "windows/MAIN_WINDOW.h"
 
 #include "globals.h"
+#include "config.h"
 
 #include "lib/bbb_hvac.hpp"
 
@@ -57,13 +61,66 @@ int main( int argc, char* argv[] )
 {
 	BBB_HVAC::GLOBALS::configure_logging( BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals( );
-	LOG_DEBUG_STAT( "ADC ref: " + num_to_str( GC_IO_ADC_VREF_MAX ) );
-	LOG_DEBUG_STAT( "ADC steps: " + num_to_str( GC_IO_ADC_STEPS ) );
-	LOG_DEBUG_STAT( "ADC step: " + num_to_str( GC_IO_ADC_STEP ) );
+
 	QApplication app( argc, argv );
-	message_bus = new MESSAGE_BUS( 10 );
+
+	app.setApplicationName( APP_NAME );
+	app.setApplicationVersion( APP_VERSION );
+
+	QCommandLineParser parser;
+	parser.setApplicationDescription( "QT5 based HMI shim to LOGIC_LOOP" );
+	parser.addHelpOption();
+	parser.addVersionOption();
+
+	QCommandLineOption clo_domain_unix( "d", "Connect using a domain socket,  This is the default mode." );
+	QCommandLineOption clo_domain_inet( "i", "Connect using a TCPIP socket." );
+	QCommandLineOption clo_address( "a", "Remote address.  Relevant only if -i is specified.  Defaults to " + QString( GC_DEFAULT_LISTEN_INTERFACE ) + "." , "address", QString( GC_DEFAULT_LISTEN_INTERFACE ) );
+	QCommandLineOption clo_port( "p", "Remote port.  Mandatory if -i is specified.  Relevant only if -i is specified.  Defaults to " + QString::number( GC_DEFAULT_TCPIP_PORT ) + "." , "port", QString::number( GC_DEFAULT_TCPIP_PORT ) );
+
+	parser.addOption( clo_domain_unix );
+	parser.addOption( clo_domain_inet );
+	parser.addOption( clo_address );
+	parser.addOption( clo_port );
+
+	parser.process( app );
+
+	bool domain_unix = parser.isSet( clo_domain_unix );
+	bool domain_inet = parser.isSet( clo_domain_inet );
+	uint16_t port = parser.value( clo_port ).toUInt();
+	QString address = parser.value( clo_address );
+
+	if ( !domain_unix && !domain_inet )
+	{
+		domain_unix = true;
+	}
+
+	if ( domain_unix && domain_inet )
+	{
+		std::cerr << "Confusing command line parameters.  Both -d and -i specified.  They are mutually exclusive" << endl;
+		exit( -1 );
+	}
+
+	if ( domain_unix )
+	{
+		address = GC_LOCAL_COMMAND_SOCKET;
+	}
+
+	message_bus = new MESSAGE_BUS( 10, ( domain_unix ? BBB_HVAC::SOCKET_TYPE::DOMAIN : BBB_HVAC::SOCKET_TYPE::TCPIP ), address, port );
+
+	try
+	{
+		message_bus->connect_to_remote();
+	}
+	catch ( const std::exception& e )
+	{
+		QMessageBox::critical( nullptr, "Connection failure", QString( e.what() ) + "\n*********\nStart the program [" + QString( argv[0] ) + "] with the '-h' command line parameter for help." );
+		exit( -1 );
+	}
+
 	MAIN_WINDOW main_window;
 	main_window.show( );
 	app.exec( );
+
+
 	delete message_bus;
 }

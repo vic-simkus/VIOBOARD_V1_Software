@@ -28,6 +28,7 @@
 #include <QVariant>
 
 #include "lib/bbb_hvac.hpp"
+#include "lib/context.hpp"
 
 class QTimer;
 
@@ -102,7 +103,7 @@ class MESSAGE_BUS : public QObject
 		Constructor
 		\param _update_frequency The number of times per second that the message queue will be processed.
 		*/
-		MESSAGE_BUS( uint8_t _update_frequency );
+		MESSAGE_BUS( uint8_t _update_frequency, BBB_HVAC::SOCKET_TYPE st, const QString& _address, uint16_t _port );
 
 		/**
 		Destructor
@@ -116,9 +117,11 @@ class MESSAGE_BUS : public QObject
 
 		/**
 		Returns connection status
-		\return true - if there is an active connection to a remove logic core.
+		\return true - if there is an active connection to a remote logic core.
 		*/
 		bool is_connected( void ) const;
+
+		void connect_to_remote( void ) throw( exception );
 
 	public slots:
 		/**
@@ -218,7 +221,7 @@ class MESSAGE_BUS : public QObject
 		/**
 		Invoked by the timer every (1000/update_frequenct) milliseconds.
 		*/
-		void do_update( void );
+		void do_update( void ) throw( exception );
 
 	private:
 		/// The command queue.  Commands are added by the add_message method and consumed periodically by the do_update method.
@@ -238,6 +241,10 @@ class MESSAGE_BUS : public QObject
 
 		/// How many times we've failed to connect to the logic core.
 		uint8_t failure_count;
+
+		BBB_HVAC::SOCKET_TYPE st;
+		QString address;
+		uint16_t port;
 };
 
 #endif

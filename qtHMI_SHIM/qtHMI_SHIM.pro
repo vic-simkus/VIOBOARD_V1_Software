@@ -6,6 +6,8 @@ debug {
 	DESTDIR = build/debug	
 }
 
+QT += widgets core
+
 HEADERS = src/widgets/AI_RAW_VALUE.h \
 	src/widgets/AI_VALUE.h \
 	src/windows/BOARD_INFO_WIDGET.h \
@@ -41,7 +43,7 @@ SOURCES = src/widgets/AI_RAW_VALUE.cpp \
 
 LIBS += -L../HVAC_LIB/bin -lHVAC_LIB
 INCLUDEPATH += "../HVAC_LIB/src/include" "./src/"
-CONFIG += qt debug
+CONFIG += qt debug 
 
 QMAKE_CXXFLAGS += -Wno-deprecated 
 
