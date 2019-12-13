@@ -214,6 +214,8 @@ void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 
 	this->in_stop_all = false;
 	this->release_lock();
+
+	LOG_DEBUG_P( "Finished." );
 }
 
 void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )

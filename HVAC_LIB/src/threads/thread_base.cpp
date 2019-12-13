@@ -25,6 +25,10 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <sys/types.h>
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+
 using namespace BBB_HVAC;
 
 THREAD_BASE::THREAD_BASE( const string& _tag ) : TPROTECT_BASE( _tag )
@@ -50,7 +54,7 @@ TPROTECT_BASE* THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
 	{
 		this->obtain_lock_ex( &this->abort_thread );
 	}
-	catch( const LOCK_ERROR& _ex )
+	catch ( const LOCK_ERROR& _ex )
 	{
 		LOG_ERROR_P( "Failed to obtain lock: " + string( _ex.what() ) );
 		this->abort_thread = true;
@@ -62,11 +66,12 @@ TPROTECT_BASE* THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
 
 void THREAD_BASE::pthread_func( void )
 {
-	LOG_DEBUG_P( "Thread started." )
 	pthread_detach( pthread_self() );
 	this->is_running = true;
 
-	if( this->is_io_thread )
+	LOG_DEBUG_P( "Thread started.  TID: " + num_to_str( gettid() ) );
+
+	if ( this->is_io_thread )
 	{
 		THREAD_REGISTRY::register_thread( this, THREAD_TYPES_ENUM::IO_THREAD );
 	}
@@ -77,22 +82,22 @@ void THREAD_BASE::pthread_func( void )
 
 	try
 	{
-		if( !this->thread_func() )
+		if ( !this->thread_func() )
 		{
-			//LOG_ERROR_P( "thread_func for [" + this->thread_tag + "] returned false." );
+			LOG_ERROR_P( "thread_func for [" + this->thread_tag + "] returned false." );
 		}
 		else
 		{
-			//OG_DEBUG_P( "thread_func for [" + this->thread_tag + "] returned true." );
+			LOG_DEBUG_P( "thread_func for [" + this->thread_tag + "] returned true." );
 		}
 	}
-	catch( const exception& _e )
+	catch ( const exception& _e )
 	{
 		LOG_ERROR_P( "Caught an unhandled exception: " + string( _e.what() ) );
 		LOG_ERROR_P( "Aborting." );
 	}
 
-	if( !this->do_not_self_delete )
+	if ( !this->do_not_self_delete )
 	{
 		THREAD_REGISTRY::delete_thread( this );
 	}
@@ -118,7 +123,7 @@ void THREAD_BASE::stop_thread( bool _self_delete )
 {
 	LOG_DEBUG_P( "Attempting to stop" );
 
-	if( this->is_running == false )
+	if ( this->is_running == false )
 	{
 		LOG_DEBUG_P( "Thread is already dead." );
 		return;
@@ -128,14 +133,25 @@ void THREAD_BASE::stop_thread( bool _self_delete )
 	this->abort_thread = true;
 	timespec st;
 
-	while( this->is_running )
+	int attempt_count = 0;
+
+	while ( this->is_running )
 	{
 		st.tv_sec = 0;
-		st.tv_nsec = 10000000; //1 milisecond
+		st.tv_nsec = 10000000; //10 milisecond
 		nsleep( &st );
+
+		attempt_count += 1;
+
+		if ( attempt_count >= 100 )
+		{
+			LOG_ERROR_P( "Thread [" + num_to_str( gettid() ) + "] is failing to die gracefully." );
+			this->is_running = false;
+			break;
+		}
 	}
 
-	if( _self_delete )
+	if ( _self_delete )
 	{
 		THREAD_REGISTRY::delete_thread( this );
 	}
