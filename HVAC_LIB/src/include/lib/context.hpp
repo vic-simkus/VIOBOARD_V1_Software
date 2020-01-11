@@ -52,7 +52,7 @@ namespace BBB_HVAC
 	class BASE_CONTEXT : public MESSAGE_CALLBACK_BASE, public THREAD_BASE
 	{
 		public:
-			DEF_LOGGER;
+			//DEF_LOGGER;
 
 			friend void BBB_HVAC::comm_thread_func( void* );
 
@@ -113,9 +113,7 @@ namespace BBB_HVAC
 
 			bool thread_func( void );
 
-			LOGGING::LOGGER* logger;
-
-
+			DEF_LOGGER;
 
 			bool is_in_client_mode;
 

@@ -38,13 +38,11 @@ THREAD_BASE::THREAD_BASE( const string& _tag ) : TPROTECT_BASE( _tag )
 	this->thread_tag = _tag;
 	this->do_not_self_delete = false;
 	this->is_io_thread = false;
-	this->logger = new LOGGING::LOGGER( "BBB_HVAC::THREAD_BASE[" + this->thread_tag + "]" );
+	INIT_LOGGER( "BBB_HVAC::THREAD_BASE[" + this->thread_tag + "]" );
 }
 
 THREAD_BASE::~THREAD_BASE()
 {
-	delete this->logger;
-	this->logger = nullptr;
 	return;
 }
 
@@ -56,7 +54,7 @@ TPROTECT_BASE* THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
 	}
 	catch ( const LOCK_ERROR& _ex )
 	{
-		LOG_ERROR_P( "Failed to obtain lock: " + string( _ex.what() ) );
+		LOG_ERROR( "Failed to obtain lock: " + string( _ex.what() ) );
 		this->abort_thread = true;
 		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in thread [" + this->thread_tag + "]" );
 	}
@@ -69,7 +67,7 @@ void THREAD_BASE::pthread_func( void )
 	pthread_detach( pthread_self() );
 	this->is_running = true;
 
-	LOG_DEBUG_P( "Thread started.  TID: " + num_to_str( gettid() ) );
+	LOG_DEBUG( "Thread started.  TID: " + num_to_str( gettid() ) );
 
 	if ( this->is_io_thread )
 	{
@@ -84,17 +82,17 @@ void THREAD_BASE::pthread_func( void )
 	{
 		if ( !this->thread_func() )
 		{
-			LOG_ERROR_P( "thread_func for [" + this->thread_tag + "] returned false." );
+			LOG_ERROR( "thread_func for [" + this->thread_tag + "] returned false." );
 		}
 		else
 		{
-			LOG_DEBUG_P( "thread_func for [" + this->thread_tag + "] returned true." );
+			LOG_DEBUG( "thread_func for [" + this->thread_tag + "] returned true." );
 		}
 	}
 	catch ( const exception& _e )
 	{
-		LOG_ERROR_P( "Caught an unhandled exception: " + string( _e.what() ) );
-		LOG_ERROR_P( "Aborting." );
+		LOG_ERROR( "Caught an unhandled exception: " + string( _e.what() ) );
+		LOG_ERROR( "Aborting." );
 	}
 
 	if ( !this->do_not_self_delete )
@@ -103,7 +101,7 @@ void THREAD_BASE::pthread_func( void )
 	}
 
 	this->is_running = false;
-	LOG_DEBUG_P( "Thread stopped." )
+	LOG_DEBUG( "Thread stopped." )
 	pthread_exit( nullptr );
 	return;
 }
@@ -121,11 +119,11 @@ string THREAD_BASE::get_thread_tag( void ) const
 
 void THREAD_BASE::stop_thread( bool _self_delete )
 {
-	LOG_DEBUG_P( "Attempting to stop" );
+	LOG_DEBUG( "Attempting to stop" );
 
 	if ( this->is_running == false )
 	{
-		LOG_DEBUG_P( "Thread is already dead." );
+		LOG_DEBUG( "Thread is already dead." );
 		return;
 	}
 
@@ -145,7 +143,7 @@ void THREAD_BASE::stop_thread( bool _self_delete )
 
 		if ( attempt_count >= 100 )
 		{
-			LOG_ERROR_P( "Thread [" + num_to_str( gettid() ) + "] is failing to die gracefully." );
+			LOG_ERROR( "Thread [" + num_to_str( gettid() ) + "] is failing to die gracefully." );
 			this->is_running = false;
 			break;
 		}
@@ -156,6 +154,6 @@ void THREAD_BASE::stop_thread( bool _self_delete )
 		THREAD_REGISTRY::delete_thread( this );
 	}
 
-	LOG_DEBUG_P( "Has been stopped." );
+	LOG_DEBUG( "Has been stopped." );
 	return;
 }

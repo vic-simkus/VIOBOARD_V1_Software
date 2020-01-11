@@ -43,7 +43,7 @@ LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
 	THREAD_BASE( "LOGIC_PROCESSOR_BASE" )
 {
 	this->configurator = _config;
-	this->logger = new LOGGING::LOGGER( "BBB_HVAC::LOGIC_PROCESSOR_BASE" );
+	INIT_LOGGER( "BBB_HVAC::LOGIC_PROCESSOR_BASE" );
 	/*
 	Populate the logic fluff stuff.  Logic fluff is used by user-facing stuffs to extract operational information out of the logic processor
 	*/
@@ -77,9 +77,9 @@ LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
 		this->logic_status_core.current_state_map.emplace( std::make_pair( *i, BOARD_STATE_STRUCT() ) );
 	}
 
-	LOG_DEBUG_P( "adc_vref_max: " + num_to_str( this->logic_status_core.adc_vref_max ) );
-	LOG_DEBUG_P( "adc_steps: " + num_to_str( this->logic_status_core.adc_steps ) );
-	LOG_DEBUG_P( "adc_step_val: " + num_to_str( this->logic_status_core.adc_step_val ) );
+	LOG_DEBUG( "adc_vref_max: " + num_to_str( this->logic_status_core.adc_vref_max ) );
+	LOG_DEBUG( "adc_steps: " + num_to_str( this->logic_status_core.adc_steps ) );
+	LOG_DEBUG( "adc_step_val: " + num_to_str( this->logic_status_core.adc_step_val ) );
 	return;
 }
 
@@ -116,7 +116,7 @@ std::map<std::string, LOGIC_POINT_STATUS> LOGIC_PROCESSOR_BASE::get_logic_status
 		}
 		else
 		{
-			LOG_ERROR_P( "Unrecognized point type in point map: " + num_to_str( static_cast<unsigned int>( point_type ) ) );
+			LOG_ERROR( "Unrecognized point type in point map: " + num_to_str( static_cast<unsigned int>( point_type ) ) );
 		}
 	}
 
@@ -137,7 +137,7 @@ string LOGIC_STATUS_CORE::to_string( void )
 
 bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 {
-	LOG_INFO_P( "Starting logic thread." );
+	LOG_INFO( "Starting logic thread." );
 	this->obtain_lock();
 	this->pre_process();
 	this->release_lock();
@@ -172,7 +172,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 			}
 			catch ( const exception& _e )
 			{
-				LOG_ERROR_P( "Failed to find board IO thread: (" + std::string( _e.what() ) + ").  Skipping logic iteration." );
+				LOG_ERROR( "Failed to find board IO thread: (" + std::string( _e.what() ) + ").  Skipping logic iteration." );
 				goto _end;
 			}
 
@@ -186,7 +186,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 
 				if ( board_state_iterator == this->logic_status_core.current_state_map.end() )
 				{
-					LOG_ERROR_P( "Failed to find state map for the current board tag: " + ( *i ) );
+					LOG_ERROR( "Failed to find state map for the current board tag: " + ( *i ) );
 					goto _end;
 				}
 
@@ -200,7 +200,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 			}
 			catch ( const exception& _e )
 			{
-				LOG_ERROR_P( "Failed to update state: " + string( _e.what() ) );
+				LOG_ERROR( "Failed to update state: " + string( _e.what() ) );
 			}
 		}
 
@@ -273,12 +273,12 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 		}
 		catch ( const std::exception& e )
 		{
-			LOG_ERROR_P( "process_logic() emitted an std::exception.  Logic thread will abort. Message: " + std::string( e.what() ) );
+			LOG_ERROR( "process_logic() emitted an std::exception.  Logic thread will abort. Message: " + std::string( e.what() ) );
 			this->abort_thread = true;
 		}
 		catch ( ... )
 		{
-			LOG_ERROR_P( "process_logic() emitted an unspecified exception.  Logic thread will abort." );
+			LOG_ERROR( "process_logic() emitted an unspecified exception.  Logic thread will abort." );
 			this->abort_thread = true;
 		}
 
@@ -298,7 +298,7 @@ _end:
 	 */
 	this->post_process();
 	GLOBALS::global_exit_flag = true;
-	LOG_INFO_P( "Logic thread finished." );
+	LOG_INFO( "Logic thread finished." );
 	return true;
 }
 
@@ -310,11 +310,11 @@ bool LOGIC_PROCESSOR_BASE::thread_func( void )
 	}
 	catch ( const exception& _e )
 	{
-		LOG_ERROR_P( "Unhandled exception caught in the main logic loop: " + string( _e.what() ) );
+		LOG_ERROR( "Unhandled exception caught in the main logic loop: " + string( _e.what() ) );
 	}
 	catch ( ... )
 	{
-		LOG_ERROR_P( "Unhandled and unknown exception caught in the main logic loop." );
+		LOG_ERROR( "Unhandled and unknown exception caught in the main logic loop." );
 	}
 
 	try
@@ -323,10 +323,10 @@ bool LOGIC_PROCESSOR_BASE::thread_func( void )
 	}
 	catch ( const exception& _e )
 	{
-		LOG_ERROR_P( "Ignoring exception during last ditch effort to release lock: " + string( _e.what() ) );
+		LOG_ERROR( "Ignoring exception during last ditch effort to release lock: " + string( _e.what() ) );
 	}
 
-	LOG_ERROR_P( "Aborting application." );
+	LOG_ERROR( "Aborting application." );
 	GLOBALS::global_exit_flag = true;
 	return false;
 }
@@ -443,7 +443,7 @@ void LOGIC_PROCESSOR_BASE::set_output( const string& _name ) throw ( exception )
 		return;
 	}
 
-	LOG_DEBUG_P( "Setting point " + _name + " to ON" );
+	LOG_DEBUG( "Setting point " + _name + " to ON" );
 	IOCOMM::SER_IO_COMM* thread_handle = THREAD_REGISTRY::get_serial_io_thread( board_point.get_board_tag() );
 	uint8_t v = ( uint8_t )( 1 << board_point.get_point_id() );
 	do_status |= v;
@@ -471,7 +471,7 @@ void LOGIC_PROCESSOR_BASE::clear_output( const string& _name ) throw ( exception
 		return;
 	}
 
-	LOG_DEBUG_P( "Setting point " + _name + " to OFF" );
+	LOG_DEBUG( "Setting point " + _name + " to OFF" );
 	IOCOMM::SER_IO_COMM* thread_handle = nullptr;
 
 

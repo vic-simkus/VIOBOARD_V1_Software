@@ -273,6 +273,8 @@ namespace BBB_HVAC
 
 			std::vector<std::string> involved_board_tags;
 
+			DEF_LOGGER;
+
 		private:
 
 	};

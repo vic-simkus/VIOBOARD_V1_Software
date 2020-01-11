@@ -35,8 +35,7 @@ namespace BBB_HVAC
 
 	WATCHDOG::WATCHDOG() : THREAD_BASE( "WATCHDOG" )
 	{
-		this->logger = new LOGGING::LOGGER();
-		INIT_LOGGER_P( "BBB_HVAC::WATCHDOG_THREAD" );
+		this->logger.reset( new LOGGING::LOGGER( "BBB_HVAC::WATCHDOG_THREAD" ) );
 		this->counter = 0;
 		return;
 	}
@@ -48,8 +47,6 @@ namespace BBB_HVAC
 
 	WATCHDOG::~WATCHDOG()
 	{
-		delete this->logger;
-		this->logger = nullptr;
 		return;
 	}
 
@@ -57,14 +54,14 @@ namespace BBB_HVAC
 	{
 		this->reset_sleep_timespec( GC_WATCHDOG_SLEEP_NSEC );
 
-		while( this->abort_thread == false )
+		while ( this->abort_thread == false )
 		{
 			this->nsleep();
 			THREAD_REGISTRY::init_cleanup();
 
-			if( this->counter >= GC_WATCHDOG_ATTEMPTS )
+			if ( this->counter >= GC_WATCHDOG_ATTEMPTS )
 			{
-				LOG_ERROR_P( "Watchdog thread terminating program." );
+				LOG_ERROR( "Watchdog thread terminating program." );
 				kill( 0, SIGTERM );
 				return false;
 			}

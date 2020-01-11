@@ -111,7 +111,8 @@ SER_IO_COMM::~SER_IO_COMM()
 SER_IO_COMM::SER_IO_COMM( const char* _tty, const string& _tag, bool _debug ) :
 	IO_COMM_BASE( _tag )
 {
-	this->logger->configure( "BBB_HVAC::SERIAL_IO[" + _tag + "]" );
+	INIT_LOGGER( "BBB_HVAC::SERIAL_IO[" + _tag + "]" );
+
 	this->tty_dev = generate_port_device_file_name( _tty );
 	this->lock_file = generate_lock_file_name( _tty );
 	this->buffer = ( unsigned char* ) calloc( GC_SERIAL_BUFF_SIZE, sizeof( unsigned char ) );
@@ -130,14 +131,14 @@ SER_IO_COMM::SER_IO_COMM( const char* _tty, const string& _tag, bool _debug ) :
 
 void SER_IO_COMM::writer_thread_func( void )
 {
-	LOG_DEBUG_P( "Write event loop thread starting." );
+	LOG_DEBUG( "Write event loop thread starting." );
 
 	if ( !this->write_event_loop() )
 	{
-		LOG_DEBUG_P( "Thread's write event loop returned 'false'." );
+		LOG_DEBUG( "Thread's write event loop returned 'false'." );
 	}
 
-	LOG_DEBUG_P( "Write event loop thread ending." );
+	LOG_DEBUG( "Write event loop thread ending." );
 	//pthread_exit( nullptr );
 	return;
 }
@@ -154,14 +155,14 @@ bool SER_IO_COMM::thread_func( void )
 	ts.tv_sec = 0;
 	ts.tv_nsec = 250000000;	// quarter second
 	this->nsleep( &ts );
-	LOG_DEBUG_P( "Main event loop thread starting." );
+	LOG_DEBUG( "Main event loop thread starting." );
 
 	if ( !this->main_event_loop() )
 	{
-		LOG_DEBUG_P( "Thread's main event loop returned 'false'." );
+		LOG_DEBUG( "Thread's main event loop returned 'false'." );
 	}
 
-	LOG_DEBUG_P( "Main event loop thread ending." );
+	LOG_DEBUG( "Main event loop thread ending." );
 	pthread_join( writer_thread_id, nullptr );
 	//pthread_exit( nullptr );
 	return true;
@@ -214,7 +215,7 @@ string SER_IO_COMM::generate_port_device_file_name( const char* _tty )
 bool SER_IO_COMM::try_lock_serial( void )
 {
 	bool ret = false;
-	LOG_DEBUG_P( "Checking lock file: " + this->lock_file );
+	LOG_DEBUG( "Checking lock file: " + this->lock_file );
 
 	if ( access( this->lock_file.data(), F_OK ) == 0 )
 	{
@@ -223,13 +224,12 @@ bool SER_IO_COMM::try_lock_serial( void )
 
 		if ( is_process_alive( pid ) )
 		{
-			LOG_ERROR_P( "Port is locked and locking process is alive: " + get_locking_pid_command( pid ) );
+			LOG_ERROR( "Port is locked and locking process is alive: " + get_locking_pid_command( pid ) );
 			ret = false;
 		}
 		else
 		{
-			LOG_DEBUG_P( "Port is locked, but locking process is dead." );
-			;
+			LOG_DEBUG( "Port is locked, but locking process is dead." );
 			unlink( this->lock_file.data() );
 			ret = true;
 		}
@@ -248,7 +248,7 @@ bool SER_IO_COMM::try_lock_serial( void )
 
 		if ( !lock_file.is_open() )
 		{
-			LOG_ERROR_P( "Failed to open lock file for writting." );
+			LOG_ERROR( "Failed to open lock file for writting." );
 			ret = false;
 		}
 		else
@@ -291,7 +291,7 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 		}
 		else if ( rc < 0 )
 		{
-			LOG_ERROR_P( create_perror_string( "Serial read" ) );
+			LOG_ERROR( create_perror_string( "Serial read" ) );
 			rc = false;
 			break;
 		}
@@ -312,7 +312,7 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 			/*
 			 * Overflow
 			 */
-			LOG_ERROR_P( "Serial receive buffer overflowed. Bytes read: " + num_to_str( bytes_read ) +  ".  Buffer index: " + num_to_str( this->buffer_context.buffer_idx ) + ". Buffer size: " + num_to_str( GC_SERIAL_BUFF_SIZE ) + ". Data has been lost." );
+			LOG_ERROR( "Serial receive buffer overflowed. Bytes read: " + num_to_str( bytes_read ) +  ".  Buffer index: " + num_to_str( this->buffer_context.buffer_idx ) + ". Buffer size: " + num_to_str( GC_SERIAL_BUFF_SIZE ) + ". Data has been lost." );
 			this->reset_buffer_context();
 			memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 		}
@@ -334,13 +334,13 @@ unsigned char SER_IO_COMM::clear_to_send( void ) const
 
 	if ( ioctl( this->serial_fd, TIOCOUTQ, &output_queue ) != 0 )
 	{
-		LOG_ERROR_P( create_perror_string( "Failed get IOCTL port queue" ) );
+		LOG_ERROR( create_perror_string( "Failed get IOCTL port queue" ) );
 		return 2;
 	}
 
 	if ( ioctl( this->serial_fd, TIOCMGET, &flow_ctrl_status ) != 0 )
 	{
-		LOG_ERROR_P( create_perror_string( "Failed get IOCTL port status" ) );
+		LOG_ERROR( create_perror_string( "Failed get IOCTL port status" ) );
 		return 3;
 	}
 
@@ -360,7 +360,7 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 
 	if ( this->serial_fd < 0 )
 	{
-		LOG_ERROR_P( create_perror_string( "Serial port open" ) );
+		LOG_ERROR( create_perror_string( "Serial port open" ) );
 		return ENUM_ERRORS::ERR_PORT_OPEN;
 	}
 
@@ -416,7 +416,7 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 
 	if ( tcsetattr( this->serial_fd, TCSANOW, &this->current_tio ) < 0 )
 	{
-		LOG_ERROR_P( create_perror_string( "Serial port attributes" ) );
+		LOG_ERROR( create_perror_string( "Serial port attributes" ) );
 		return ENUM_ERRORS::ERR_ATTRIBUTES;
 	}
 
@@ -425,11 +425,11 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 
 ENUM_ERRORS SER_IO_COMM::init( void )
 {
-	LOG_INFO_P( "Operating on serial port:" + this->tty_dev );
+	LOG_INFO( "Operating on serial port:" + this->tty_dev );
 
 	if ( !this->try_lock_serial() )
 	{
-		LOG_ERROR_P( "Failed to obtain lock on serial port." );
+		LOG_ERROR( "Failed to obtain lock on serial port." );
 		return ENUM_ERRORS::ERR_FAIL_LOCK;
 	}
 
@@ -437,11 +437,11 @@ ENUM_ERRORS SER_IO_COMM::init( void )
 
 	if ( ( rc = this->serial_port_open() ) != ENUM_ERRORS::ERR_NONE )
 	{
-		LOG_ERROR_P( "Failed to open serial port." );
+		LOG_ERROR( "Failed to open serial port." );
 		return rc;
 	}
 
-	LOG_DEBUG_P( "Init successful" );
+	LOG_DEBUG( "Init successful" );
 	return ENUM_ERRORS::ERR_NONE;
 }
 
@@ -477,7 +477,7 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 
 		if ( rc < 0 )
 		{
-			LOG_ERROR_P( create_perror_string( this->tag + ": Failed to write message to IO board. rc < 0" ) );
+			LOG_ERROR( create_perror_string( this->tag + ": Failed to write message to IO board. rc < 0" ) );
 			return false;
 		}
 
@@ -491,7 +491,9 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 
 	if ( _length != ( size_t ) bytes_written )
 	{
-		LOG_ERROR_P( "Write loop aborted before writing full buffer.  bytes written: " + num_to_str( bytes_written ) + "; buffer length: " + num_to_str( _length ) );
+		LOG_ERROR( "(1/2) Write loop aborted before writing full buffer." )
+		LOG_ERROR( "(2/2) Bytes written: " + num_to_str( bytes_written ) + "; buffer length: " + num_to_str( _length ) );
+
 		return false;
 	}
 	else
@@ -538,7 +540,7 @@ bool SER_IO_COMM::add_calibration_values( size_t _idx, unsigned char _level )
 	}
 	else
 	{
-		LOG_ERROR_P( "Invalid cache level parameter supplied." );
+		LOG_ERROR( "Invalid cache level parameter supplied." );
 		return false;
 	}
 
@@ -558,7 +560,7 @@ bool SER_IO_COMM::add_boot_count( size_t _idx )
 
 	if ( length != 4 )
 	{
-		LOG_ERROR_P( "Invalid payload length received for boot count response: " + num_to_str( length ) );
+		LOG_ERROR( "Invalid payload length received for boot count response: " + num_to_str( length ) );
 		return false;
 	}
 
@@ -604,9 +606,9 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 
 	if ( chksum != 0 )
 	{
-		LOG_ERROR_P( "Message failed checksum check: " + num_to_str( chksum ) + ", in message: " + num_to_str( data_ptr[4] ) );
-		LOG_ERROR_P( "Message length: " + num_to_str( length ) );
-		LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
+		LOG_ERROR( "Message failed checksum check: " + num_to_str( chksum ) + ", in message: " + num_to_str( data_ptr[4] ) );
+		LOG_ERROR( "Message length: " + num_to_str( length ) );
+		LOG_ERROR( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
 		goto _end;
 	}
 
@@ -617,8 +619,8 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 		case CMD_ID_RESET_BOARD:
 		{
 			// This should never happen.
-			LOG_ERROR_P( "We received a response of type CMD_ID_RESET_BOARD??  How is that possible?" )
-			LOG_ERROR_P( buffer_to_hex( this->active_table->table[_idx], RESP_HEAD_SIZE + length ) );
+			LOG_ERROR( "We received a response of type CMD_ID_RESET_BOARD??  How is that possible?" )
+			LOG_ERROR( buffer_to_hex( this->active_table->table[_idx], RESP_HEAD_SIZE + length ) );
 			this->set_active_table_line_blank( _idx );
 			break;
 		}
@@ -627,7 +629,7 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 		{
 			if ( length % 2 != 0 )
 			{
-				LOG_ERROR_P( "Payload length for response to CMD_ID_GET_AI_SATATUS is not a multiple of two [" + num_to_str( length ) + "].  Clearing offending line." );
+				LOG_ERROR( "Payload length for response to CMD_ID_GET_AI_SATATUS is not a multiple of two [" + num_to_str( length ) + "].  Clearing offending line." );
 				this->set_active_table_line_blank( _idx );
 				return;
 			}
@@ -722,14 +724,14 @@ void SER_IO_COMM::process_binary_message( size_t _idx )
 
 		case CMD_ID_SYS_FAILURE:
 		{
-			LOG_ERROR_P( "Board returned a hard error.  Buffer output bellow:" );
-			LOG_ERROR_P( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
+			LOG_ERROR( "Board returned a hard error.  Buffer output bellow:" );
+			LOG_ERROR( "\n" + buffer_to_hex( this->active_table->table[_idx], length  + RESP_HEAD_SIZE ) );
 			break;
 		}
 
 		default:
 		{
-			LOG_ERROR_P( "Unrecognized command: " + to_string( cmd ) );
+			LOG_ERROR( "Unrecognized command: " + to_string( cmd ) );
 			break;
 		}
 	}
@@ -749,7 +751,7 @@ token_vector SER_IO_COMM::tokenize_protocol_line( size_t _line_index )
 
 	if ( left_idx < 0 )
 	{
-		LOG_ERROR_P( "Malformed protocol message: " + string( ( const char* ) line ) );
+		LOG_ERROR( "Malformed protocol message: " + string( ( const char* ) line ) );
 		return ret;
 	}
 
@@ -816,15 +818,15 @@ void SER_IO_COMM::process_protocol_message( size_t _idx )
 
 	if ( ( tokens[0] == "F CC" && tokens[1] == "CC UP" ) )
 	{
-		LOG_DEBUG_P( "Board reset: communication controller up." );
+		LOG_DEBUG( "Board reset: communication controller up." );
 		this->board_has_reset = false;
 		this->stream_started = false;
 	}
 
 	if ( ( tokens[0] == "F IC" && tokens[1] == "IC UP" ) )
 	{
-		LOG_DEBUG_P( "Board reset: input controller up." );
-		LOG_DEBUG_P( "Complete board reset sensed." );
+		LOG_DEBUG( "Board reset: input controller up." );
+		LOG_DEBUG( "Complete board reset sensed." );
 		this->board_has_reset = true;
 		this->stream_started = false;
 	}
@@ -834,7 +836,7 @@ void SER_IO_COMM::process_protocol_message( size_t _idx )
 
 void SER_IO_COMM::process_text_message( size_t _idx )
 {
-	LOG_DEBUG_P( string( ( char* )( this->active_table->table[_idx] ) ) );
+	LOG_DEBUG( string( ( char* )( this->active_table->table[_idx] ) ) );
 
 	if ( this->active_table->table[_idx][2] == '9' )
 	{
@@ -869,7 +871,7 @@ bool SER_IO_COMM::digest_line_table( void )
 		}
 		else
 		{
-			LOG_ERROR_P( "Line at index " + to_string( i ) + " was unrecognized.  Clearing offending line." );
+			LOG_ERROR( "Line at index " + to_string( i ) + " was unrecognized.  Clearing offending line." );
 			//LOG_DEBUG_P( "\n" + buffer_to_hex( this->active_table->table[i], 16 ) );
 			this->set_active_table_line_blank( i );
 		}
@@ -883,7 +885,7 @@ bool SER_IO_COMM::swap_two_line_table_lines( size_t _target_idx, size_t _source_
 {
 	if ( _target_idx >= GC_SERIAL_LINE_TABLE_ENTRIES || _source_idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
-		LOG_ERROR_P( "One of the supplied indexes is >= GC_SERIAL_LINE_TABLE_ENTRIES." );
+		LOG_ERROR( "One of the supplied indexes is >= GC_SERIAL_LINE_TABLE_ENTRIES." );
 		return false;
 	}
 
@@ -897,7 +899,7 @@ size_t SER_IO_COMM::find_next_nonblank_line_table_line( size_t _start_idx ) cons
 {
 	if ( _start_idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
-		LOG_ERROR_P( "Supplied line index >= GC_SERIAL_LINE_TABLE_ENTRIES." );
+		LOG_ERROR( "Supplied line index >= GC_SERIAL_LINE_TABLE_ENTRIES." );
 		return _start_idx;
 	}
 
@@ -919,7 +921,7 @@ bool SER_IO_COMM::is_line_table_line_blank( size_t _idx ) const
 {
 	if ( _idx >= GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
-		LOG_ERROR_P( "Supplied line index >= GC_SERIAL_LINE_TABLE_ENTRIES." );
+		LOG_ERROR( "Supplied line index >= GC_SERIAL_LINE_TABLE_ENTRIES." );
 		return false;
 	}
 
@@ -961,7 +963,7 @@ void SER_IO_COMM::compact_line_table( void )
 					 */
 					if ( !this->swap_two_line_table_lines( i, nb_idx ) )
 					{
-						LOG_ERROR_P( "Failed to swap lines. Target: " + to_string( i ) + ", source: " + to_string( nb_idx ) );
+						LOG_ERROR( "Failed to swap lines. Target: " + to_string( i ) + ", source: " + to_string( nb_idx ) );
 					}
 				}
 			}
@@ -1024,7 +1026,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 				*/
 				if ( length >= GC_SERIAL_BUFF_SIZE || length > 32 )
 				{
-					LOG_ERROR_P( "Weird message size: " + num_to_str( length ) + "; nuking context" );
+					LOG_ERROR( "Weird message size: " + num_to_str( length ) + "; nuking context" );
 					//LOG_DEBUG_P( "\n" + buffer_to_hex( this->buffer + this->buffer_context.bin_msg_start_index , 8 ) );
 					this->reset_buffer_context();
 					memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
@@ -1035,7 +1037,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 
 				if ( ( this->buffer_context.bin_msg_start_index +  RESP_HEAD_SIZE + length ) == GC_SERIAL_BUFF_SIZE )
 				{
-					LOG_ERROR_P( "Possible buffer overflow.  Record length: " + to_string( this->buffer_context.buffer_work_index + RESP_HEAD_SIZE + length ) + ", GC_SERIAL_BUFF_SIZE: " + to_string( GC_SERIAL_BUFF_SIZE ) + ".  Nuking context." );
+					LOG_ERROR( "Possible buffer overflow.  Record length: " + to_string( this->buffer_context.buffer_work_index + RESP_HEAD_SIZE + length ) + ", GC_SERIAL_BUFF_SIZE: " + to_string( GC_SERIAL_BUFF_SIZE ) + ".  Nuking context." );
 					this->reset_buffer_context();
 					memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 					break;
@@ -1063,7 +1065,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 
 					if ( source_ptr < this->buffer || source_ptr > ( this->buffer + GC_SERIAL_BUFF_SIZE ) )
 					{
-						LOG_ERROR_P( "Source pointer weirdness.  Nuking context." );
+						LOG_ERROR( "Source pointer weirdness.  Nuking context." );
 						this->reset_buffer_context();
 						memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 						break;
@@ -1071,7 +1073,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 
 					if ( dest_ptr < this->buffer || ( dest_ptr + move_length ) > ( this->buffer + GC_SERIAL_BUFF_SIZE ) || move_length > GC_SERIAL_BUFF_SIZE )
 					{
-						LOG_ERROR_P( "Destination pointer weirdness.  Nuking context." );
+						LOG_ERROR( "Destination pointer weirdness.  Nuking context." );
 						this->reset_buffer_context();
 						memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 						break;
@@ -1161,7 +1163,7 @@ int SER_IO_COMM::assemble_serial_data( void )
 			{
 				if ( copy_len >= GC_SERIAL_BUFF_SIZE )
 				{
-					LOG_ERROR_P( "Text message length (" + num_to_str( copy_len ) + ") is greater than GC_SERIAL_BUFF_SIZE.  Nuking context." );
+					LOG_ERROR( "Text message length (" + num_to_str( copy_len ) + ") is greater than GC_SERIAL_BUFF_SIZE.  Nuking context." );
 					this->reset_buffer_context();
 					memset( this->buffer, 0x00, GC_SERIAL_BUFF_SIZE );
 					break;
@@ -1206,7 +1208,7 @@ void SER_IO_COMM::add_to_active_table( const unsigned char* _buffer, size_t _len
 
 	if ( this->active_table->index == GC_SERIAL_LINE_TABLE_ENTRIES )
 	{
-		LOG_DEBUG_P( "Active table wrap around" );
+		LOG_DEBUG( "Active table wrap around" );
 		this->active_table->index = 0;
 	}
 
@@ -1215,7 +1217,7 @@ void SER_IO_COMM::add_to_active_table( const unsigned char* _buffer, size_t _len
 
 void SER_IO_COMM::handle_hung_board()
 {
-	LOG_DEBUG_P( "Handling hung board." );
+	LOG_DEBUG( "Handling hung board." );
 	this->board_has_reset = false;
 	this->stream_started = false;
 	this->reset_buffer_context();
@@ -1238,12 +1240,12 @@ void SER_IO_COMM::handle_hung_board()
 			/*
 			Port successfully reset.
 			*/
-			LOG_DEBUG_P( "Port is available." );
+			LOG_DEBUG( "Port is available." );
 			break;
 		}
 		else
 		{
-			LOG_DEBUG_P( "Waiting for port to become available." );
+			LOG_DEBUG( "Waiting for port to become available." );
 		}
 
 		sleep_time.tv_nsec = 100000000;	//100 miliseconds
@@ -1283,7 +1285,7 @@ bool SER_IO_COMM::main_event_loop( void )
 
 	if ( gettimeofday( &refresh_loop_time_now, nullptr ) )
 	{
-		LOG_ERROR_P( create_perror_string( "gettimeofday" ) );
+		LOG_ERROR( create_perror_string( "gettimeofday" ) );
 		this->abort_thread = true;
 		return false;
 	}
@@ -1328,7 +1330,7 @@ bool SER_IO_COMM::main_event_loop( void )
 			 * Error encountered by 'poll'
 			 * XXX - What do we do here?  Ignore?
 			 */
-			LOG_ERROR_P( create_perror_string( "Poll" ) );
+			LOG_ERROR( create_perror_string( "Poll" ) );
 		}
 		else
 		{
@@ -1348,22 +1350,22 @@ bool SER_IO_COMM::main_event_loop( void )
 				/*
 				 * We don't know how to handle anything other than incomming data.
 				 */
-				LOG_ERROR_P( "Don't know what to do when poll.revents is not POLLIN" );
+				LOG_ERROR( "Don't know what to do when poll.revents is not POLLIN" );
 			}
 
-			if ( fds.events & POLLERR )
+			if ( fds.revents & POLLERR )
 			{
-				LOG_ERROR_P( "POLLERR flag is set." );
+				LOG_ERROR( "POLLERR flag is set." );
 			}
 
-			if ( fds.events & POLLHUP )
+			if ( fds.revents & POLLHUP )
 			{
-				LOG_ERROR_P( "POLLHUP flag is set." );
+				LOG_ERROR( "POLLHUP flag is set." );
 			}
 
-			if ( fds.events & POLLNVAL )
+			if ( fds.revents & POLLNVAL )
 			{
-				LOG_ERROR_P( "POLLNVAL flag is set." );
+				LOG_ERROR( "POLLNVAL flag is set." );
 			}
 		}
 
@@ -1429,7 +1431,7 @@ bool SER_IO_COMM::write_event_loop( void ) throw( LOCK_ERROR )
 				/*
 				XXX - Do not kill thread
 				*/
-				LOG_ERROR_P( "Failed to write whole message." );
+				LOG_ERROR( "Failed to write whole message." );
 				this->abort_thread = true;
 				break;
 			}
@@ -1448,7 +1450,7 @@ bool SER_IO_COMM::send_message( const unsigned char* _message, size_t _length )
 	 */
 	if ( _length >= GC_SERIAL_BUFF_SIZE )
 	{
-		LOG_ERROR_P( "Tried to send message that would overflow buffer." );
+		LOG_ERROR( "Tried to send message that would overflow buffer." );
 		return false;
 	}
 

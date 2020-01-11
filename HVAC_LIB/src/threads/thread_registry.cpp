@@ -32,16 +32,14 @@ void ( * BBB_HVAC::THREAD_REGISTRY::io_death_listener )( const std::string& ) = 
 
 THREAD_REGISTRY::THREAD_REGISTRY( const string& _tag ) : TPROTECT_BASE( _tag )
 {
-	this->logger = new LOGGING::LOGGER();
-	INIT_LOGGER_P( "BBB_HVAC::THREAD_REGISTRY [" + _tag + + "]" );
+	INIT_LOGGER( "BBB_HVAC::THREAD_REGISTRY [" + _tag + + "]" );
 	this->in_stop_all = false;
 	return;
 }
 
 THREAD_REGISTRY::~THREAD_REGISTRY()
 {
-	delete this->logger;
-	this->logger = nullptr;
+	return;
 }
 
 void THREAD_REGISTRY::register_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type ) throw( runtime_error )
@@ -91,7 +89,7 @@ void THREAD_REGISTRY::reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type 
 {
 	if ( this->in_stop_all )
 	{
-		LOG_ERROR_P( "Tried to register thread while in stop-all mode." );
+		LOG_ERROR( "Tried to register thread while in stop-all mode." );
 		return;
 	}
 
@@ -121,7 +119,7 @@ void THREAD_REGISTRY::del_thread( THREAD_BASE* _thread, bool _lock ) throw( runt
 		return;
 	}
 
-	LOG_DEBUG_P( "Deleting thread" );
+	LOG_DEBUG( "Deleting thread" );
 
 	if ( _lock )
 	{
@@ -170,7 +168,7 @@ void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 
 	this->obtain_lock_ex();
 	this->in_stop_all = true;
-	LOG_DEBUG_P( "Stopping all threads." );
+	LOG_DEBUG( "Stopping all threads." );
 
 	/*
 	 * First loop through all the threads and flag them for stoppage.
@@ -184,7 +182,7 @@ void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 		}
 		else
 		{
-			LOG_ERROR_P( "NULLPTR in registry." );
+			LOG_ERROR( "NULLPTR in registry." );
 		}
 	}
 
@@ -201,7 +199,7 @@ void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 		}
 		else
 		{
-			LOG_ERROR_P( "NULLPTR in registry." );
+			LOG_ERROR( "NULLPTR in registry." );
 		}
 	}
 
@@ -215,7 +213,7 @@ void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 	this->in_stop_all = false;
 	this->release_lock();
 
-	LOG_DEBUG_P( "Finished." );
+	LOG_DEBUG( "Finished." );
 }
 
 void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
@@ -227,7 +225,7 @@ void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
 	{
 		if ( *i != nullptr )
 		{
-			LOG_DEBUG_P( "Purging thread: " + ( *i )->get_thread_tag() );
+			LOG_DEBUG( "Purging thread: " + ( *i )->get_thread_tag() );
 			io_thread = ( *i )->get_is_io_thread();
 
 			if ( io_thread )
@@ -246,7 +244,7 @@ void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
 					/*
 					An IO thread dying is bad, mkay
 					*/
-					LOG_DEBUG_P( "A death of an IO thread was detected." );
+					LOG_DEBUG( "A death of an IO thread was detected." );
 
 					if ( THREAD_REGISTRY::io_death_listener )
 					{
@@ -257,7 +255,7 @@ void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
 		}
 		else
 		{
-			LOG_ERROR_P( "NULLPTR in registry." );
+			LOG_ERROR( "NULLPTR in registry." );
 		}
 	}
 

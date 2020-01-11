@@ -125,12 +125,21 @@ namespace BBB_HVAC
 		return os << static_cast < unsigned int >( _v );
 	}
 
+	namespace LOGGING
+	{
+		class LOGGER;
+
+
+		typedef std::shared_ptr<BBB_HVAC::LOGGING::LOGGER > LOGGER_PTR;
+	}
+
 	class __MESSAGE_TYPE;
 	/**
 	 * Typedef of the std::shared_ptr wrapper around __MESSAGE_TYPE.
 	 * This type will be passed around rather than the raw instances __MESSAGE_TYPE.
 	 */
 	typedef std::shared_ptr<__MESSAGE_TYPE> MESSAGE_TYPE;
+
 
 	/**
 	 * An enum to message type map type definition.

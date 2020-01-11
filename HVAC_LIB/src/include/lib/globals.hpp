@@ -67,7 +67,7 @@ namespace BBB_HVAC
 
 		extern LOGGING::LOG_CONFIGURATOR* root_log_configurator;
 
-		extern void configure_logging( const LOGGING::ENUM_LOG_LEVEL&  _level );
+		extern void configure_logging( int _fd, const LOGGING::ENUM_LOG_LEVEL&  _level );
 
 		extern void configure_watchdog();
 		extern void destroy_watchdog();

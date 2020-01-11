@@ -267,7 +267,7 @@ namespace BBB_HVAC
 			 */
 			MESSAGE_PROCESSOR( const MESSAGE_PROCESSOR& _src );
 
-			LOGGING::LOGGER __logger__;
+			DEF_LOGGER;
 
 	} ;
 }

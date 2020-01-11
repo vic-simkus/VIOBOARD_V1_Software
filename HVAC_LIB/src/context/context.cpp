@@ -59,7 +59,7 @@ using namespace BBB_HVAC::EXCEPTIONS;
 HS_CLIENT_CONTEXT::HS_CLIENT_CONTEXT( int _client_socket ) :
 	BASE_CONTEXT( "HS_CLIENT_CONTEXT", SOCKET_TYPE::NONE, "", -1 )
 {
-	INIT_LOGGER( "BBB_HVAC::HS_CLIENT_CONTEXT" );
+	//INIT_LOGGER( "BBB_HVAC::HS_CLIENT_CONTEXT" );
 	this->remote_socket = _client_socket;
 	return;
 }
