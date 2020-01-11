@@ -35,16 +35,18 @@
 #include "lib/threads/shim_listener_thread.hpp"
 #include "lib/threads/serial_io_thread.hpp"
 #include "lib/threads/thread_registry.hpp"
-
+#include "lib/log_configurator.hpp"
 #include "lib/globals.hpp"
 #include "lib/configurator.hpp"
 
+#include "command_line_parms.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <unistd.h>
 #include <errno.h>
@@ -56,8 +58,8 @@
 #include <time.h>
 #include <pthread.h>
 
-#include <iostream>
 #include <memory>
+#include <iostream>
 
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::SERVER;
@@ -65,193 +67,6 @@ using namespace BBB_HVAC::SERVER;
 DEF_LOGGER_STAT( "BBB_HVAC(MAIN)" );
 
 static CONFIGURATOR* config = nullptr;
-
-class COMMAND_LINE_PARMS
-{
-	public:
-		COMMAND_LINE_PARMS( size_t _argc, const char** _argv ) {
-			this->argc = _argc;
-			this->argv = _argv;
-
-			this->verbose_flag = false;
-			this->server_mode = false;
-
-			address = "";
-			port_s = "";
-
-			port_i =  GC_DEFAULT_TCPIP_PORT;
-
-			this->st = SOCKET_TYPE::NONE;
-
-			this->exe = string( argv[0] );
-
-			return;
-		}
-
-		void process( void ) {
-			for ( size_t i = 1; i < argc; i++ ) {
-				string p = trimmed( argv[i] );
-
-				if ( p == "-d" ) {
-					if ( st != SOCKET_TYPE::NONE ) {
-						print_cmd_error( exe, "Confusing command line.  Connection method specified more than once?" );
-					}
-
-					st = SOCKET_TYPE::DOMAIN;
-				}
-				else if ( p == "-i" ) {
-					if ( st != SOCKET_TYPE::NONE ) {
-						print_cmd_error( exe, "Confusing command line.  Connection method specified more than once?" );
-					}
-
-					st = SOCKET_TYPE::TCPIP;
-				}
-				else if ( p == "-h" ) {
-					print_help( exe );
-					exit( 0 );
-				}
-				else if ( p == "-v" ) {
-					verbose_flag = true;
-				}
-				else if ( p == "-p" ) {
-					if ( i == ( argc - 1 ) ) {
-						print_cmd_error( exe, "No port specified for the -p parameter." );
-					}
-					else {
-						port_s = string( argv[i + 1] );
-						i += 1;
-					}
-				}
-				else if ( p == "-a" ) {
-					if ( i == ( argc - 1 ) ) {
-						print_cmd_error( exe, "No address specified for the -a parameter." );
-					}
-					else {
-						address = string( argv[i + 1] );
-						i += 1;
-					}
-				}
-				else if ( p == "-s" ) {
-					server_mode = true;
-				}
-				else {
-					print_cmd_error( exe, "Unrecognized command line parameter: " + p );
-				}
-			}
-
-			if ( st == SOCKET_TYPE::NONE ) {
-				print_cmd_error( exe, "Need to specify connection method.  See {-d|-i} parameters." );
-			}
-
-			switch ( st ) {
-				case SOCKET_TYPE::NONE:
-					// do nothing.
-					break;
-
-				case SOCKET_TYPE::DOMAIN:
-					if ( address.length() == 0 ) {
-						address = GC_LOCAL_COMMAND_SOCKET;
-					}
-
-					break;
-
-				case SOCKET_TYPE::TCPIP:
-					if ( address.length() == 0 ) {
-						address = GC_DEFAULT_LISTEN_INTERFACE;
-					}
-
-					break;
-			}
-
-			if ( verbose_flag ) {
-				cout << "Verbose flag (-v) has been set via command line." << endl;
-				cout << "    Connection type {-d|-i}: ";
-
-				switch ( st ) {
-					case SOCKET_TYPE::NONE:
-						cout << "NONE";
-						break;
-
-					case SOCKET_TYPE::DOMAIN:
-						cout << "DOMAIN";
-						break;
-
-					case SOCKET_TYPE::TCPIP:
-						cout << "TCPIP";
-						break;
-				}
-
-				cout << endl;
-
-				cout << "    Address [-a]: [" << address << "]" << endl;
-				cout << "    Port [-p]: [" << port_i << "]" << endl;
-				cout << "    Server mode [-s]: [" << ( server_mode ? "TRUE" : "FALSE" ) << "]" << endl;
-			}
-
-		}
-
-		bool is_verbose_flag( void ) const {
-			return this->verbose_flag;
-		}
-
-		bool is_server_mode( void ) const {
-			return this->server_mode;
-		}
-
-		const string& get_address( void ) const {
-			return this->address;
-		}
-
-		uint16_t get_port( void ) const {
-			return this->port_i;
-		}
-
-		SOCKET_TYPE get_socket_type( void ) const {
-			return this->st;
-		}
-
-		const string& get_exe( void ) const {
-			return this->exe;
-		}
-	protected:
-
-		void print_help( const string& _c ) {
-			cout << "Usage: " << endl;
-			cout << _c << " {-d|i} [-a <address>] [-p <port>] [-s] [-v]" << endl;
-			cout << "Where: " << endl;
-			cout << "\t-d - Listen on domain socket (mutually exclusive with -i)" << endl;
-			cout << "\t-i - Listen on TCP/IP socket (mutually exclusive with -d)" << endl;
-			cout << "\t-a <address> - Address to listen on.  File name (optional) if -d is specified.  Interface to bind to if -i is specified." << endl;
-			cout << "\t  For -i, the interface should be specified in x.x.x.x notation. Default is 127.0.0.1." << endl;
-			cout << "\t-p <port> - Port to listen to.  Relevant only if -i is specified.  Defaults to 6666" << endl;
-			cout << "\t-s - Server mode.  If not specified application runs in console." << endl;
-			cout << "\t-v - Verbose mode.  Produces extra debugging information to the console." << endl;
-			cout << "\t-h - This help" << endl;
-			exit( -1 );
-
-			return;
-		}
-
-		void print_cmd_error( const string& _c, const string& _failure ) {
-			cerr << "Command line error: " << endl;
-			cerr << _failure << endl;
-			print_help( _c );
-		}
-
-
-		size_t argc;
-		const char** argv;
-	private:
-		bool verbose_flag;
-		bool server_mode;
-		string address;
-		string port_s;
-		uint16_t port_i;
-		SOCKET_TYPE st;
-		string exe;
-
-
-};
 
 /**
  * Checks to see if privileges need to be dropped.
@@ -342,17 +157,17 @@ bool start_board_io_thread( const CONFIG_ENTRY& _board_config )
 	{
 		if ( _board_config.get_part_as_string( 2 ) == "DEBUG" )
 		{
-			LOG_INFO_STAT( "Starting board " + board_name + " in debug mode." );
+			LOG_INFO( "Starting board " + board_name + " in debug mode." );
 			debug = true;
 		}
 	}
 
-	LOG_DEBUG_STAT( "Starting thread for board: " + board_name );
+	LOG_DEBUG( "Starting thread for board: " + board_name );
 	IOCOMM::SER_IO_COMM* ser_comm	= new IOCOMM::SER_IO_COMM( board_dev.data(), board_name, debug );
 
 	if ( ser_comm->init() != IOCOMM::ENUM_ERRORS::ERR_NONE )
 	{
-		LOG_ERROR_STAT( "Failed to initialized serial IO for board:" + board_name );
+		LOG_ERROR( "Failed to initialized serial IO for board:" + board_name );
 		return false;
 	}
 
@@ -376,6 +191,9 @@ bool start_io_threads( CONFIGURATOR* config )
 	return true;
 }
 
+/**
+Starts the shim listener thread.  This is where we bind to either the domain socket or network interface.
+*/
 bool start_shim_thread( const COMMAND_LINE_PARMS& _clp )
 {
 	SHIM_LISTENER* listener = new SHIM_LISTENER( _clp.get_socket_type(), _clp.get_address(), _clp.get_port() );
@@ -386,7 +204,7 @@ bool start_shim_thread( const COMMAND_LINE_PARMS& _clp )
 	}
 	catch ( const exception& _e )
 	{
-		LOG_ERROR_STAT( "Failed to initialize shim listener thread: " + string( _e.what() ) );
+		LOG_ERROR( "Failed to initialize shim listener thread: " + string( _e.what() ) );
 		delete listener;
 		return false;
 	}
@@ -405,36 +223,9 @@ bool start_logic_thread( CONFIGURATOR* )
 	return true;
 }
 
-bool start_threads( CONFIGURATOR* config, const COMMAND_LINE_PARMS& _clp )
-{
-	GLOBALS::configure_watchdog();
-
-	if ( !start_shim_thread( _clp ) )
-	{
-		LOG_ERROR_STAT( "Failed to start shim listener thread." );
-		return false;
-	}
-
-	if ( !start_io_threads( config ) )
-	{
-		LOG_ERROR_STAT( "Failed to start IO threads." );
-		return false;
-	}
-
-	sleep( 2 );
-
-	if ( !start_logic_thread( config ) )
-	{
-		LOG_ERROR_STAT( "Failed to start logic thread." );
-		return false;
-	}
-
-	return true;
-}
-
 void io_death_listener( const std::string& _tag )
 {
-	LOG_DEBUG_STAT( "IO thread [" + _tag + "] death sensed." );
+	LOG_DEBUG( "IO thread [" + _tag + "] death sensed." );
 	const CONFIG_TYPE_INDEX_TYPE& board_config = config->get_board_index();
 
 	for ( CONFIG_TYPE_INDEX_TYPE::const_iterator i = board_config.begin(); i != board_config.end(); ++i )
@@ -446,7 +237,7 @@ void io_death_listener( const std::string& _tag )
 		{
 			if ( !start_board_io_thread( bc ) )
 			{
-				LOG_ERROR_STAT( "Failed to re-start IO board thread.  Aborting." );
+				LOG_ERROR( "Failed to re-start IO board thread.  Aborting." );
 				GLOBALS::global_exit_flag = true;
 			}
 		}
@@ -455,19 +246,70 @@ void io_death_listener( const std::string& _tag )
 	return;
 }
 
+bool start_threads( CONFIGURATOR* config, const COMMAND_LINE_PARMS& _clp )
+{
+	GLOBALS::configure_watchdog();
+
+	if ( !start_shim_thread( _clp ) )
+	{
+		LOG_ERROR( "Failed to start shim listener thread." );
+		return false;
+	}
+
+	if ( !start_io_threads( config ) )
+	{
+		LOG_ERROR( "Failed to start IO threads." );
+		return false;
+	}
+
+	sleep( 2 );
+
+	if ( !start_logic_thread( config ) )
+	{
+		LOG_ERROR( "Failed to start logic thread." );
+		return false;
+	}
+
+	return true;
+}
+
 int do_main( const COMMAND_LINE_PARMS& _clp )
 {
-	GLOBALS::configure_logging( LOGGING::ENUM_LOG_LEVEL::DEBUG );
-	LOG_INFO_STAT( "Starting up BBB HVAC server." );
+
+	string log_file_name = _clp.get_log_file();
+
+	std::cout << "Logging in: [" << log_file_name << "]" << std::endl;
+
+	int fd = open( log_file_name.data(), O_WRONLY | O_APPEND | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP );
+
+	if ( fd < 0 )
+	{
+		std::cerr << create_perror_string( "Failed to open log file" )  << std::endl;
+		exit( -1 );
+	}
+
+	if ( write( fd, "TEST WRITE\n", 11 ) < 0 )
+	{
+		std::cerr << create_perror_string( "Failed to write to log file" ) << std::endl;
+		exit( -1 );
+	}
+
+	GLOBALS::configure_logging( fd, LOGGING::ENUM_LOG_LEVEL::TRACE );
+
+	LOG_INFO( "Starting up BBB HVAC server." );
+
 	GLOBALS::configure_signals();
+
 	drop_privs();
+
 	config = new CONFIGURATOR( "configuration.cfg" );
 	config->read_file();
+
 	//start_io_threads(config);
 
 	if ( !start_threads( config, _clp ) )
 	{
-		LOG_ERROR_STAT( "Failed to start threads." );
+		LOG_ERROR( "Failed to start threads." );
 		GLOBALS::global_exit_flag = true;
 		THREAD_REGISTRY::stop_all();
 	}
@@ -484,17 +326,21 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 
 	THREAD_REGISTRY::stop_all();
 	THREAD_REGISTRY::destroy_global();
-	LOG_INFO_STAT( "Main process is exiting." );
+
+	LOG_INFO( "Main process is exiting." );
+
 	LOGGING::LOG_CONFIGURATOR::destroy_root_configurator();
+
 	return EXIT_SUCCESS;
 }
-
-
-
 
 int main( int argc, const char** argv )
 {
 	COMMAND_LINE_PARMS clp( argc, argv );
+
+	// If there is an error in command line parms this method never returns.
 	clp.process();
-	do_main( clp );
+
+	// No problem with the command line parameters, do our main thing.
+	return do_main( clp );
 }
