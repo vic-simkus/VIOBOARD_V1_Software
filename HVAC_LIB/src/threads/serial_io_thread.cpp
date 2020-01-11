@@ -360,7 +360,7 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 
 	if ( this->serial_fd < 0 )
 	{
-		LOG_ERROR_P( create_perror_string( "Failed to open " + this->tty_dev ) );
+		LOG_ERROR( create_perror_string( "Failed to open " + this->tty_dev ) );
 		return ENUM_ERRORS::ERR_PORT_OPEN;
 	}
 
