@@ -567,6 +567,8 @@ namespace BBB_HVAC
 				Has stream mode started.
 				*/
 				bool stream_started;
+
+				DEF_LOGGER;
 		} ;
 
 		inline void serial_io_shim_func( void* _parm )

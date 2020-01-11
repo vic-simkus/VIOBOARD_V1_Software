@@ -76,22 +76,22 @@ void CONFIGURATOR::normalize_file_names( void ) throw( exception )
 
 void CONFIGURATOR::check_file_permissions( void ) throw( exception )
 {
-	if( access( this->file_name.data(), F_OK ) != 0 )
+	if ( access( this->file_name.data(), F_OK ) != 0 )
 	{
 		throw runtime_error( "Configuration file [" + this->file_name + "] does not exist." );
 	}
 
-	if( access( this->file_name.data(), R_OK ) != 0 )
+	if ( access( this->file_name.data(), R_OK ) != 0 )
 	{
 		throw runtime_error( "Configuration file [" + this->file_name + "] is not readable to us." );
 	}
 
-	if( access( this->overlay_file_name.data(), F_OK ) != 0 )
+	if ( access( this->overlay_file_name.data(), F_OK ) != 0 )
 	{
 		LOG_DEBUG( this->overlay_file_name + " does not exist." );
 		int fd = open( this->overlay_file_name.data(), O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR );
 
-		if( fd == -1 )
+		if ( fd == -1 )
 		{
 			throw runtime_error( create_perror_string( "Failed to create overlay file" ) );
 		}
@@ -111,11 +111,11 @@ void CONFIGURATOR::process_file( void ) throw( exception )
 	char cin = 0;
 	FILE* file = fopen( this->file_name.data(), "rt" );
 
-	while( ( c = fgetc( file ) ) != EOF )
+	while ( ( c = fgetc( file ) ) != EOF )
 	{
 		cin = ( char ) c;
 
-		if( cin == '\n' )
+		if ( cin == '\n' )
 		{
 			/*
 			 * End of the line
@@ -136,7 +136,7 @@ void CONFIGURATOR::process_file( void ) throw( exception )
 			buff_idx += 1;
 		}
 
-		if( buff_idx == GC_BUFFER_SIZE )
+		if ( buff_idx == GC_BUFFER_SIZE )
 		{
 			fclose( file );
 			throw runtime_error( "Failed to find line terminator before exceeding buffer size." );
@@ -145,7 +145,7 @@ void CONFIGURATOR::process_file( void ) throw( exception )
 
 	LOG_DEBUG( "Point mappings:" );
 
-	for( auto i = this->point_map.begin(); i != this->point_map.end(); ++i )
+	for ( auto i = this->point_map.begin(); i != this->point_map.end(); ++i )
 	{
 		LOG_DEBUG( i->first + " --> " + i->second.to_string() );
 	}
@@ -162,11 +162,11 @@ void CONFIGURATOR::process_mapping( const CONFIG_ENTRY& _ce ) throw( exception )
 	BOARD_POINT* target_entry = nullptr;
 	BOARD_POINT_VECTOR* point_list = nullptr;
 
-	if( type == ENUM_CONFIG_TYPES::DO )
+	if ( type == ENUM_CONFIG_TYPES::DO )
 	{
 		point_list = &this->do_points;
 	}
-	else if( type == ENUM_CONFIG_TYPES::AI )
+	else if ( type == ENUM_CONFIG_TYPES::AI )
 	{
 		point_list = &this->ai_points;
 	}
@@ -176,15 +176,15 @@ void CONFIGURATOR::process_mapping( const CONFIG_ENTRY& _ce ) throw( exception )
 		return;
 	}
 
-	for( auto i = point_list->begin(); i != point_list->end(); ++i )
+	for ( auto i = point_list->begin(); i != point_list->end(); ++i )
 	{
-		if( i->get_board_tag() == target_board && target_point == i->get_point_id() )
+		if ( i->get_board_tag() == target_board && target_point == i->get_point_id() )
 		{
 			target_entry = &( *i );
 		}
 	}
 
-	if( target_entry == nullptr )
+	if ( target_entry == nullptr )
 	{
 		LOG_ERROR( "Failed to find target entry for: " + _ce.to_string() );
 		return;
@@ -201,7 +201,7 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 
 	//LOG_DEBUG("Processing line: " + num_to_str(_line_idx) + ".  Length: " + num_to_str(line_length));
 
-	if( line_length == 0 || line[0] == '#' )
+	if ( line_length == 0 || line[0] == '#' )
 	{
 		return;
 	}
@@ -209,15 +209,15 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 	char c;
 	vector<string> line_parts;
 
-	for( size_t i = 0; i < line_length; i++ )
+	for ( size_t i = 0; i < line_length; i++ )
 	{
 		c = line[i];
 
-		if( c == '\t' )
+		if ( c == '\t' )
 		{
 			line[i] = '\0';
 
-			if( strlen( ( line + prev_tab ) ) > 0 )
+			if ( strlen( ( line + prev_tab ) ) > 0 )
 			{
 				line_parts.push_back( ( line + prev_tab ) );
 			}
@@ -237,13 +237,13 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 	{
 		type = CONFIG_ENTRY::string_to_type( line_parts[0] );
 	}
-	catch( const exception& _e )
+	catch ( const exception& _e )
 	{
 		LOG_ERROR( string( "Failed to process configuration line " + num_to_str( _line_idx ) + ": " + _e.what() ) );
 		return;
 	}
 
-	if( type == ENUM_CONFIG_TYPES::INVALID )
+	if ( type == ENUM_CONFIG_TYPES::INVALID )
 	{
 		LOG_ERROR( string( "An INVALID record type specified in the configuration file at line " + num_to_str( _line_idx ) + "?" ) );
 		return;
@@ -254,7 +254,7 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 	CONFIG_ENTRY ce = CONFIG_ENTRY( type, line_parts );
 	this->config_entries.push_back( ce );
 
-	switch( type )
+	switch ( type )
 	{
 		case ENUM_CONFIG_TYPES::DO:
 		{
@@ -264,25 +264,25 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 
 		case ENUM_CONFIG_TYPES::AI:
 		{
-			if( line_parts.size() < 4 )
+			if ( line_parts.size() < 4 )
 			{
 				LOG_ERROR( "Malformed AI entry at line " + num_to_str( _line_idx )  + "; missing parts." );
 			}
 			else
 			{
-				if( line_parts[3] == "420" )
+				if ( line_parts[3] == "420" )
 				{
-					if( line_parts.size() != 6 )
+					if ( line_parts.size() != 6 )
 					{
 						LOG_ERROR( "Malformed AI entry at line " + num_to_str( _line_idx ) + "; Wrong number of parts.  Expecting 6, found: " + num_to_str( line_parts.size() ) );
 						break;
 					}
 				}
-				else if( line_parts[3] == "ICTD" )
+				else if ( line_parts[3] == "ICTD" )
 				{
 					//
 					// No other parts for ICTD.  We're just doing a health and welfare check.
-					if( line_parts.size() != 5 )
+					if ( line_parts.size() != 5 )
 					{
 						LOG_ERROR( "Malformed AI entry at line " + num_to_str( _line_idx ) + "; Wrong number of parts.  Expecting 5, found: " + num_to_str( line_parts.size() ) );
 						break;
@@ -347,9 +347,9 @@ void CONFIGURATOR::write_file( void ) const throw( exception )
 	fprintf( out_file, "# This file is mechanically generated.  Manual edits will most likely be lost.  So don't do it.\n" );
 	fprintf( out_file, "#\n" );
 
-	for( CONFIG_ENTRY_LIST_TYPE::const_iterator i = this->config_entries.cbegin(); i != this->config_entries.cend(); ++i )
+	for ( CONFIG_ENTRY_LIST_TYPE::const_iterator i = this->config_entries.cbegin(); i != this->config_entries.cend(); ++i )
 	{
-		if( i->get_is_dirty() )
+		if ( i->get_is_dirty() )
 		{
 			fprintf( out_file, "%s\n", i->write_self_to_file().data() );
 		}
@@ -367,7 +367,7 @@ const CONFIG_TYPE_INDEX_TYPE& CONFIGURATOR::get_board_index( void ) const
 
 CONFIG_ENTRY& CONFIGURATOR::get_config_entry( size_t _idx ) throw( exception )
 {
-	if( _idx > this->config_entries.size() )
+	if ( _idx > this->config_entries.size() )
 	{
 		throw runtime_error( string( "Supplied index " + num_to_str( _idx ) + " is out of range." ) );
 	}

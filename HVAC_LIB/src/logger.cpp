@@ -20,64 +20,20 @@
 
 #include "lib/logger.hpp"
 #include "lib/string_lib.hpp"
-
-using namespace BBB_HVAC::LOGGING;
-
+#include "lib/log_configurator.hpp"
 #include <iostream>
 #include <ostream>
 #include <sstream>
 
 #include <unistd.h>
 
-const string LEVEL_NAMES[] = { "INVALID", "NONE", "TRACE", "DEBUG", "INFO", "WARNING", "ERROR" };
 
-LOG_CONFIGURATOR* LOG_CONFIGURATOR::root_configurator = nullptr;
+using namespace BBB_HVAC::LOGGING;
 
-LOG_CONFIGURATOR::LOG_CONFIGURATOR( ENUM_LOG_LEVEL _level ) : TPROTECT_BASE( "LOG_CONFIGURATOR" )
-{
-	this->level = _level;
-
-	if( LOG_CONFIGURATOR::root_configurator == nullptr )
-	{
-		LOG_CONFIGURATOR::root_configurator = this;
-	}
-}
-LOG_CONFIGURATOR::~LOG_CONFIGURATOR()
-{
-	return;
-}
-
-ENUM_LOG_LEVEL LOG_CONFIGURATOR::get_level( void ) const
-{
-	return this->level;
-}
-
-LOG_CONFIGURATOR* LOG_CONFIGURATOR::get_root_configurator( void )
-{
-	return LOG_CONFIGURATOR::root_configurator;
-}
-void LOG_CONFIGURATOR::destroy_root_configurator( void )
-{
-	delete LOG_CONFIGURATOR::root_configurator;
-	LOG_CONFIGURATOR::root_configurator = nullptr;
-}
-
-void LOG_CONFIGURATOR::log( const string& _log_name, const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function )
-{
-	this->obtain_lock_ex();
-	this->output_buffer.str( "" );
-	this->output_buffer.clear();
-	this->output_buffer << get_iso_date_time() << " - [" << LEVEL_NAMES[static_cast<unsigned int> ( _level )] << "] " << _log_name << ":" << _file << "@" << _line << ":" << _function << " -- " << _msg << endl;
-	string str = this->output_buffer.str();
-	write( STDERR_FILENO, str.data(), str.length() );
-	this->release_lock();
-	return;
-}
-
-LOGGER::LOGGER( const string& _name )
+LOGGER::LOGGER( const string& _name, ENUM_LOG_LEVEL _level )
 {
 	this->name = _name;
-	this->level = ENUM_LOG_LEVEL::INVALID;
+	this->level = _level;
 	return;
 }
 LOGGER::LOGGER()
@@ -110,55 +66,50 @@ static bool nag_flag = true;
 
 void LOGGER::log( const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function )
 {
-	LOG_CONFIGURATOR* root_logger = LOG_CONFIGURATOR::get_root_configurator();
+	LOG_CONFIGURATOR* log_configurator = LOG_CONFIGURATOR::get_root_configurator();
 
-	if( this->level == ENUM_LOG_LEVEL::INVALID )
+	if ( log_configurator == nullptr )
 	{
-		if( root_logger == nullptr )
+		// Logging system not configured.
+		//
+		if ( nag_flag )
 		{
-			// Do nothing.  If root logger is not configured dump everything.
-			if( nag_flag )
-			{
-				cerr << "LOGGER:: Root configurator is not present.  Please fix." << endl;
-				nag_flag = false;
-			}
+			cerr << "LOGGER:: Root configurator is not present. No further log output will be produced." << endl;
+			nag_flag = false;
 		}
-		else
-		{
-			/**
-			 * This doesn't make sense.  Why are we comparing our level to root logger?  Our level has been determined to be invalid.
-			 */
-			if( _level < root_logger->get_level() )
-			{
-				return;
-			}
-		}
-	}
-	else
-	{
-		if( _level < this->level )
-		{
-			return;
-		}
+
+		return;
 	}
 
 	/*
-	 * What's going on here?  So if a root logger does exist we just dump to it?  This behaviour is contrary to the above block.
-	 */
-	if( root_logger != nullptr )
+	If we don't have a level set we steal it from the log_configurator.
+	*/
+	if ( this->level == ENUM_LOG_LEVEL::INVALID )
 	{
-		root_logger->log( this->name, _level, _msg, _file, _line, _function );
+		this->level = log_configurator->get_level();
 	}
-	else
+
+	/*
+	If the supplied log level is lower than our log level ignore the log message.
+	*/
+	if ( _level < this->level )
 	{
-		cerr << get_iso_date_time() << " - [" << LEVEL_NAMES[static_cast<unsigned int> ( _level )] << "] " << this->name << ":" << _file << "@" << _line << ":" << _function << " -- " << _msg << endl;
+		return;
+	}
+
+
+	if ( log_configurator != nullptr )
+	{
+		log_configurator->log( this->name, _level, _msg, _file, _line, _function );
 	}
 
 	return;
 }
+/*
 void LOGGER::configure( const string& _name, const ENUM_LOG_LEVEL& _level )
 {
 	this->name = _name;
 	this->level = _level;
 }
 
+*/

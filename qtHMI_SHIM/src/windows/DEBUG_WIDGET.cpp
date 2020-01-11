@@ -67,7 +67,7 @@ void DEBUG_WIDGET::slot_raw_adc_value_changed( const QString& _board, uint8_t _i
 
 void DEBUG_WIDGET::slot_force_clicked( unsigned int _port, bool _state, uint16_t _value )
 {
-	LOG_DEBUG_STAT( "FORCE: " + this->board_tag.toStdString() +  ": port: " + num_to_str( _port ) + ", forced: " + ( _state ? "yes" : "no" ) + ", value: " + num_to_str( _value ) );
+	LOG_DEBUG( "FORCE: " + this->board_tag.toStdString() +  ": port: " + num_to_str( _port ) + ", forced: " + ( _state ? "yes" : "no" ) + ", value: " + num_to_str( _value ) );
 
 	if ( _state )
 	{

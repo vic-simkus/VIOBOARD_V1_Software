@@ -35,8 +35,7 @@ namespace BBB_HVAC
 
 	SHIM_LISTENER::SHIM_LISTENER( SOCKET_TYPE _st, const string& _path, uint16_t _port ) : THREAD_BASE( "SHIM_LISTENER" )
 	{
-		this->logger = new LOGGING::LOGGER();
-		INIT_LOGGER_P( "BBB_HVAC::SHIM_LISTENER" );
+		INIT_LOGGER( "BBB_HVAC::SHIM_LISTENER" ) ;
 		this->server_ctx = nullptr;
 
 		this->socket_type = _st;
@@ -47,8 +46,6 @@ namespace BBB_HVAC
 	SHIM_LISTENER::~SHIM_LISTENER()
 	{
 		delete this->server_ctx;
-		delete this->logger;
-		this->logger = nullptr;
 	}
 
 	void SHIM_LISTENER::init( void ) throw( exception )
@@ -95,15 +92,15 @@ namespace BBB_HVAC
 
 	bool SHIM_LISTENER::thread_func( void )
 	{
-		LOG_INFO_P( "Starting shim listening thread." );
+		LOG_INFO( "Starting shim listening thread." );
 
 		if ( listen( this->server_ctx->remote_socket, 10 ) == -1 )
 		{
-			LOG_ERROR_P( create_perror_string( "Failed to listen on socket:" ) );
+			LOG_ERROR( create_perror_string( "Failed to listen on socket:" ) );
 			exit( -1 );
 		}
 
-		LOG_DEBUG_P( "Listening on socket." );
+		LOG_DEBUG( "Listening on socket." );
 		HS_CLIENT_CONTEXT* client_ctx;
 		int client_fd = 0;
 		struct sockaddr_un client_addr;
@@ -126,7 +123,7 @@ namespace BBB_HVAC
 
 			if ( client_fd == -1 )
 			{
-				LOG_ERROR_P( create_perror_string( "accept() failed" ) );
+				LOG_ERROR( create_perror_string( "accept() failed" ) );
 				GLOBALS::global_exit_flag = true;
 				break;
 			}

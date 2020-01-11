@@ -28,58 +28,54 @@ using std::string;
 
 #include "lib/exceptions.hpp"
 #include "lib/tprotect_base.hpp"
+#include "lib/logger.hpp"
 
 namespace BBB_HVAC
 {
-	namespace LOGGING
-	{
-		class LOGGER;
-	}
-
 	using namespace EXCEPTIONS;
 
 	class THREAD_BASE : public TPROTECT_BASE
 	{
-	public:
-		friend void thread_base_shim_func( void* );
+		public:
+			friend void thread_base_shim_func( void* );
 
-		THREAD_BASE( const string& _tag );
-		~THREAD_BASE();
+			THREAD_BASE( const string& _tag );
+			~THREAD_BASE();
 
-		void start_thread( void );
-		void stop_thread( bool _self_delete = false );
+			void start_thread( void );
+			void stop_thread( bool _self_delete = false );
 
-		inline void flag_for_stop( void ) {
-			this->abort_thread = true;
-		}
+			inline void flag_for_stop( void ) {
+				this->abort_thread = true;
+			}
 
-		string get_thread_tag( void ) const;
+			string get_thread_tag( void ) const;
 
-		TPROTECT_BASE* obtain_lock( void ) throw( LOCK_ERROR );
+			TPROTECT_BASE* obtain_lock( void ) throw( LOCK_ERROR );
 
-		inline bool get_is_io_thread( void ) const {
-			return this->is_io_thread;
-		}
-	protected:
+			inline bool get_is_io_thread( void ) const {
+				return this->is_io_thread;
+			}
+		protected:
 
-		void pthread_func( void );
-		virtual bool thread_func( void ) = 0;
-		string thread_tag;
-
-
-		/**
-		 * Flag to abort the processing thread.  When set to true the thread will abort during next iteration.
-		 */
-		bool abort_thread;
-		bool is_running;
-		bool do_not_self_delete;
-		bool is_io_thread;
-
-		LOGGING::LOGGER* logger;
-	private:
+			void pthread_func( void );
+			virtual bool thread_func( void ) = 0;
+			string thread_tag;
 
 
-		pthread_t root_tid;
+			/**
+			 * Flag to abort the processing thread.  When set to true the thread will abort during next iteration.
+			 */
+			bool abort_thread;
+			bool is_running;
+			bool do_not_self_delete;
+			bool is_io_thread;
+
+			DEF_LOGGER;
+		private:
+
+
+			pthread_t root_tid;
 
 	} ;
 

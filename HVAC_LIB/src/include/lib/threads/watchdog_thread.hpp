@@ -28,15 +28,15 @@ namespace BBB_HVAC
 {
 	class WATCHDOG : public THREAD_BASE
 	{
-	public:
-		WATCHDOG();
-		virtual ~WATCHDOG();
-		void reset_counter( void );
-	protected:
-		bool thread_func( void );
-	private:
-		unsigned int counter;
-		LOGGING::LOGGER* logger;
+		public:
+			WATCHDOG();
+			virtual ~WATCHDOG();
+			void reset_counter( void );
+		protected:
+			bool thread_func( void );
+		private:
+			unsigned int counter;
+			LOGGING::LOGGER_PTR logger;
 	};
 }
 

@@ -28,7 +28,7 @@
 
 #include "lib/tprotect_base.hpp"
 #include "lib/exceptions.hpp"
-#include "logger.hpp"
+#include "lib/logger.hpp"
 
 namespace BBB_HVAC
 {
@@ -41,43 +41,43 @@ namespace BBB_HVAC
 		 */
 		class OUTGOING_MESSAGE_QUEUE : protected TPROTECT_BASE
 		{
-		public:
-			OUTGOING_MESSAGE_QUEUE( const std::string& _tag );
-			virtual ~OUTGOING_MESSAGE_QUEUE();
+			public:
+				OUTGOING_MESSAGE_QUEUE( const std::string& _tag );
+				virtual ~OUTGOING_MESSAGE_QUEUE();
 
-			bool add_message( const OUTGOING_MESSAGE& _msg );
+				bool add_message( const OUTGOING_MESSAGE& _msg );
 
-			bool wait_for_signal( void ) throw( LOCK_ERROR );
+				bool wait_for_signal( void ) throw( LOCK_ERROR );
 
-			bool has_more_messages( void ) const;
-			OUTGOING_MESSAGE get_message( void );
-			void put_lock( void ) throw( LOCK_ERROR );
+				bool has_more_messages( void ) const;
+				OUTGOING_MESSAGE get_message( void );
+				void put_lock( void ) throw( LOCK_ERROR );
 
-			inline void swap_message_queue( std::queue<OUTGOING_MESSAGE>* _destination ) {
-				std::swap( this->message_queue, *_destination );
-				return;
-			}
-
-			inline void clear( void ) {
-				while( !this->message_queue.empty() ) {
-					this->message_queue.pop();
+				inline void swap_message_queue( std::queue<OUTGOING_MESSAGE>* _destination ) {
+					std::swap( this->message_queue, *_destination );
+					return;
 				}
-			}
-		protected:
 
-			void signal( void );
-			void get_lock( void ) throw( LOCK_ERROR );
+				inline void clear( void ) {
+					while ( !this->message_queue.empty() ) {
+						this->message_queue.pop();
+					}
+				}
+			protected:
+
+				void signal( void );
+				void get_lock( void ) throw( LOCK_ERROR );
 
 
 
-			pthread_cond_t conditional;
+				pthread_cond_t conditional;
 
-			std::string tag;
-			std::queue<OUTGOING_MESSAGE> message_queue;
-			uint_least32_t id_seq;
-		private:
+				std::string tag;
+				std::queue<OUTGOING_MESSAGE> message_queue;
+				uint_least32_t id_seq;
+			private:
 
-			LOGGING::LOGGER* logger;
+				DEF_LOGGER;
 		};
 
 	}

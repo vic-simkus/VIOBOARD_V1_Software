@@ -40,11 +40,13 @@ namespace BBB_HVAC
 
 		private:
 			SERVER::HS_SERVER_CONTEXT* server_ctx;
-			LOGGING::LOGGER* logger;
+			LOGGING::LOGGER_PTR logger;
 
 			string path;
 			SOCKET_TYPE socket_type;
 			uint16_t port;
+
+			DEF_LOGGER;
 
 	};
 }

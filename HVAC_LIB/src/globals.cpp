@@ -22,6 +22,7 @@
 #include "lib/globals.hpp"
 #include "lib/config.hpp"
 #include "lib/exceptions.hpp"
+#include "lib/log_configurator.hpp"
 
 #include "lib/threads/watchdog_thread.hpp"
 #include "lib/logger.hpp"
@@ -239,9 +240,9 @@ namespace BBB_HVAC
 			return string( "UNKNOWN(" ) + num_to_str( _sig ) + string( ")" );
 		}
 
-		void configure_logging( const LOGGING::ENUM_LOG_LEVEL& _level )
+		void configure_logging( int _fd, const LOGGING::ENUM_LOG_LEVEL& _level )
 		{
-			root_log_configurator = new LOGGING::LOG_CONFIGURATOR( _level );
+			root_log_configurator = new LOGGING::LOG_CONFIGURATOR( _fd, _level );
 		}
 
 		extern void destroy_watchdog()
@@ -275,12 +276,12 @@ namespace BBB_HVAC
 				return;
 			}
 
-			LOG_INFO_STAT( string( "Received signal: " ) + sig_to_str( sig ) + " (" + num_to_str( sig ) + ")" );
-			LOG_DEBUG_STAT( string( "********************************************************************" ) );
+			LOG_INFO( string( "Received signal: " ) + sig_to_str( sig ) + " (" + num_to_str( sig ) + ")" );
+			LOG_DEBUG( string( "********************************************************************" ) );
 			in_trap = true;
 			THREAD_REGISTRY::stop_all();
 			GLOBALS::global_exit_flag = true;
-			LOG_DEBUG_STAT( string( "Cleanup finished.  Exiting." ) );
+			LOG_DEBUG( string( "Cleanup finished.  Exiting." ) );
 			return;
 		}
 
@@ -292,7 +293,7 @@ namespace BBB_HVAC
 
 			if ( sigaction( SIGINT, &sa, nullptr ) != 0 ) //2
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to install signal handler for SIGINT" ) );
+				LOG_ERROR( create_perror_string( "Failed to install signal handler for SIGINT" ) );
 			}
 
 			/*
@@ -303,37 +304,37 @@ namespace BBB_HVAC
 
 			if ( signal( SIGPIPE, SIG_IGN ) != 0 )
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to ignore SIGPIPE" ) );
+				LOG_ERROR( create_perror_string( "Failed to ignore SIGPIPE" ) );
 			}
 
 			if ( sigaction( SIGABRT, &sa, nullptr ) != 0 ) //6
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to install signal handler for SIGABRT" ) );
+				LOG_ERROR( create_perror_string( "Failed to install signal handler for SIGABRT" ) );
 			}
 
 			if ( sigaction( SIGFPE, &sa, nullptr ) != 0 ) //8
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to install signal handler for SIGFPE" ) );
+				LOG_ERROR( create_perror_string( "Failed to install signal handler for SIGFPE" ) );
 			}
 
 			if ( sigaction( SIGILL, &sa, nullptr ) != 0 ) //4
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to install signal handler for SIGILL" ) );
+				LOG_ERROR( create_perror_string( "Failed to install signal handler for SIGILL" ) );
 			}
 
 			if ( sigaction( SIGSEGV, &sa, nullptr ) != 0 )
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to install signal handler for SIGSEGV" ) );
+				LOG_ERROR( create_perror_string( "Failed to install signal handler for SIGSEGV" ) );
 			}
 
 			if ( sigaction( SIGTERM, &sa, nullptr ) != 0 )
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to install signal handler for SIGTERM" ) );
+				LOG_ERROR( create_perror_string( "Failed to install signal handler for SIGTERM" ) );
 			}
 
 			if ( sigaction( SIGHUP, &sa, nullptr ) != 0 )
 			{
-				LOG_ERROR_STAT( create_perror_string( "Failed to install signal handler  for SIGHUP" ) );
+				LOG_ERROR( create_perror_string( "Failed to install signal handler  for SIGHUP" ) );
 			}
 
 			return;

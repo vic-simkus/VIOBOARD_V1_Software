@@ -19,6 +19,7 @@
 */
 
 #include "lib/configurator.hpp"
+#include "lib/string_lib.hpp"
 
 using namespace BBB_HVAC;
 
@@ -79,7 +80,7 @@ SET_POINT SET_POINT::from_string( const std::string& _source )
 	std::vector<std::string> parts;
 	split_string_to_vector( str, ',', parts );
 
-	if( parts.size() != 3 )
+	if ( parts.size() != 3 )
 	{
 		return SET_POINT();
 	}

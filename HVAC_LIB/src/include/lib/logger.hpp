@@ -25,37 +25,26 @@
 #include <sstream>
 
 #include "lib/hvac_types.hpp"
-#include "lib/tprotect_base.hpp"
 
-#define DEF_LOGGER BBB_HVAC::LOGGING::LOGGER __logger__
+#define DEF_LOGGER BBB_HVAC::LOGGING::LOGGER_PTR __logger__
 
-#define DEF_LOGGER_STAT(name) static BBB_HVAC::LOGGING::LOGGER logger(name)
+#define DEF_LOGGER_STAT(name) static BBB_HVAC::LOGGING::LOGGER_PTR __logger__(new BBB_HVAC::LOGGING::LOGGER(name,BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::TRACE))
 
-#define INIT_LOGGER(name) this->__logger__.configure(name)
-#define INIT_LOGGER_P(name) this->logger->configure(name)
+#define INIT_LOGGER(name) this->__logger__.reset(new BBB_HVAC::LOGGING::LOGGER(name,BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::TRACE));
 
-#define LOG_TRACE_INST(inst,message) inst->__logger__.log_trace(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_DEBUG_INST(inst,message) inst->__logger__.log_debug(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_INFO_INST(inst,message) inst->__logger__.log_info(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_ERROR_INST(inst,message) inst->__logger__.log_error(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define LOG_TRACE(message) __logger__->log_trace(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define LOG_DEBUG(message) __logger__->log_debug(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define LOG_INFO(message) __logger__->log_info(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define LOG_WARNING(message) __logger__->log_warning(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define LOG_ERROR(message) __logger__->log_error(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
-#define LOG_TRACE_STAT(message) logger.log_trace(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_DEBUG_STAT(message) logger.log_debug(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_INFO_STAT(message) logger.log_info(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_WARNING_STAT(message) logger.log_warning(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_ERROR_STAT(message) logger.log_error(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-
-#define LOG_TRACE(message) this->__logger__.log_trace(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_DEBUG(message) this->__logger__.log_debug(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_INFO(message) this->__logger__.log_info(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_WARNING(message) this->__logger__.log_warning(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-#define LOG_ERROR(message) this->__logger__.log_error(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
-
+/*
 #define LOG_TRACE_P(message) this->logger->log_trace(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define LOG_DEBUG_P(message) this->logger->log_debug(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define LOG_INFO_P(message) this->logger->log_info(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define LOG_WARNING_P(message) this->logger->log_warning(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define LOG_ERROR_P(message) this->logger->log_error(message,__FILE__,__LINE__,__PRETTY_FUNCTION__);
+*/
 
 using namespace std;
 
@@ -64,20 +53,22 @@ namespace BBB_HVAC
 	namespace LOGGING
 	{
 
-		/**
-		 * Logging levels
-		 */
 		enum class ENUM_LOG_LEVEL
 			: unsigned int
 		{
 			INVALID = 0, /// Invalid level.  Parent's level will be utilized
-			NONE,		/// Level of none.  XXX - what's the logic here
 			TRACE,		/// Trace-level logging level
 			DEBUG,		/// Debug-level logging level
 			INFO,		/// Information-level logging level
 			WARNING,	/// Warning-level logging level
 			ERROR		/// Error-level logging level
 		} ;
+
+
+		extern const string LEVEL_NAMES[];
+		/**
+		 * Logging levels
+		 */
 
 		/**
 		 * Helper operator to turn a logging level into a string number
@@ -90,44 +81,30 @@ namespace BBB_HVAC
 			return os << static_cast < unsigned int >( _v );
 		}
 
-		class LOG_CONFIGURATOR : public TPROTECT_BASE
-		{
-		public:
-			LOG_CONFIGURATOR( ENUM_LOG_LEVEL _level );
-			~LOG_CONFIGURATOR();
-
-			ENUM_LOG_LEVEL get_level( void ) const;
-
-			static LOG_CONFIGURATOR* get_root_configurator( void );
-			static void destroy_root_configurator( void );
-
-			void log( const string& _log_name, const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function );
-
-		protected:
-			ENUM_LOG_LEVEL level;
-			static LOG_CONFIGURATOR* root_configurator;
-
-			stringstream output_buffer;
-
-		};
 		class LOGGER
 		{
-		public:
-			LOGGER();
-			LOGGER( const string& _name );
-			void log_trace( const string& _msg, const string& _file, int _line, const string& _function );
-			void log_debug( const string& _msg, const string& _file, int _line, const string& _function );
-			void log_info( const string& _msg, const string& _file, int _line, const string& _function );
-			void log_warning( const string& _msg, const string& _file, int _line, const string& _function );
-			void log_error( const string& _msg, const string& _file, int _line, const string& _function );
+			public:
+				/**
+				Constructor.
 
-			void log( const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function );
-			void configure( const string& _name, const ENUM_LOG_LEVEL& _level = ENUM_LOG_LEVEL::INVALID );
+				\param _name	Name of the logger.
+				\param _level	Logger's level.  The level of a logger acts as a filter.  No messages with levels bellow the logger instance level will be emitted.
+				*/
+				LOGGER( const string& _name, ENUM_LOG_LEVEL _level = ENUM_LOG_LEVEL::ERROR );
+				void log_trace( const string& _msg, const string& _file, int _line, const string& _function );
+				void log_debug( const string& _msg, const string& _file, int _line, const string& _function );
+				void log_info( const string& _msg, const string& _file, int _line, const string& _function );
+				void log_warning( const string& _msg, const string& _file, int _line, const string& _function );
+				void log_error( const string& _msg, const string& _file, int _line, const string& _function );
 
-		protected:
-			string name;
-			ENUM_LOG_LEVEL level;
-		private:
+				void log( const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function );
+				void configure( const string& _name, const ENUM_LOG_LEVEL& _level = ENUM_LOG_LEVEL::ERROR );
+
+			protected:
+				string name;
+				ENUM_LOG_LEVEL level;
+			private:
+				LOGGER();
 		};
 	}
 }

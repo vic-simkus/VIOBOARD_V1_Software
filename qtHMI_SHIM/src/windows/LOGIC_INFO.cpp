@@ -214,7 +214,7 @@ void LOGIC_INFO::dump_message_parts( BBB_HVAC::MESSAGE_PTR& _message )
 	for ( size_t part_idx = 0; part_idx < _message->get_part_count( ); part_idx++ )
 	{
 		std::string part = _message->get_part_as_s( part_idx );
-		LOG_DEBUG_STAT( "Part [" + num_to_str( part_idx ) + "]: " + part );
+		LOG_DEBUG( "Part [" + num_to_str( part_idx ) + "]: " + part );
 	}
 }
 
@@ -239,22 +239,22 @@ void LOGIC_INFO::slot_mb_label_data( MESSAGE_BUS::COMMANDS _cmd, const QVector<Q
 {
 	if ( _cmd == MESSAGE_BUS::COMMANDS::GET_LABELS_DO )
 	{
-		LOG_DEBUG_STAT( "DO labels" );
+		LOG_DEBUG( "DO labels" );
 		populate_table_widget( this->table_do_points, _data );
 	}
 	else if ( _cmd == MESSAGE_BUS::COMMANDS::GET_LABELS_AI )
 	{
-		LOG_DEBUG_STAT( "AI labels" );
+		LOG_DEBUG( "AI labels" );
 		populate_table_widget( this->table_ai_points, _data );
 	}
 	else
 	{
-		LOG_ERROR_STAT( "Unrecognized command: " + num_to_str( ( int )_cmd ) );
+		LOG_ERROR( "Unrecognized command: " + num_to_str( ( int )_cmd ) );
 	}
 }
 void LOGIC_INFO::slot_mb_map_data( MESSAGE_BUS::COMMANDS, const QMap<QString, QVector<QString>>& _data )
 {
-	LOG_DEBUG_STAT( "MAP labels:" );
+	LOG_DEBUG( "MAP labels:" );
 	this->table_map_points->clearContents( );
 	this->table_map_points->setRowCount( _data.size( ) );
 	int row_index = 0;
@@ -313,7 +313,7 @@ void LOGIC_INFO::slot_mb_logic_status_update( MESSAGE_BUS::COMMANDS, const QMap<
 
 		if ( search_results.count() != 1 )
 		{
-			LOG_INFO_STAT( "Previously selected item [" + current_id.toStdString() + "] was not found." );
+			LOG_INFO( "Previously selected item [" + current_id.toStdString() + "] was not found." );
 		}
 		else
 		{

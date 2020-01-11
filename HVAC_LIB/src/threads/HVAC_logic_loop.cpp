@@ -494,6 +494,7 @@ void HVAC_LOGIC_LOOP::post_process( void ) throw( exception )
 }
 HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP( CONFIGURATOR* _config ) : LOGIC_PROCESSOR_BASE( _config )
 {
+	INIT_LOGGER( "BBB_HVAC::HVAC_LOGIC_LOOP" );
 	this->switch_op_state( OPERATING_STATE::NONE );
 
 	return;

@@ -155,7 +155,7 @@ bool BASE_CONTEXT::select_timeout_happened( void ) throw( exception )
 
 BASE_CONTEXT::BASE_CONTEXT( const string& _tag, SOCKET_TYPE _st, const string& _path, uint16_t _port ) : THREAD_BASE( _tag ), max_pp_timeout( ( GC_CLIENT_THREAD_SELECT_TIME * GC_CLIENT_PING_DIVIDER ) )
 {
-	this->logger = new LOGGING::LOGGER( "BBB_HVAC::BASE_CONTEXT[" + _tag + "]" );
+	INIT_LOGGER( "BBB_HVAC::BASE_CONTEXT[" + _tag + "]" );
 	this->st = _st;
 
 	int socket_type = -1;
@@ -224,8 +224,6 @@ BASE_CONTEXT::~BASE_CONTEXT()
 	this->timeout_counter = 0;
 	memset( &this->curr_time, 0, sizeof( struct timespec ) );
 	memset( &this->select_timeout_tv, 0, sizeof( struct timeval ) );
-	delete this->logger;
-	this->logger = nullptr;
 	return;
 }
 
@@ -285,7 +283,7 @@ bool BASE_CONTEXT::thread_func( void )
 
 			if ( clock_gettime( CLOCK_MONOTONIC, & ( this->curr_time ) ) != 0 )
 			{
-				LOG_ERROR_P( create_perror_string( "Failed to get current time" ) );
+				LOG_ERROR( create_perror_string( "Failed to get current time" ) );
 				this->abort_thread = true;
 				continue;
 			}
@@ -303,7 +301,7 @@ bool BASE_CONTEXT::thread_func( void )
 				/*
 				 * If select returns an error, log it and exit thread.
 				 */
-				LOG_ERROR_P( create_perror_string( "Select on remote socket failed" ) );
+				LOG_ERROR( create_perror_string( "Select on remote socket failed" ) );
 				this->abort_thread = true;
 				this->release_lock();
 				continue;
@@ -365,7 +363,7 @@ bool BASE_CONTEXT::thread_func( void )
 							/*
 							 * Log and ignore a bad message.
 							 */
-							LOG_DEBUG_P( "Failed to parse message: " + string( e.what() ) );
+							LOG_DEBUG( "Failed to parse message: " + string( e.what() ) );
 							continue; //continue processing in the 'for' loop
 						}
 
@@ -379,14 +377,14 @@ bool BASE_CONTEXT::thread_func( void )
 							This is where we end up if the client really screws up.
 							For example if they try to read from an IO board that doesn't exist.  The exception bubbles up to us here and we just punt.
 							*/
-							LOG_DEBUG_P( "Failed to process message:" + string( e.what() ) );
-							LOG_DEBUG_P( "Offending message: " + m->to_string() );
+							LOG_DEBUG( "Failed to process message:" + string( e.what() ) );
+							LOG_DEBUG( "Offending message: " + m->to_string() );
 							this->abort_thread = true;
 							break;	// break out of the line processing loop
 						}
 						catch ( ... )
 						{
-							LOG_DEBUG_P( "Unspecified exception caught while processing remote message" );
+							LOG_DEBUG( "Unspecified exception caught while processing remote message" );
 							this->abort_thread = true;
 							break;	// break out of the line processing loop
 						}
@@ -394,12 +392,12 @@ bool BASE_CONTEXT::thread_func( void )
 				}
 				catch ( exception& e )
 				{
-					LOG_DEBUG_P( "General failure to process remote request: " + string( e.what() ) );
+					LOG_DEBUG( "General failure to process remote request: " + string( e.what() ) );
 					this->abort_thread = true;
 				}
 				catch ( ... )
 				{
-					LOG_DEBUG_P( "Unknown exception caught while processing remote request." );
+					LOG_DEBUG( "Unknown exception caught while processing remote request." );
 					this->abort_thread = true;
 				}
 			} // Select indicated that a FD is ready to be read from.
@@ -409,11 +407,11 @@ bool BASE_CONTEXT::thread_func( void )
 	}
 	catch ( exception& e )   // main "try" block.
 	{
-		LOG_DEBUG_P( string( "Unhandled exception caught in the client thread: " ) + e.what() );
+		LOG_DEBUG( string( "Unhandled exception caught in the client thread: " ) + e.what() );
 	}
 	catch ( ... )
 	{
-		LOG_DEBUG_P( "Unhandled exception of unknown type caught in the client thread." );
+		LOG_DEBUG( "Unhandled exception of unknown type caught in the client thread." );
 	}
 
 	close( this->remote_socket );

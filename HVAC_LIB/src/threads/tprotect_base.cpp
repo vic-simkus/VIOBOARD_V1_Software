@@ -34,20 +34,20 @@ TPROTECT_BASE::TPROTECT_BASE( const string& _tag )
 	this->rand_seed = ( unsigned int ) time( nullptr );
 	pthread_mutexattr_t mutex_attr;
 
-	if( pthread_mutexattr_init( &mutex_attr ) != 0 )
+	if ( pthread_mutexattr_init( &mutex_attr ) != 0 )
 	{
 		throw runtime_error( create_perror_string( this->tag + ": Failed to initialize mutex attribute." ) );
 	}
 
 	pthread_mutexattr_settype( &mutex_attr, PTHREAD_MUTEX_ERRORCHECK );
 
-	if( pthread_mutex_init( & ( this->mutex ), &mutex_attr ) != 0 )
+	if ( pthread_mutex_init( & ( this->mutex ), &mutex_attr ) != 0 )
 	{
 		throw runtime_error( create_perror_string( this->tag + ": Failed to initialize mutex." ) );
 	}
 
 	this->reset_sleep_timespec();
-	this->logger = new LOGGING::LOGGER( "BBB_HVAC::TPROTECT_BASE[" + this->tag + "]" );
+	INIT_LOGGER( "BBB_HVAC::TPROTECT_BASE[" + this->tag + "]" );
 	return;
 }
 
@@ -55,7 +55,7 @@ void TPROTECT_BASE::reset_sleep_timespec( __syscall_slong_t _time )
 {
 	memset( & ( this->thread_sleep ), 0, sizeof( struct timespec ) );
 
-	if( _time > 0 )
+	if ( _time > 0 )
 	{
 		this->thread_sleep.tv_nsec = _time;
 	}
@@ -65,14 +65,12 @@ void TPROTECT_BASE::reset_sleep_timespec( __syscall_slong_t _time )
 
 TPROTECT_BASE::~TPROTECT_BASE()
 {
-	if( pthread_mutex_destroy( & ( this->mutex ) ) != 0 )
+	if ( pthread_mutex_destroy( & ( this->mutex ) ) != 0 )
 	{
 		//LOG_ERROR_P( create_perror_string( this->tag + ": Failed to destroy mutex" ) );
 		//XXX - Can't use the logger anymore?
 	}
 
-	delete this->logger;
-	this->logger = nullptr;
 	this->tag.clear();
 	return;
 }
@@ -82,7 +80,7 @@ void TPROTECT_BASE::nsleep( timespec* _time ) const throw( runtime_error )
 	timespec sleep_time;
 	timespec thread_sleep_rem;
 
-	if( _time == nullptr )
+	if ( _time == nullptr )
 	{
 		memcpy( &sleep_time, &this->thread_sleep, sizeof( struct timespec ) );
 	}
@@ -93,21 +91,21 @@ void TPROTECT_BASE::nsleep( timespec* _time ) const throw( runtime_error )
 
 	int rc = nanosleep( &sleep_time, &thread_sleep_rem );
 
-	if( rc != 0 )
+	if ( rc != 0 )
 	{
 		/*
 		 * Some man pages state that EINTR will be returned in case of interruption.
 		 * Other man pages state that -1 will be returned and errno will be set to EINTR.
 		 * Who the fuck knows.
 		 */
-		if( rc == EINTR || ( rc == -1 && errno == EINTR ) )
+		if ( rc == EINTR || ( rc == -1 && errno == EINTR ) )
 		{
 			/*
 			 * Sleep was interrupted.  Go back to sleep for remaining time.
 			 */
 			nanosleep( &thread_sleep_rem, nullptr );
 		}
-		else if( rc == -1 )
+		else if ( rc == -1 )
 		{
 			THROW_EXCEPTION( runtime_error, create_perror_string( this->tag + ": NANOSLEEP failed with code -1: " ) );
 		}
@@ -132,9 +130,9 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR )
 	unsigned int mutex_lock_attempts = 0;
 	timespec sleep_tv;
 
-	while( *_cond == false )
+	while ( *_cond == false )
 	{
-		if( mutex_lock_attempts > 0 )
+		if ( mutex_lock_attempts > 0 )
 		{
 			/*
 			 * If we're spinning waiting for a mutex add jitter to the sleep amount so that we don't accidentally synchronize with some other thread.
@@ -142,7 +140,7 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR )
 			memset( &sleep_tv, 0, sizeof( struct timespec ) );
 			sleep_tv.tv_nsec += rand_r( &this->rand_seed );
 
-			if( sleep_tv.tv_nsec == 0 )
+			if ( sleep_tv.tv_nsec == 0 )
 			{
 				sleep_tv.tv_nsec = 10000; // 10 uSec
 			}
@@ -160,14 +158,14 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR )
 
 		mutex_lock_result = pthread_mutex_trylock( &this->mutex );
 
-		if( mutex_lock_result != 0 )
+		if ( mutex_lock_result != 0 )
 		{
-			if( mutex_lock_result == EBUSY )
+			if ( mutex_lock_result == EBUSY )
 			{
 				/*
 				 * Failed to acquire a the main mutex.
 				 */
-				if( mutex_lock_attempts == GC_MUTEX_LOCK_ATTEMPT )
+				if ( mutex_lock_attempts == GC_MUTEX_LOCK_ATTEMPT )
 				{
 					/*
 					 * If we've tried a number of times to obtain the mutex and failed bail
@@ -208,7 +206,7 @@ bool TPROTECT_BASE::release_lock() throw( LOCK_ERROR )
 {
 	int rc = 0;
 
-	if( ( rc = pthread_mutex_unlock( & ( this->mutex ) ) ) != 0 )
+	if ( ( rc = pthread_mutex_unlock( & ( this->mutex ) ) ) != 0 )
 	{
 		THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to release lock." );
 	}

@@ -7,7 +7,7 @@ import os
 
 class MyContext(Context):
 	SOURCE_FILES = (
-			SourceFile("bbb_hvac.cpp"),
+			SourceFile("bbb_hvac.cpp"),SourceFile("command_line_parms.cpp"),
 			)
 	TAG = "LOGIC_CORE"
 

@@ -27,6 +27,7 @@
 #include <string>
 
 #include "lib/exceptions.hpp"
+#include "logger.hpp"
 
 using namespace std;
 
@@ -34,10 +35,6 @@ namespace BBB_HVAC
 {
 	using namespace EXCEPTIONS;
 
-	namespace LOGGING
-	{
-		class LOGGER;
-	}
 
 	/**
 	 *\brief A class that provides a mutex and lock/unlock method with retries, timeouts, etc.  It is intended to be a base class for any class
@@ -45,79 +42,79 @@ namespace BBB_HVAC
 	 */
 	class TPROTECT_BASE
 	{
-	public:
-		/**
-		 * \brief Constructor.
-		 * \param _tag Identification tag.  Used in log output to aid in troubleshooting
-		 */
-		TPROTECT_BASE( const string& _tag );
-		/**
-		 * \brief Destructor.
-		 */
-		virtual ~TPROTECT_BASE();
+		public:
+			/**
+			 * \brief Constructor.
+			 * \param _tag Identification tag.  Used in log output to aid in troubleshooting
+			 */
+			TPROTECT_BASE( const string& _tag );
+			/**
+			 * \brief Destructor.
+			 */
+			virtual ~TPROTECT_BASE();
 
-		/**
-		 * \brief Attempts to obtain a lock on the mutex.
-		 * Under the hood it calls obtain_lock_ex with a pointer to a local 'false' condition.
-		 * \return Always returns true.  If something goes wonky and exception is thrown.
-		 * \see obtain_lock_ex(const bool*)
-		 */
-		bool obtain_lock_ex( void ) throw( LOCK_ERROR );
-		/**
-		 * \brief Attempts to obtain a lock on the mutex.
-		 * If an initial attempt fails, it tries GC_MUTEX_LOCK_ATTEMPT times to obtain a lock with an rand_r nanoseonds
-		 * between attempts.  If after all that it still can't obtain a lock an exception is thrown.
-		 * All attempts are predicated on _cond being false.  If _cond becomes true the attemp loop aborts with an exception.
-		 * \return Always returns true.  If something goes wonky an exception is thrown.
-		 */
-		bool obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR );
+			/**
+			 * \brief Attempts to obtain a lock on the mutex.
+			 * Under the hood it calls obtain_lock_ex with a pointer to a local 'false' condition.
+			 * \return Always returns true.  If something goes wonky and exception is thrown.
+			 * \see obtain_lock_ex(const bool*)
+			 */
+			bool obtain_lock_ex( void ) throw( LOCK_ERROR );
+			/**
+			 * \brief Attempts to obtain a lock on the mutex.
+			 * If an initial attempt fails, it tries GC_MUTEX_LOCK_ATTEMPT times to obtain a lock with an rand_r nanoseonds
+			 * between attempts.  If after all that it still can't obtain a lock an exception is thrown.
+			 * All attempts are predicated on _cond being false.  If _cond becomes true the attemp loop aborts with an exception.
+			 * \return Always returns true.  If something goes wonky an exception is thrown.
+			 */
+			bool obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR );
 
-		/**
-		 * \brief Relieses lock obtained by obtain_lock
-		 * \return Always returns true.  If something goes wonky an exception is thrown.
-		 * \see obtain_lock(void)
-		 */
-		bool release_lock( void ) throw( LOCK_ERROR );
+			/**
+			 * \brief Relieses lock obtained by obtain_lock
+			 * \return Always returns true.  If something goes wonky an exception is thrown.
+			 * \see obtain_lock(void)
+			 */
+			bool release_lock( void ) throw( LOCK_ERROR );
 
-		/**
-		 * \brief Sleeps for a specified time.  The method will make a best faith effort to sleep for the full specified period.
-		 * \param _time Sleep period.  If nullptr is supplied this->thread_sleep is used.
-		 */
-		void nsleep( timespec* _time = nullptr ) const throw( runtime_error );
+			/**
+			 * \brief Sleeps for a specified time.  The method will make a best faith effort to sleep for the full specified period.
+			 * \param _time Sleep period.  If nullptr is supplied this->thread_sleep is used.
+			 */
+			void nsleep( timespec* _time = nullptr ) const throw( runtime_error );
 
-		/**
-		 * \brief Resets this->thread_sleep to the specified number of nanoseconds.
-		 * \param _nsecs Number of nanoseconds to initialize the struct to to.  If -1 is passed the struct is zeroed out.
-		 */
-		void reset_sleep_timespec( __syscall_slong_t _nsecs = -1 );
+			/**
+			 * \brief Resets this->thread_sleep to the specified number of nanoseconds.
+			 * \param _nsecs Number of nanoseconds to initialize the struct to to.  If -1 is passed the struct is zeroed out.
+			 */
+			void reset_sleep_timespec( __syscall_slong_t _nsecs = -1 );
 
-	protected:
+		protected:
 
-		/**
-		 * \brief Mutex protecting the instance.
-		 */
-		pthread_mutex_t mutex;
+			/**
+			 * \brief Mutex protecting the instance.
+			 */
+			pthread_mutex_t mutex;
 
-	private:
-		/**
-		 * \brief Logger instance.
-		 */
-		BBB_HVAC::LOGGING::LOGGER* logger;
+		private:
+			/**
+			 * \brief Logger instance.
+			 */
+			DEF_LOGGER;
 
-		/**
-		 * Instance tag.  Used for log output for debugging.
-		 */
-		string tag;
+			/**
+			 * Instance tag.  Used for log output for debugging.
+			 */
+			string tag;
 
-		/**
-		 * \brief Random seed.  Initialized at class instantiation.  Used to generate random sleep intervals when trying and failing to obtain a lock.
-		 */
-		unsigned int rand_seed;
+			/**
+			 * \brief Random seed.  Initialized at class instantiation.  Used to generate random sleep intervals when trying and failing to obtain a lock.
+			 */
+			unsigned int rand_seed;
 
-		/**
-		 * \brief Struct used in sleeping.
-		 */
-		timespec thread_sleep;
+			/**
+			 * \brief Struct used in sleeping.
+			 */
+			timespec thread_sleep;
 
 	} ;
 }

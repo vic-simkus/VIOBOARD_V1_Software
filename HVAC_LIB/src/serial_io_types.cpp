@@ -42,11 +42,11 @@ namespace BBB_HVAC
 
 		OUTGOING_MESSAGE_QUEUE::OUTGOING_MESSAGE_QUEUE( const std::string& _tag ) : TPROTECT_BASE( _tag )
 		{
-			this->logger = new LOGGING::LOGGER( "BBB_HVAC::IOCOMM::OUTGOING_MESSAGE_QUEUE[" + this->tag + "]" );
+			INIT_LOGGER( "BBB_HVAC::IOCOMM::OUTGOING_MESSAGE_QUEUE[" + this->tag + "]" );
 
 			if ( pthread_cond_init( &this->conditional, nullptr ) != 0 )
 			{
-				LOG_ERROR_P( "Failed to initializer conditional." );
+				LOG_ERROR( "Failed to initializer conditional." );
 			}
 
 			this->id_seq = 0;
@@ -57,7 +57,7 @@ namespace BBB_HVAC
 		{
 			if ( pthread_cond_destroy( &this->conditional ) != 0 )
 			{
-				LOG_ERROR_P( "Failed to destroy conditional." );
+				LOG_ERROR( "Failed to destroy conditional." );
 			}
 
 			while ( !this->message_queue.empty() )
@@ -65,8 +65,6 @@ namespace BBB_HVAC
 				this->message_queue.pop();
 			}
 
-			delete this->logger;
-			this->logger = nullptr;
 			return;
 		}
 
@@ -77,7 +75,7 @@ namespace BBB_HVAC
 			 */
 			if ( pthread_cond_signal( &this->conditional ) != 0 )
 			{
-				LOG_ERROR_P( "Failed to signal conditional." );
+				LOG_ERROR( "Failed to signal conditional." );
 			}
 
 			this->release_lock();
@@ -93,7 +91,7 @@ namespace BBB_HVAC
 			{
 				this->release_lock();
 				ret = false;
-				LOG_ERROR_P( "Outgoing message queue is full." );
+				LOG_ERROR( "Outgoing message queue is full." );
 			}
 			else
 			{
