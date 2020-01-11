@@ -53,7 +53,7 @@ MESSAGE_BUS::~MESSAGE_BUS()
 	catch ( ... )
 	{
 		//ignore
-		LOG_DEBUG_STAT( "Disconnection attempt failed." );
+		LOG_DEBUG( "Disconnection attempt failed." );
 	}
 
 	this->ctx = nullptr;
@@ -77,7 +77,7 @@ void MESSAGE_BUS::connect_to_remote( void ) throw( exception )
 		}
 		catch ( const BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR& _e )
 		{
-			LOG_ERROR_STAT( "Failed to connect: " +  std::string( _e.what() ) );
+			LOG_ERROR( "Failed to connect: " +  std::string( _e.what() ) );
 			delete this->ctx;
 			this->ctx = nullptr;
 			this->failure_count += 1;
@@ -85,7 +85,7 @@ void MESSAGE_BUS::connect_to_remote( void ) throw( exception )
 			throw std::runtime_error( std::string( "Failed to connect to remote: " ) + _e.what() );
 		}
 
-		LOG_DEBUG_STAT( "MESSAGE_BUS connected to remote point." );
+		LOG_DEBUG( "MESSAGE_BUS connected to remote point." );
 	}
 	else
 	{
@@ -212,7 +212,7 @@ void MESSAGE_BUS::force_value( const MESSAGE_BUS::MESSAGE& _message )
 
 	message = this->ctx->message_processor->create_force_ai( _message.board_id.toStdString(), ai_idx, ai_value );
 
-	LOG_DEBUG_STAT( "Message: " + message->to_string() );
+	LOG_DEBUG( "Message: " + message->to_string() );
 
 	this->ctx->send_message( message );
 
@@ -381,7 +381,7 @@ void MESSAGE_BUS::emit_map_data_mesage( COMMANDS _command, const BBB_HVAC::MESSA
 
 	for ( auto map_iterator = map.cbegin( ); map_iterator != map.cend( ); ++map_iterator )
 	{
-		LOG_DEBUG_STAT( map_iterator->second );
+		LOG_DEBUG( map_iterator->second );
 		BBB_HVAC::BOARD_POINT board_point = BBB_HVAC::BOARD_POINT::from_string( map_iterator->second );
 		QVector<QString> temp_vect( 4 );
 		temp_vect[0] = QString( board_point.get_board_tag( ).data( ) ) ;

@@ -59,7 +59,7 @@ checksum( uint16_t const data[], int nWords )
 
 int main( int argc, char* argv[] )
 {
-	BBB_HVAC::GLOBALS::configure_logging( BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
+	BBB_HVAC::GLOBALS::configure_logging( 1, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals( );
 
 	QApplication app( argc, argv );
