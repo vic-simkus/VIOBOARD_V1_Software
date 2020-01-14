@@ -87,8 +87,6 @@ LOGIC_PROCESSOR_BASE::~LOGIC_PROCESSOR_BASE()
 {
 	delete this->configurator;
 	this->configurator = nullptr;
-	delete this->logger;
-	this->logger = nullptr;
 	return;
 }
 

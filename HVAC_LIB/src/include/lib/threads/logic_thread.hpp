@@ -180,11 +180,6 @@ namespace BBB_HVAC
 		public:
 
 			/**
-			 * Logger instance.
-			 */
-			LOGGING::LOGGER* logger;
-
-			/**
 			 * Constructor.
 			 */
 			LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config );
@@ -273,9 +268,9 @@ namespace BBB_HVAC
 
 			std::vector<std::string> involved_board_tags;
 
-			DEF_LOGGER;
-
 		private:
+
+			DEF_LOGGER;
 
 	};
 }
