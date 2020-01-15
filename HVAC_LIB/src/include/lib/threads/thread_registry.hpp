@@ -66,9 +66,11 @@ namespace BBB_HVAC
 				THREAD_REGISTRY::global_instance->cleanup();
 			}
 
+			static THREAD_REGISTRY* get_instance( void );
+
 		protected:
 			THREAD_REGISTRY( const string& _tag );
-			static THREAD_REGISTRY* get_instance( void );
+
 
 			void reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type = THREAD_TYPES_ENUM::NONE ) throw( runtime_error );
 			void del_thread( THREAD_BASE* _thread, bool _lockl ) throw( runtime_error );

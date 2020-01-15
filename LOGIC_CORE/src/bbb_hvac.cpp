@@ -68,6 +68,41 @@ DEF_LOGGER_STAT( "BBB_HVAC(MAIN)" );
 
 static CONFIGURATOR* config = nullptr;
 
+
+void daemon_self( void )
+{
+
+	int i = fork();
+
+	if ( i < 0 )
+	{
+		LOG_ERROR( create_perror_string( "Failed to fork" ) );
+		exit( -1 );
+	}
+
+	if ( i > 0 )
+	{
+		exit( 0 ); /* parent exits */
+	}
+
+	/* child (daemon) continues */
+
+	setsid(); /* obtain a new process group */
+
+	for ( i = getdtablesize(); i >= 0; --i )
+	{
+		close( i ); /* close all descriptors */
+	}
+
+	i = open( "/dev/null", O_RDWR ); /* open stdin */
+	dup( i ); /* stdout */
+	dup( i ); /* stderr */
+
+	umask( 027 );
+
+	return;
+}
+
 /**
  * Checks to see if privileges need to be dropped.
  * \return 1 if the process has a GID or UID of 0
@@ -275,10 +310,14 @@ bool start_threads( CONFIGURATOR* config, const COMMAND_LINE_PARMS& _clp )
 
 int do_main( const COMMAND_LINE_PARMS& _clp )
 {
-
 	string log_file_name = _clp.get_log_file();
 
 	std::cout << "Logging in: [" << log_file_name << "]" << std::endl;
+
+	if ( _clp.is_server_mode() )
+	{
+		daemon_self();
+	}
 
 	int fd = open( log_file_name.data(), O_WRONLY | O_APPEND | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP );
 
@@ -305,7 +344,7 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 	config = new CONFIGURATOR( "configuration.cfg" );
 	config->read_file();
 
-	//start_io_threads(config);
+	BBB_HVAC::THREAD_REGISTRY::get_instance();
 
 	if ( !start_threads( config, _clp ) )
 	{

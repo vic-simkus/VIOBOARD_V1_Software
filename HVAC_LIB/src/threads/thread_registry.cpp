@@ -64,6 +64,9 @@ void THREAD_REGISTRY::init_cleanup( void ) throw( runtime_error )
 
 THREAD_REGISTRY* THREAD_REGISTRY::get_instance( void )
 {
+	// XXX - possible race condition.  Need to initialize a thread registry instance before
+	// we start the threads.
+	//
 	if ( THREAD_REGISTRY::global_instance == nullptr )
 	{
 		THREAD_REGISTRY::global_instance = new THREAD_REGISTRY( "THREAD_REGISTRY" );
