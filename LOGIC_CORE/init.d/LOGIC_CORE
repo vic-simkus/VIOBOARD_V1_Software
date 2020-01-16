@@ -1,0 +1,47 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          LOGIC_CORE
+# Required-Start:    $syslog $time $remote_fs
+# Required-Stop:     $syslog $time $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: BBB HVAC logic core
+# Description:       BBB HVAC logic core 
+### END INIT INFO
+#
+# Author:		Vic Simkus <vic.simkus@gmail.com>
+#
+
+#PATH=/bin:/usr/bin:/sbin:/usr/sbin
+DAEMON=/opt/VIOBOARD_V1_Software/LOGIC_CORE/LOGIC_CORE.sh 
+PIDFILE=/var/run/LOGIC_CORE.pid
+
+test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting LOGIC_CORE" "BBB_HVAC"
+	start_daemon -p $PIDFILE $DAEMON -i -s -a 192.168.1.247
+	log_end_msg $?
+    ;;
+  stop)
+	log_daemon_msg "Stopping LOGIC_CORE" "BBB_HVAC"
+	killproc -p $PIDFILE $DAEMON
+	log_end_msg $?
+    ;;
+  force-reload|restart)
+    $0 stop
+    $0 start
+    ;;
+  status)
+    status_of_proc -p $PIDFILE $DAEMON LOGIC_CORE && exit 0 || exit $?
+    ;;
+  *)
+    echo "Usage: /etc/init.d/LOGIC_CORE {start|stop|restart|force-reload|status}"
+    exit 1
+    ;;
+esac
+
+exit 0

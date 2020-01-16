@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-echo "Starting LOGIC_CORE"
 
-export LD_LIBRARY_PATH="../HVAC_LIB/bin:$LD_LIBRARY_PATH"
+me=`realpath $0`
+my_dir=`dirname $me`
 
-./bin/LOGIC_CORE $@
+export LD_LIBRARY_PATH="$my_dir/../HVAC_LIB/bin:$LD_LIBRARY_PATH"
+cd $my_dir
+$my_dir/bin/LOGIC_CORE $@
