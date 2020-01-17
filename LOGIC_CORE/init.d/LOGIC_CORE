@@ -12,9 +12,10 @@
 # Author:		Vic Simkus <vic.simkus@gmail.com>
 #
 
-#PATH=/bin:/usr/bin:/sbin:/usr/sbin
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/opt/VIOBOARD_V1_Software/LOGIC_CORE/LOGIC_CORE.sh 
 PIDFILE=/var/run/LOGIC_CORE.pid
+USER=debian
 
 test -x $DAEMON || exit 0
 
@@ -23,12 +24,13 @@ test -x $DAEMON || exit 0
 case "$1" in
   start)
 	log_daemon_msg "Starting LOGIC_CORE" "BBB_HVAC"
-	start_daemon -p $PIDFILE $DAEMON -i -s -a 192.168.1.247
+	start-stop-daemon --start --quiet --user $USER --chuid $USER -p $PIDFILE --exec $DAEMON -- -i -s -a 192.168.1.247
 	log_end_msg $?
     ;;
   stop)
 	log_daemon_msg "Stopping LOGIC_CORE" "BBB_HVAC"
-	killproc -p $PIDFILE $DAEMON
+#	killproc -p $PIDFILE $DAEMON
+	pkill -HUP -f LOGIC_CORE
 	log_end_msg $?
     ;;
   force-reload|restart)
