@@ -39,7 +39,7 @@
 #include "lib/globals.hpp"
 #include "lib/configurator.hpp"
 
-#include "command_line_parms.h"
+#include "lib/command_line_parms.h"
 
 #include <stdio.h>
 #include <stdlib.h>
