@@ -59,6 +59,7 @@ class MyContext(Context):
 			SourceFile("serial_io_types.cpp"),
 			SourceFile("socket_reader.cpp"),
 			SourceFile("string_lib.cpp"),
+			SourceFile("command_line_parms.cpp"),
 			SourceFile("configurator/set_point.cpp"),
 			SourceFile("configurator/board_point.cpp"),
 			SourceFile("configurator/configurator_operators.cpp")

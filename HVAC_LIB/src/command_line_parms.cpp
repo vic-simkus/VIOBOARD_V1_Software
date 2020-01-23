@@ -1,6 +1,7 @@
-#include "command_line_parms.h"
+#include "lib/command_line_parms.h"
 
 #include <iostream>
+using namespace BBB_HVAC;
 
 COMMAND_LINE_PARMS::COMMAND_LINE_PARMS( size_t _argc, const char** _argv )
 {
