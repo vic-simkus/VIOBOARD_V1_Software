@@ -57,7 +57,7 @@ using namespace BBB_HVAC::EXCEPTIONS;
  *************************************/
 
 HS_CLIENT_CONTEXT::HS_CLIENT_CONTEXT( int _client_socket ) :
-	BASE_CONTEXT( "HS_CLIENT_CONTEXT", SOCKET_TYPE::NONE, "", -1 )
+	BASE_CONTEXT( "HS_CLIENT_CONTEXT", SOCKET_TYPE::NONE, "", 0 )
 {
 	//INIT_LOGGER( "BBB_HVAC::HS_CLIENT_CONTEXT" );
 	this->remote_socket = _client_socket;
@@ -71,7 +71,7 @@ HS_CLIENT_CONTEXT::~HS_CLIENT_CONTEXT()
 
 ENUM_MESSAGE_CALLBACK_RESULT HS_CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception )
 {
-	ENUM_MESSAGE_CALLBACK_RESULT ret;
+	ENUM_MESSAGE_CALLBACK_RESULT ret = ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED;
 
 	if ( BASE_CONTEXT::process_message( _direction, _ctx, _message ) == ENUM_MESSAGE_CALLBACK_RESULT::PROCESSED )
 	{

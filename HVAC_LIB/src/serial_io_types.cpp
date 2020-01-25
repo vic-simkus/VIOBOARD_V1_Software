@@ -213,7 +213,7 @@ namespace BBB_HVAC
 				}
 				else if ( source_buffer[i] >= 48 && source_buffer[i] <= 57 ) // 0 ... 9
 				{
-					work_buffer[buffer_index] = source_buffer[i];
+					work_buffer[buffer_index] = ( unsigned char )source_buffer[i];
 					buffer_index += 1;
 
 					if ( buffer_index == MAX_BUFF_SIZE )

@@ -35,53 +35,53 @@ namespace BBB_HVAC
 	 */
 	class SOCKET_READER
 	{
-	public:
-		/**
-		 * Constructor
-		 */
-		SOCKET_READER();
+		public:
+			/**
+			 * Constructor
+			 */
+			SOCKET_READER();
 
-		/**
-		 * Destructor
-		 */
-		~SOCKET_READER();
+			/**
+			 * Destructor
+			 */
+			~SOCKET_READER();
 
-		/**
-		 * Reads all available data from the supplied file descriptor.
-		 * \param _fd File descriptor to read from.
-		 * \return Number of lines available for processing.  Note:  This does not mean how many lines were read during this method invocation.  The returned number of lines may include number of lines stored in the internal buffer that have not yet been consumed.
-		 */
-		size_t read( int _fd ) throw( exception );
+			/**
+			 * Reads all available data from the supplied file descriptor.
+			 * \param _fd File descriptor to read from.
+			 * \return Number of lines available for processing.  Note:  This does not mean how many lines were read during this method invocation.  The returned number of lines may include number of lines stored in the internal buffer that have not yet been consumed.
+			 */
+			size_t read( int _fd ) throw( exception );
 
-		/**
-		 * Gets the number of lines in the internal buffer that are available for processing.
-		 * \return Number of lines in the internal buffer.
-		 */
-		size_t get_line_count( void ) const;
+			/**
+			 * Gets the number of lines in the internal buffer that are available for processing.
+			 * \return Number of lines in the internal buffer.
+			 */
+			size_t get_line_count( void ) const;
 
-		/**
-		 * Returns the first (oldest) line from the internal buffer.  The line is then deleted from the buffer.
-		 * \return Line to be processed.
-		 */
-		string pop_first_line( void );
+			/**
+			 * Returns the first (oldest) line from the internal buffer.  The line is then deleted from the buffer.
+			 * \return Line to be processed.
+			 */
+			string pop_first_line( void );
 
-	protected:
-		/**
-		 * Temporary read buffer.  Size determined by GC_BUFFER_SIZE.
-		 */
-		char* read_buffer;
+		protected:
+			/**
+			 * Temporary read buffer.  Size determined by GC_BUFFER_SIZE.
+			 */
+			char* read_buffer;
 
-		/**
-		 * Finds the next occurrence of a new line character in the read_buffer.
-		 */
-		size_t find_nl_in_buffer( size_t _start, size_t _end );
+			/**
+			 * Finds the next occurrence of a new line character in the read_buffer.
+			 */
+			ssize_t find_nl_in_buffer( size_t _start, size_t _end );
 
-		/**
-		 * Line buffer.  Lines read, but not yet processed.
-		 */
-		vector<string> line_vector;
+			/**
+			 * Line buffer.  Lines read, but not yet processed.
+			 */
+			vector<string> line_vector;
 
-	private:
+		private:
 	};
 }
 

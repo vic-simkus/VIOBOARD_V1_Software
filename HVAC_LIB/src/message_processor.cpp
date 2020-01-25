@@ -69,7 +69,7 @@ void MESSAGE_PROCESSOR::send_message( MESSAGE_PTR& _msg, int _fd ) throw( except
 
 	do
 	{
-		rc = write( _fd, buffer.get(), ( int ) payload.length() );
+		rc = write( _fd, buffer.get(),  payload.length() );
 
 		if ( rc == -1 )
 		{
@@ -105,7 +105,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	}
 
 	string tstr = _buffer.substr( 0, sep_idx );
-	unsigned int msg_length = -1;
+	ssize_t msg_length = -1;
 
 	try
 	{
@@ -116,7 +116,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 		throw ( EXCEPTIONS::PROTOCOL_ERROR( string( "Failed to convert [" + tstr + "] to a number:" + e.what() ) ) );
 	}
 
-	if ( msg_length != _buffer.length() )
+	if ( msg_length != ( ssize_t )_buffer.length() )
 	{
 		throw ( EXCEPTIONS::PROTOCOL_ERROR( string( "Supplied length parameter [" + tstr + "] is not the length of the buffer [" + num_to_str( ( unsigned int ) _buffer.length() ) + "] [" + _buffer + "]" ) ) );
 	}

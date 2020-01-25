@@ -23,10 +23,11 @@
 
 from make_makefile import SourceFile
 from make_makefile import Context
+from make_makefile import CLANGContext
 
 import os
 
-class MyContext(Context):
+class MyContext(CLANGContext):
 	def __init__(self):
 		Context.__init__(self)
 		self.CXX_FLAGS.append("-Wno-deprecated");

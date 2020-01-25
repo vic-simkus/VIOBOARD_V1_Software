@@ -54,7 +54,8 @@ namespace BBB_HVAC
 		public:
 			//DEF_LOGGER;
 
-			friend void BBB_HVAC::comm_thread_func( void* );
+			//Commented out as part of CLANG stuff
+			//friend void BBB_HVAC::comm_thread_func( void* );
 
 			/**
 			 * Invoked by the comm_thread every time a new message comes in.  The base implementation handles the HELLO, PING, and PONG messages.  It ignores all other

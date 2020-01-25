@@ -276,12 +276,12 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 		/*
 		 * If I make the type ssize_t arithmetic with size_t fails
 		 */
-		long int rc = read( this->serial_fd, buffer + this->buffer_context.buffer_idx, GC_SERIAL_BUFF_SIZE - this->buffer_context.buffer_idx );
+		long int read_count = read( this->serial_fd, buffer + this->buffer_context.buffer_idx, GC_SERIAL_BUFF_SIZE - this->buffer_context.buffer_idx );
 
 		// DEBUG SET A.1.  Also enable DEBUG SET A.2 at the same time.
 		//long int rc = read( this->serial_fd, buffer + this->buffer_context.buffer_idx, 1 );
 
-		if ( rc == 0 )
+		if ( read_count == 0 )
 		{
 			/*
 			 * Nothing more to read
@@ -289,14 +289,16 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 			rc = true;
 			break;
 		}
-		else if ( rc < 0 )
+		else if ( read_count < 0 )
 		{
 			LOG_ERROR( create_perror_string( "Serial read" ) );
 			rc = false;
 			break;
 		}
-
-		bytes_read += rc;
+		else
+		{
+			bytes_read += read_count;
+		}
 
 		if ( _discard )
 		{
@@ -305,7 +307,7 @@ bool SER_IO_COMM::drain_serial( bool _discard )
 
 		// DEBUG SET A.2
 		//cerr << "[" << this->buffer_context.buffer_idx << "] -- 0x" << char_to_hex( buffer[this->buffer_context.buffer_idx]) << " -- " <<  (buffer[this->buffer_context.buffer_idx] != 0x0A ? char(buffer[this->buffer_context.buffer_idx]) : (char)' ')   << endl;
-		this->buffer_context.buffer_idx = this->buffer_context.buffer_idx + rc;
+		this->buffer_context.buffer_idx = this->buffer_context.buffer_idx + ( unsigned long )read_count;
 
 		if ( this->buffer_context.buffer_idx >= GC_SERIAL_BUFF_SIZE )
 		{
@@ -383,27 +385,27 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 	/*
 	 * Set for 8N1
 	 */
-	this->current_tio.c_cflag &= ~PARENB;
-	this->current_tio.c_cflag &= ~CSTOPB;
-	this->current_tio.c_cflag &= ~CSIZE;
+	this->current_tio.c_cflag &= ( unsigned int )~PARENB;
+	this->current_tio.c_cflag &= ( unsigned int )~CSTOPB;
+	this->current_tio.c_cflag &= ( unsigned int )~CSIZE;
 	this->current_tio.c_cflag |= CS8;
 	/*
 	 * Enable raw mode; disable canonical mode, echo, and signals
 	 */
-	this->current_tio.c_lflag &= ~( ICANON | ECHO | ECHOE | ISIG );
+	this->current_tio.c_lflag &= ( unsigned int )~( ICANON | ECHO | ECHOE | ISIG );
 	/*
 	 * Disable software flow control
 	 */
-	this->current_tio.c_iflag &= ~( IXON | IXOFF | IXANY );
+	this->current_tio.c_iflag &= ( unsigned int )~( IXON | IXOFF | IXANY );
 	/*
 	 * Disable all input processing.  This fucker got me.  The port was automatically converting all 0x0D to 0x0A
 	 */
-	this->current_tio.c_iflag &= ~( BRKINT | INLCR | ICRNL | IUCLC | BRKINT | IMAXBEL | IGNCR );
+	this->current_tio.c_iflag &= ( unsigned int )~( BRKINT | INLCR | ICRNL | IUCLC | BRKINT | IMAXBEL | IGNCR );
 	this->current_tio.c_iflag |= ( IGNBRK );
 	/*
 	 * disable postprocess output
 	 */
-	this->current_tio.c_oflag &= ~OPOST;
+	this->current_tio.c_oflag &= ( unsigned int )~OPOST;
 	/*
 	 * Don't care about minimum character counts or timeouts.
 	 */
@@ -473,7 +475,7 @@ bool SER_IO_COMM::write_buffer( const unsigned char* _buffer, size_t _length )
 			return false;
 		}
 
-		rc = write( this->serial_fd, _buffer + bytes_written, _length - bytes_written );
+		rc = write( this->serial_fd, _buffer + bytes_written, _length - ( size_t )bytes_written );
 
 		if ( rc < 0 )
 		{
@@ -745,7 +747,7 @@ token_vector SER_IO_COMM::tokenize_protocol_line( size_t _line_index )
 {
 	token_vector ret;
 	const unsigned char* line = this->active_table->table[_line_index];
-	ssize_t str_len = strlen( ( const char* ) line );
+	ssize_t str_len = ( ssize_t )strlen( ( const char* ) line );
 	ssize_t left_idx = find_last_index_of( line, '|', str_len );
 	ssize_t right_idx = 0;
 
