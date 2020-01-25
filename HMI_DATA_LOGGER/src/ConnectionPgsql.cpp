@@ -15,3 +15,29 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "include/ConnectionPgsql.hpp"
+
+using namespace HMI_DATA_LOGGER;
+
+ConnectionPgsql::ConnectionPgsql( HMI_DATA_LOGGER::Context* _ctx ) : Connection( _ctx )
+{
+	return;
+}
+
+ConnectionPgsql::~ConnectionPgsql()
+{
+	return;
+}
+
+bool ConnectionPgsql::connect( void )
+{
+	return true;
+}
+bool ConnectionPgsql::disconnect( void )
+{
+	return true;
+}
+bool ConnectionPgsql::read_status( void )
+{
+	return true;
+}

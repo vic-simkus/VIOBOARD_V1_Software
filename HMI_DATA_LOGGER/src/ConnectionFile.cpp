@@ -62,14 +62,7 @@ bool ConnectionFile::read_status( void )
 
 	if ( this->logger_context->get_new_file_flag() )
 	{
-		this->logic_core_points.clear();
-
-		for ( auto map_iterator = map.begin(); map_iterator != map.end(); ++map_iterator )
-		{
-			this->logic_core_points.push_back( map_iterator->first );
-		}
-
-		this->logger_context->get_output_stream() << join_vector( this->logic_core_points, ',' ) << std::endl;
+		this->logger_context->get_output_stream() << join_list( this->logic_core_points, ',' ) << std::endl;
 		this->logger_context->reset_new_file_flag();
 	}
 
@@ -82,6 +75,7 @@ bool ConnectionFile::read_status( void )
 	}
 
 	this->logger_context->get_output_stream() << join_vector( output_vector, ',' ) << std::endl;
+
 	return true;
 }
 

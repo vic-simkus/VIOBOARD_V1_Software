@@ -28,6 +28,8 @@ For sleep
 */
 #include <unistd.h>
 
+#include <iostream>
+
 DEF_LOGGER_STAT( "HMI_DATA_LOGGER::MAIN" );
 
 /**
@@ -43,53 +45,80 @@ namespace HMI_DATA_LOGGER
 		LOG_DEBUG( "base data file name: " + _config.base_data_file_name );
 		LOG_DEBUG( "current file index: " + num_to_str( _config.current_file_index ) );
 		LOG_DEBUG( "fail hard: " + num_to_str( _config.fail_hard ) );
-		LOG_DEBUG( "mode: " + _config.mode );
+		LOG_DEBUG( "mode: " + Config::mode_to_string( _config.mode ) );
 		LOG_DEBUG( "pg url: " + _config.pg_url );
 		return;
 	}
 }
 
-bool collect_data_file( HMI_DATA_LOGGER::Context* )
+bool collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
 {
-	return true;
-}
-
-bool collect_data_pgsql( HMI_DATA_LOGGER::Context* )
-{
-	return true;
-}
-
-bool collect_data( HMI_DATA_LOGGER::Context* _logger_context )
-{
-	HMI_DATA_LOGGER::ConnectionFile connection( _logger_context );
-
-	if ( !connection.connect() )
+	if ( !_connection->connect() )
 	{
 		return false;
 	}
 
 	while ( !BBB_HVAC::GLOBALS::global_exit_flag )
 	{
-		if ( !connection.read_status() )
+		if ( !_connection->read_status() )
 		{
 			LOG_ERROR( "Failed to read status.  See previous error logs." );
-			connection.disconnect();
+			_connection->disconnect();
 			return false;
 		}
 
 		sleep( 1 );
 	}
 
-	LOG_DEBUG( "collect_data returning." );
 	return true;
+}
+bool dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
+{
+	_connection->connect();
+	std::list<std::string> names = _connection->get_item_names();
+
+	std::cout << endl;
+	std::cout << "Field names: " << endl;
+
+	for ( auto i = names.begin(); i != names.end(); ++i )
+	{
+		std::cout << "\t" << ( *i ) << endl;
+	}
+
+	std::cout << endl;
+
+	return true;
+}
+bool collect_data( HMI_DATA_LOGGER::Context* _logger_context )
+{
+	switch ( _logger_context->configuration.mode )
+	{
+		case HMI_DATA_LOGGER::Config::MODE::NONE:
+			throw logic_error( "Mode is none." );
+
+		case HMI_DATA_LOGGER::Config::MODE::FILE:
+			return collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
+			break;
+
+		case HMI_DATA_LOGGER::Config::MODE::PGSQL:
+			return collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionPgsql( _logger_context ) ) );
+			break;
+
+		case HMI_DATA_LOGGER::Config::MODE::PFIELDS:
+			return dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
+			break;
+
+		default:
+			throw logic_error( "Unrecognized mode: " + HMI_DATA_LOGGER::Config::mode_to_string( _logger_context->configuration.mode ) );
+	}
 }
 int main( int argc, const char** argv )
 {
-	BBB_HVAC::GLOBALS::configure_logging( 1, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
+	BBB_HVAC::GLOBALS::configure_logging( 1, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::ERROR );
 	BBB_HVAC::GLOBALS::configure_signals();
 
 
-	LOG_ERROR( "Starting." );
+	LOG_INFO( "Starting." );
 
 	HMI_DATA_LOGGER::Context logger_context = HMI_DATA_LOGGER::create_context( argc, argv );
 
@@ -103,36 +132,47 @@ int main( int argc, const char** argv )
 
 	LOG_DEBUG( "Next data file: " + logger_context.get_next_data_file_name() );
 
-	if ( logger_context.configuration.fail_hard == true )
+	try
 	{
-		collect_data( &logger_context );
-		LOG_DEBUG( "collect_data returned." );
-	}
-	else
-	{
-		LOG_INFO( "Application is running in FAIL_HARD=FALSE mode.  Will retry indefinitely on all error conditions." );
+		/*
+		We can retry indefinitely on recoverable errors.  On Exceptions we bail.
+		*/
 
-		while ( 1 )
+		if ( logger_context.configuration.fail_hard == true )
 		{
-			if ( collect_data( &logger_context ) )
-			{
-				LOG_DEBUG( "Data collection ended successfully.  Exiting." );
-				break;
-			}
-			else
-			{
-				LOG_DEBUG( "Error in data collection process.  FAIL_HARD is false.  Looping." );
-			}
-
-			if ( BBB_HVAC::GLOBALS::global_exit_flag == true )
-			{
-				LOG_INFO( "Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true." );
-				break;
-			}
-
-			BBB_HVAC::THREAD_REGISTRY::global_cleanup();
-			sleep( 1 );
+			collect_data( &logger_context );
+			LOG_DEBUG( "collect_data returned." );
 		}
+		else
+		{
+			LOG_INFO( "Application is running in FAIL_HARD=FALSE mode.  Will retry indefinitely on all error conditions." );
+
+			while ( 1 )
+			{
+				if ( collect_data( &logger_context ) )
+				{
+					LOG_INFO( "Data collection ended successfully.  Exiting." );
+					break;
+				}
+				else
+				{
+					LOG_ERROR( "Error in data collection process.  FAIL_HARD is false.  Looping." );
+				}
+
+				if ( BBB_HVAC::GLOBALS::global_exit_flag == true )
+				{
+					LOG_INFO( "Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true." );
+					break;
+				}
+
+				BBB_HVAC::THREAD_REGISTRY::global_cleanup();
+				sleep( 1 );
+			}
+		}
+	}
+	catch ( const exception& _e )
+	{
+		LOG_ERROR( "Unexpected exception caught: " + string( _e.what() ) );
 	}
 
 	LOG_INFO( "Application is exiting." );

@@ -17,6 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "include/Connection.hpp"
 #include "include/Context.hpp"
+
+#include <exception>
+
 using namespace HMI_DATA_LOGGER;
 
 Connection::Connection( HMI_DATA_LOGGER::Context* _logger_context )
@@ -54,5 +57,45 @@ bool Connection::connect_to_logic_core( void )
 		return false;
 	}
 
+	this->get_item_names();
+
 	return true;
+}
+
+std::list<std::string> Connection::get_item_names( void )
+{
+	if ( this->client_context == nullptr )
+	{
+		throw logic_error( "Not connected to remote" );
+	}
+
+	if ( this->logic_core_points.size() > 0 )
+	{
+		return this->logic_core_points;
+	}
+
+	BBB_HVAC::MESSAGE_PTR message;
+
+	try
+	{
+		message = this->client_context->message_processor->create_read_logic_status( );
+		message = this->client_context->send_message_and_wait( message );
+	}
+	catch ( const exception& e )
+	{
+		throw runtime_error( "Failed to read from remote: " + std::string( e.what() ) );
+	}
+
+	std::map<std::string, std::string> map;
+	BBB_HVAC::MESSAGE::message_to_map( message, map );
+
+	this->logic_core_points.clear();
+
+	for ( auto map_iterator = map.begin(); map_iterator != map.end(); ++map_iterator )
+	{
+		this->logic_core_points.push_back( map_iterator->first );
+	}
+
+	return this->logic_core_points;
+
 }

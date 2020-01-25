@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "lib/bbb_hvac.hpp"
 
 #include <memory>
-#include <vector>
+#include <list>
 
 namespace HMI_DATA_LOGGER
 {
@@ -38,13 +38,15 @@ namespace HMI_DATA_LOGGER
 			virtual bool disconnect( void ) = 0;
 			virtual bool read_status( void ) = 0;
 
+			std::list<std::string> get_item_names( void );
+
 		protected:
 
 			bool connect_to_logic_core( void );
 
 			BBB_HVAC::CLIENT::CLIENT_CONTEXT* client_context;
 			HMI_DATA_LOGGER::Context* logger_context;
-			std::vector<std::string> logic_core_points;
+			std::list<std::string> logic_core_points;
 
 		private:
 			DEF_LOGGER;

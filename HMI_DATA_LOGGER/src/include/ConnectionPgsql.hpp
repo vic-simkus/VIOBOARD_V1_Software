@@ -18,4 +18,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __HMI_DATA_LOGGER_CONNECTION_PGSQL_HPP
 #define __HMI_DATA_LOGGER_CONNECTION_PGSQL_HPP
 
+#include "Connection.hpp"
+
+namespace  HMI_DATA_LOGGER
+{
+	class Context;
+
+	class ConnectionPgsql : public Connection
+	{
+		public:
+			ConnectionPgsql( HMI_DATA_LOGGER::Context* );
+			~ConnectionPgsql();
+			virtual bool connect( void );
+			virtual bool disconnect( void );
+			virtual bool read_status( void );
+		protected:
+		private:
+	};
+}
 #endif

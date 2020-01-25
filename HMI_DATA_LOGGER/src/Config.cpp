@@ -35,7 +35,7 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 	ex_parms["--rotate_size"] = "Size of the data log file, in bytes, when it should be rotated.\n\t\tRelevant only if mode is FILE.";
 	ex_parms["--log_dir"] = "Directory where the logged data will be saved to.\n\t\tRelevant only if mode is FILE.";
 	ex_parms["--base_data_file_name"] = "Base name of the data file.\n\t\tRelevant only if mode is FILE.";
-	ex_parms["--mode"] = "Where to save the data [FILE|PGSQL]\n\t\tSpecify --pg_host if mode = PGSQL";
+	ex_parms["--mode"] = "Where to save the data [FILE|PGSQL|PFIELDS]\n\t\tSpecify --pg_host if mode = PGSQL";
 	ex_parms["--pg_url"] = "PostgreSQL connection string.\n\t\tRelevant only if mode is PGSQL.";
 
 	LOG_DEBUG( "Processing command line parameters." );
@@ -94,7 +94,20 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 		}
 		else if ( param == "--mode" )
 		{
-			_ctx.configuration.mode = to_upper_case( i->second );
+			string mode = to_upper_case( i->second );
+
+			if ( mode == "FILE" )
+			{
+				_ctx.configuration.mode = Config::MODE::FILE;
+			}
+			else if ( mode == "PGSQL" )
+			{
+				_ctx.configuration.mode = Config::MODE::PGSQL;
+			}
+			else if ( mode == "PFIELDS" )
+			{
+				_ctx.configuration.mode = Config::MODE::PFIELDS;
+			}
 		}
 		else if ( param == "--fail_hard" )
 		{

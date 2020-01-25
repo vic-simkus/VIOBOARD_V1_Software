@@ -33,6 +33,35 @@ namespace HMI_DATA_LOGGER
 	class Config
 	{
 		public:
+			enum class MODE : char
+			{
+				NONE = 0,
+				FILE,
+				PGSQL,
+				PFIELDS
+			};
+
+			static std::string mode_to_string( MODE _right ) {
+				switch ( _right ) {
+					case MODE::NONE:
+						return "NONE";
+						break;
+
+					case MODE::FILE:
+						return "FILE";
+						break;
+
+					case MODE::PGSQL:
+						return "PGSQL";
+						break;
+
+					case MODE::PFIELDS:
+						return"PFIELDS";
+						break;
+				}
+
+				return "UNKNOWN";
+			}
 			/**
 			\brief Default constructor.
 			Initializes all of the instance values to their super reasonable defaults.
@@ -43,7 +72,7 @@ namespace HMI_DATA_LOGGER
 				this->base_data_file_name = "sys_status_log.#.csv";
 				this->current_file_index = 0;
 				this->fail_hard = true;
-				this->mode = "FILE";
+				this->mode = MODE::NONE;
 				this->valid = false;
 
 				return;
@@ -54,7 +83,7 @@ namespace HMI_DATA_LOGGER
 
 			std::string log_dir;
 			std::string base_data_file_name;
-			std::string mode;
+			MODE mode;
 			std::string pg_url;
 
 			bool fail_hard;
