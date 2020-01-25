@@ -133,6 +133,31 @@ std::string join_vector( const std::vector<std::string>& _vect, char _char )
 	return ret.str();
 }
 
+std::string join_list( const std::list<std::string>& _list, char _char )
+{
+	std::stringstream ret;
+
+	/*
+	Fucking pain in the ass C++.  I can look at the next item in the iterator in the vector but not list.
+	*/
+	size_t i = 0;
+
+	for ( auto it = _list.begin(); it != _list.end(); ++it )
+	{
+		ret << *it;
+
+		if ( ( i + 1 ) < _list.size() )
+		{
+			ret << _char;
+		}
+
+		i += 1;
+	}
+
+	return ret.str();
+}
+
+
 const char* TEST_STR[] = { "   TESTING", "TESTING   ", "   TESTING   ", "  ", "", " ", "..A..", "T E S T I N G", 0 };
 
 bool test_string_lib( void )

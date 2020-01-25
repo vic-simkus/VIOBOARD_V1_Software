@@ -26,13 +26,13 @@ LOG_CONFIGURATOR::LOG_CONFIGURATOR( int _fd, ENUM_LOG_LEVEL _level ) : TPROTECT_
 	this->fd = _fd;
 	this->had_error = false;
 
-	string msg = "LOG_CONFIGURATOR instantiated.";
-	write( this->fd, msg.data(), msg.length() );
+	//string msg = "LOG_CONFIGURATOR instantiated. ";
+	//write( this->fd, msg.data(), msg.length() );
 
 	if ( LOG_CONFIGURATOR::root_configurator == nullptr )
 	{
-		msg = "This LOG_CONFIGURATOR instance is root.\n";
-		write( this->fd, msg.data(), msg.length() );
+		//msg = "This LOG_CONFIGURATOR instance is root.\n";
+		//write( this->fd, msg.data(), msg.length() );
 
 		LOG_CONFIGURATOR::root_configurator = this;
 	}
