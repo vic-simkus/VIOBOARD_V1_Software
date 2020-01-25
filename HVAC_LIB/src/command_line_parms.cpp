@@ -3,7 +3,31 @@
 #include <iostream>
 using namespace BBB_HVAC;
 
+COMMAND_LINE_PARMS::COMMAND_LINE_PARMS()
+{
+	this->init( 0, nullptr );
+	return;
+}
 COMMAND_LINE_PARMS::COMMAND_LINE_PARMS( size_t _argc, const char** _argv )
+{
+	this->init( _argc, _argv );
+	return;
+}
+COMMAND_LINE_PARMS::COMMAND_LINE_PARMS( size_t _argc, const char** _argv, const EX_PARAM_LIST& _ex_parm_list )
+{
+	this->init( _argc, _argv );
+
+	for ( auto i = _ex_parm_list.begin(); i != _ex_parm_list.end(); ++i )
+	{
+		this->ex_parm_names.push_back( i->first );
+	}
+
+	this->ex_parm_list = _ex_parm_list;
+
+	return;
+}
+
+void COMMAND_LINE_PARMS::init( size_t _argc, const char** _argv )
 {
 	this->argc = _argc;
 	this->argv = _argv;
@@ -18,13 +42,27 @@ COMMAND_LINE_PARMS::COMMAND_LINE_PARMS( size_t _argc, const char** _argv )
 
 	this->st = BBB_HVAC::SOCKET_TYPE::NONE;
 
-	this->exe = string( argv[0] );
+	if ( _argv != nullptr )
+	{
+		this->exe = string( argv[0] );
+	}
 
 	this->log_file = "/var/log/BBB_HVAC.log";
 
 	return;
 }
+bool COMMAND_LINE_PARMS::process_ex_params( const string& _p )
+{
+	for ( auto i = this->ex_parm_names.begin(); i != this->ex_parm_names.end(); ++i )
+	{
+		if ( ( *i ) == _p )
+		{
+			return true;
+		}
+	}
 
+	return false;
+}
 void COMMAND_LINE_PARMS::process( void )
 {
 	for ( size_t i = 1; i < argc; i++ )
@@ -100,7 +138,22 @@ void COMMAND_LINE_PARMS::process( void )
 		}
 		else
 		{
-			print_cmd_error( exe, "Unrecognized command line parameter: " + p );
+			if ( !this->process_ex_params( p ) )
+			{
+				print_cmd_error( exe, "Unrecognized command line parameter: " + p );
+			}
+			else
+			{
+				if ( i == ( argc - 1 ) )
+				{
+					print_cmd_error( exe, "No parameter specified for: " + p );
+				}
+				else
+				{
+					this->ex_parm_values[p] = string( argv[i + 1] );
+					i += 1;
+				}
+			}
 		}
 	}
 
@@ -159,6 +212,8 @@ void COMMAND_LINE_PARMS::process( void )
 		cout << "    Server mode [-s]: [" << ( server_mode ? "TRUE" : "FALSE" ) << "]" << endl;
 	}
 
+	return;
+
 }
 
 bool COMMAND_LINE_PARMS::is_verbose_flag( void ) const
@@ -210,6 +265,17 @@ void COMMAND_LINE_PARMS::print_help( const string& _c )
 	cout << "\t-s - Server mode.  If not specified application runs in console." << endl;
 	cout << "\t-v - Verbose mode.  Produces extra debugging information to the console." << endl;
 	cout << "\t-h - This help" << endl;
+
+	if ( this->ex_parm_list.size() > 0 )
+	{
+		cout << "\n\t***********" << endl << endl;
+
+		for ( auto i = this->ex_parm_list.begin(); i != this->ex_parm_list.end(); i++ )
+		{
+			cout << "\t" << i->first <<  " " << i->second << endl;
+		}
+	}
+
 	exit( -1 );
 
 	return;
@@ -220,5 +286,7 @@ void COMMAND_LINE_PARMS::print_cmd_error( const string& _c, const string& _failu
 	cerr << "Command line error: " << endl;
 	cerr << _failure << endl;
 	print_help( _c );
+
+	return;
 }
 
