@@ -15,7 +15,7 @@
 		},
 		{
 			"path": "src/include",
-			"name": "INCLUDES",
+			"name": "INCLUDE",
 			"file_exclude_patterns": [".tags*"]
 		}
 	]
