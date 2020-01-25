@@ -32,14 +32,11 @@ bool HMI_DATA_LOGGER::create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _
 	BBB_HVAC::COMMAND_LINE_PARMS::EX_PARAM_LIST ex_parms;
 
 	ex_parms["--fail_hard"] = "If set to true the application will fail 'hard and loud' on error conditions.\n\t\tIf [false] (default) the application will keep trying failed operations.";
-	ex_parms["--rotate_size"] = "Size of the data log file, in bytes, when it should be rotated.";
-	ex_parms["--log_dir"] = "Directory where the logged data will be saved to.";
-	ex_parms["--base_data_file_name"] = "Base name of the data file.";
-
-	_ctx.configuration.command_line_parms.reset( new BBB_HVAC::COMMAND_LINE_PARMS( _argc, _argv, ex_parms ) );
-
-	// If there is an error in command line parms this method never returns.
-	_ctx.configuration.command_line_parms->process();
+	ex_parms["--rotate_size"] = "Size of the data log file, in bytes, when it should be rotated.\n\t\tRelevant only if mode is FILE.";
+	ex_parms["--log_dir"] = "Directory where the logged data will be saved to.\n\t\tRelevant only if mode is FILE.";
+	ex_parms["--base_data_file_name"] = "Base name of the data file.\n\t\tRelevant only if mode is FILE.";
+	ex_parms["--mode"] = "Where to save the data [FILE|PGSQL]\n\t\tSpecify --pg_host if mode = PGSQL";
+	ex_parms["--pg_url"] = "PostgreSQL connection string.\n\t\tRelevant only if mode is PGSQL.";
 
 	LOG_DEBUG( "Processing command line parameters." );
 
@@ -55,24 +52,17 @@ bool HMI_DATA_LOGGER::create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _
 	_ctx.set_prog_name( std::string( _argv[0] ) );
 	_ctx.set_prog_name_fixed( normalized_me );
 
-	if ( ( _argc % 2 ) == 0 )
-	{
-		/*
-		We always expect an odd number of parameters.
-		0   -- program name
-		n   -- param name
-		n+1 -- param value
+	_ctx.configuration.command_line_parms.reset( new BBB_HVAC::COMMAND_LINE_PARMS( _argc, _argv, ex_parms ) );
 
-		... so forth ...
-		*/
-		LOG_ERROR( "Command line parameter goofiness.  We always expect an odd number of parameters (including argv[0]!)." );
-		return false;
-	}
+	// If there is an error in command line parms this method never returns.
+	_ctx.configuration.command_line_parms->process();
 
-	for ( auto i = _ctx.configuration.command_line_parms->ex_parm_values.begin(); i != _ctx.configuration.command_line_parms->ex_parm_values.begin(); ++i )
+
+	for ( auto i = _ctx.configuration.command_line_parms->ex_parm_values.begin(); i != _ctx.configuration.command_line_parms->ex_parm_values.end(); ++i )
 	{
-		//LOG_DEBUG_STAT("Param [" + num_to_str(i) + "]: " + std::string(_argv[i]) );
 		std::string param = i->first;
+
+		LOG_DEBUG( "Param [" + i->first + "]: " + i->second );
 
 		if ( param == "--rotate_size" )
 		{
@@ -85,6 +75,7 @@ bool HMI_DATA_LOGGER::create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _
 			catch ( const std::exception& e )
 			{
 				LOG_ERROR( "Failed to convert value o LOG_SIZE parameter to number.  Value [" + i->second + "], error: " + e.what() );
+				return false;
 			}
 
 			_ctx.configuration.rotate_size = rotate_size;
@@ -96,6 +87,14 @@ bool HMI_DATA_LOGGER::create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _
 		else if ( param == "--base_data_file_name" )
 		{
 			_ctx.configuration.base_data_file_name =  i->second;
+		}
+		else if ( param == "--pg_url" )
+		{
+			_ctx.configuration.pg_url =  i->second;
+		}
+		else if ( param == "--mode" )
+		{
+			_ctx.configuration.mode = to_upper_case( i->second );
 		}
 		else if ( param == "--fail_hard" )
 		{
@@ -109,6 +108,8 @@ bool HMI_DATA_LOGGER::create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _
 			}
 		}
 	}
+
+	_ctx.configuration.valid = true;
 
 	return rc;
 

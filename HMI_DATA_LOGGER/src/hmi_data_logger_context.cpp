@@ -1,22 +1,20 @@
 /*
-* This file is part of the software stack for Vic's IO board and its
-* associated projects.
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Affero General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Affero General Public License for more details.
-*
-* You should have received a copy of the GNU Affero General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*
-* Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
+Copyright (C) 2019  Vidas Simkus (vic.simkus@simkus.com)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 
 #include "include/hmi_data_logger_context.hpp"
 #include "lib/string_lib.hpp"
@@ -73,7 +71,7 @@ bool HMI_DATA_LOGGER_CONTEXT::check_data_dir( void )
 	std::unique_ptr<char> _data_dir( realpath( this->configuration.log_dir.data(), nullptr ) );
 	std::string data_dir;
 
-	if( _data_dir )
+	if ( _data_dir )
 	{
 		data_dir = _data_dir.get();
 	}
@@ -88,13 +86,13 @@ bool HMI_DATA_LOGGER_CONTEXT::check_data_dir( void )
 	struct stat stat_buff;
 	int rc = stat( data_dir.data(), &stat_buff );
 
-	if( rc != 0 )
+	if ( rc != 0 )
 	{
 		LOG_ERROR( BBB_HVAC::create_perror_string( "Failed to stat [" + data_dir + "]: " ) );
 		return false;
 	}
 
-	if( !S_ISDIR( stat_buff.st_mode ) )
+	if ( !S_ISDIR( stat_buff.st_mode ) )
 	{
 		LOG_ERROR( "Apparently " + data_dir + " is not a directory?" );
 		return false;
@@ -112,20 +110,20 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 	std::string post_index_fluff = this->get_data_file_name_after_index();
 	size_t post_index_fluff_start = 0;
 
-	if( this->full_data_dir.empty() )
+	if ( this->full_data_dir.empty() )
 	{
 		throw std::runtime_error( "Must call this->check_data_dir first.  Oh and also the call must succeed." );
 	}
 
 	DIR* dir_stream = opendir( this->full_data_dir.data() );
 
-	if( dir_stream == nullptr )
+	if ( dir_stream == nullptr )
 	{
 		LOG_ERROR( BBB_HVAC::create_perror_string( "Failed to open data directory " + this->full_data_dir + ": " ) );
 		throw std::runtime_error( BBB_HVAC::create_perror_string( "Failed to open data directory " + this->full_data_dir + ": " ) );
 	}
 
-	while( 1 )
+	while ( 1 )
 	{
 		/*
 		On error to readdir errno is changed.  We set it here to a known state.
@@ -133,9 +131,9 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 		errno = 0;
 		struct dirent* directory_entry = readdir( dir_stream );
 
-		if( directory_entry == nullptr )
+		if ( directory_entry == nullptr )
 		{
-			if( errno == 0 )
+			if ( errno == 0 )
 			{
 				/*
 				End of directory entries.
@@ -154,14 +152,14 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 
 		std::string entry_string( directory_entry->d_name );
 
-		if( entry_string == "." || entry_string == ".." )
+		if ( entry_string == "." || entry_string == ".." )
 		{
 			continue;
 		}
 
 		//LOG_DEBUG_STAT("Processing directory entry: " + entry_string);
 
-		if( entry_string.find( pre_index_fluff ) == std::string::npos )
+		if ( entry_string.find( pre_index_fluff ) == std::string::npos )
 		{
 			/*
 			The beginning of the file name does not look like the pre-index portion.
@@ -169,7 +167,7 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 			continue;
 		}
 
-		if( ( post_index_fluff_start = entry_string.rfind( post_index_fluff ) ) == std::string::npos )
+		if ( ( post_index_fluff_start = entry_string.rfind( post_index_fluff ) ) == std::string::npos )
 		{
 			/*
 			While the file starts with the configured data file preamble, it does not end with the expected suffix.
@@ -180,7 +178,7 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 		//LOG_DEBUG( "Found a recognized file: " + entry_string );
 		std::string str_index = entry_string.substr( pre_index_fluff.length(), entry_string.length() - ( pre_index_fluff.length() + post_index_fluff.length() ) );
 
-		if( str_index.length() < 1 )
+		if ( str_index.length() < 1 )
 		{
 			LOG_WARNING( "Weirdness (1) in file name in data directory: [" + entry_string +  "].  An investigation is appropriate." );
 			continue;
@@ -192,7 +190,7 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 		{
 			file_index = std::stoul( str_index );
 		}
-		catch( const std::invalid_argument& e )
+		catch ( const std::invalid_argument& e )
 		{
 			LOG_WARNING( "Weirdness (2) in file name in data directory: [" + entry_string + "].  An investigation is appropriate." );
 			continue;
@@ -200,7 +198,7 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 
 		//LOG_DEBUG( "Index string: [" + str_index + "] --> [" + num_to_str( file_index ) + "]" );
 
-		if( file_index > next_file_index )
+		if ( file_index > next_file_index )
 		{
 			next_file_index = file_index;
 		}
@@ -214,7 +212,7 @@ std::string HMI_DATA_LOGGER_CONTEXT::get_data_file_name_before_index( void )
 {
 	size_t idx = this->configuration.base_data_file_name.find( '#' );
 
-	if( idx == std::string::npos )
+	if ( idx == std::string::npos )
 	{
 		/*
 		Hash is not present.
@@ -231,7 +229,7 @@ std::string HMI_DATA_LOGGER_CONTEXT::get_data_file_name_after_index( void )
 {
 	size_t idx = this->configuration.base_data_file_name.find( '#' );
 
-	if( idx == std::string::npos )
+	if ( idx == std::string::npos )
 	{
 		/*
 		Hash is not present.
@@ -246,7 +244,7 @@ std::string HMI_DATA_LOGGER_CONTEXT::get_data_file_name_after_index( void )
 
 void HMI_DATA_LOGGER_CONTEXT::set_prog_name( const std::string& _p ) throw( std::logic_error )
 {
-	if( !this->prog_name.empty() )
+	if ( !this->prog_name.empty() )
 	{
 		throw std::logic_error( "Tried to set prog_name more than once." );
 	}
@@ -257,7 +255,7 @@ void HMI_DATA_LOGGER_CONTEXT::set_prog_name( const std::string& _p ) throw( std:
 
 void HMI_DATA_LOGGER_CONTEXT::set_prog_name_fixed( const std::string& _p ) throw( std::logic_error )
 {
-	if( !this->prog_name_fixed.empty() )
+	if ( !this->prog_name_fixed.empty() )
 	{
 		throw std::logic_error( "Tried to set prog_name_fixed more than once." );
 	}
@@ -298,7 +296,7 @@ std::ofstream& HMI_DATA_LOGGER_CONTEXT::get_output_stream( void )
 {
 	struct stat stat_buff;
 
-	if( this->configuration.rotate_size == 0 )
+	if ( this->configuration.rotate_size == 0 )
 	{
 		/*
 		Do not rotate.
@@ -306,16 +304,16 @@ std::ofstream& HMI_DATA_LOGGER_CONTEXT::get_output_stream( void )
 		return this->output_stream;
 	}
 
-	if( stat( this->current_data_file_name.data(), &stat_buff ) != 0 )
+	if ( stat( this->current_data_file_name.data(), &stat_buff ) != 0 )
 	{
-		throw( runtime_error( BBB_HVAC::create_perror_string( "Failed to stat current log file: " ) ) );
+		throw ( runtime_error( BBB_HVAC::create_perror_string( "Failed to stat current log file: " ) ) );
 	}
 
 	size_t file_size_k = ( ( size_t )( stat_buff.st_size / 1024 ) );
 
 	//LOG_DEBUG("Current log size in K: " + num_to_str(file_size_k));
 
-	if( file_size_k >= this->configuration.rotate_size )
+	if ( file_size_k >= this->configuration.rotate_size )
 	{
 		this->close_output_stream();
 		this->open_output_stream();
@@ -326,7 +324,7 @@ std::ofstream& HMI_DATA_LOGGER_CONTEXT::get_output_stream( void )
 
 void HMI_DATA_LOGGER_CONTEXT::open_output_stream( void ) throw( exception )
 {
-	if( this->output_stream.is_open() )
+	if ( this->output_stream.is_open() )
 	{
 		LOG_ERROR( "Tried to open output stream more than once.  Check program logic." );
 		return;
@@ -339,9 +337,9 @@ void HMI_DATA_LOGGER_CONTEXT::open_output_stream( void ) throw( exception )
 	this->current_data_file_name = this->get_next_data_file_name();
 	this->output_stream = std::ofstream( this->current_data_file_name, std::ios::binary | std::ios::out | std::ios::ate | std::ios::app );
 
-	if( !this->output_stream.good() )
+	if ( !this->output_stream.good() )
 	{
-		throw( runtime_error( "Failed to open output stream." ) );
+		throw ( runtime_error( "Failed to open output stream." ) );
 	}
 
 	this->new_file_flag = true;
@@ -349,10 +347,22 @@ void HMI_DATA_LOGGER_CONTEXT::open_output_stream( void ) throw( exception )
 }
 void HMI_DATA_LOGGER_CONTEXT::close_output_stream( void )
 {
-	if( this->output_stream.is_open() )
+	if ( this->output_stream.is_open() )
 	{
 		this->output_stream.close();
 	}
 
 	return;
+}
+
+HMI_DATA_LOGGER_CONTEXT HMI_DATA_LOGGER::create_context( int _argc, const char** _argv )
+{
+	HMI_DATA_LOGGER_CONTEXT ctx;
+
+	if ( !create_configuration( ctx, _argc, _argv ) )
+	{
+		throw ( runtime_error( "Failed to configure application.  Check log output for details." ) );
+	}
+
+	return ctx;
 }
