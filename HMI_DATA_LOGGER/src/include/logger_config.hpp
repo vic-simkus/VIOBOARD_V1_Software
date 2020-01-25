@@ -1,0 +1,69 @@
+/*
+Copyright (C) 2019  Vidas Simkus (vic.simkus@simkus.com)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef __HMI_DATA_LOGGER_CONFIG_HPP
+#define __HMI_DATA_LOGGER_CONFIG_HPP
+
+//#include "hmi_data_logger_context.hpp"
+#include "lib/command_line_parms.h"
+
+#include <string>
+#include <memory>
+
+namespace HMI_DATA_LOGGER
+{
+	class HMI_DATA_LOGGER_CONTEXT;
+	/**
+	\brief Application configuration
+	*/
+	class HMI_DATA_LOGGER_CONFIG
+	{
+		public:
+			/**
+			\brief Default constructor.
+			Initializes all of the instance values to their super reasonable defaults.
+			*/
+			HMI_DATA_LOGGER_CONFIG() {
+				this->rotate_size = 0;
+				this->log_dir = "./log_data";
+				this->base_data_file_name = "sys_status_log.#.csv";
+				this->current_file_index = 0;
+				this->fail_hard = true;
+				this->mode = "FILE";
+				this->valid = false;
+
+				return;
+			}
+
+			size_t rotate_size;
+			size_t current_file_index;
+
+			std::string log_dir;
+			std::string base_data_file_name;
+			std::string mode;
+			std::string pg_url;
+
+			bool fail_hard;
+			bool valid;
+
+			std::shared_ptr<BBB_HVAC::COMMAND_LINE_PARMS> command_line_parms;
+	};
+
+	bool create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _argc, const char** _argv );
+}
+
+#endif
