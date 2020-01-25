@@ -2,10 +2,12 @@
 
 from make_makefile import SourceFile
 from make_makefile import Context
+from make_makefile import GCCContext
+from make_makefile import CLANGContext
 
 import os
 
-class MyContext(Context):
+class MyContext(CLANGContext):
 	SOURCE_FILES = (
 			SourceFile("HmiDataLogger.cpp"),
 			SourceFile("Context.cpp"),
@@ -24,3 +26,7 @@ class MyContext(Context):
 
 def vc_init():
 	return MyContext()
+
+
+if __name__ == "main":
+	vc_init()

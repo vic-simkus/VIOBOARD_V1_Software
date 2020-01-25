@@ -52,7 +52,7 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 	_ctx.set_prog_name( std::string( _argv[0] ) );
 	_ctx.set_prog_name_fixed( normalized_me );
 
-	_ctx.configuration.command_line_parms.reset( new BBB_HVAC::COMMAND_LINE_PARMS( _argc, _argv, ex_parms ) );
+	_ctx.configuration.command_line_parms.reset( new BBB_HVAC::COMMAND_LINE_PARMS( ( size_t )_argc, _argv, ex_parms ) );
 
 	// If there is an error in command line parms this method never returns.
 	_ctx.configuration.command_line_parms->process();
