@@ -150,6 +150,7 @@ void COMMAND_LINE_PARMS::process( void )
 				}
 				else
 				{
+					//cout << "Setting: " << p << " to: " << std::string( argv[i + 1] ) << endl;
 					this->ex_parm_values[p] = string( argv[i + 1] );
 					i += 1;
 				}
