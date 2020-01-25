@@ -23,6 +23,7 @@
 #define STRING_LIB_H_
 
 #include <vector>
+#include <list>
 #include <string>
 
 /*\file Stuff here is to get around the fucking travesty that is the standard C++ library.
@@ -56,6 +57,14 @@ char* trim_string_right( char* str );
  * \return The generated (joined) string.
  */
 std::string join_vector( const std::vector<std::string>& _vect, char _char );
+
+/**
+ * Joins the supplied vector of strings into a single string separating the individual elements using the provided character.
+ * \param _vect The string vector to be joined.
+ * \param _char The separator character to be used between the elements of the vector.
+ * \return The generated (joined) string.
+ */
+std::string join_list( const std::list<std::string>& _vect, char _char );
 
 /**
 	Converts the supplied byte (_n) into a binary string representation in little endian format.
