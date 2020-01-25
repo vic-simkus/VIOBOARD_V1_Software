@@ -16,8 +16,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "include/hmi_data_logger_config.hpp"
-#include "include/hmi_data_logger_context.hpp"
+#include "include/Config.hpp"
+#include "include/Context.hpp"
 
 #include "lib/logger.hpp"
 
@@ -25,7 +25,7 @@ using namespace HMI_DATA_LOGGER;
 
 DEF_LOGGER_STAT( "HMI_DATA_LOGGER::CONFIG" );
 
-bool HMI_DATA_LOGGER::create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _argc, const char** _argv )
+bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char** _argv )
 {
 	bool rc = true;
 

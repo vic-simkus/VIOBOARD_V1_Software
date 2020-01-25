@@ -15,8 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "include/hmi_data_logger_context.hpp"
-#include "include/hmi_data_logger_connection.hpp"
+#include "include/Context.hpp"
+#include "include/ConnectionFile.hpp"
+#include "include/ConnectionPgsql.hpp"
 
 #include "lib/logger.hpp"
 
@@ -34,7 +35,7 @@ Application namespace
 */
 namespace HMI_DATA_LOGGER
 {
-	static void dump_config( const HMI_DATA_LOGGER_CONFIG& _config )
+	static void dump_config( const Config& _config )
 	{
 		LOG_DEBUG( "Application configuration:" );
 		LOG_DEBUG( "log rotate size: " + num_to_str( _config.rotate_size ) );
@@ -48,19 +49,19 @@ namespace HMI_DATA_LOGGER
 	}
 }
 
-bool collect_data_file( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* _logger_context )
+bool collect_data_file( HMI_DATA_LOGGER::Context* )
 {
-
+	return true;
 }
 
-bool collect_data_pgsql( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* _logger_context )
+bool collect_data_pgsql( HMI_DATA_LOGGER::Context* )
 {
-
+	return true;
 }
 
-bool collect_data( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* _logger_context )
+bool collect_data( HMI_DATA_LOGGER::Context* _logger_context )
 {
-	HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONNECTION connection( _logger_context );
+	HMI_DATA_LOGGER::ConnectionFile connection( _logger_context );
 
 	if ( !connection.connect() )
 	{
@@ -90,7 +91,7 @@ int main( int argc, const char** argv )
 
 	LOG_ERROR( "Starting." );
 
-	HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT logger_context = HMI_DATA_LOGGER::create_context( argc, argv );
+	HMI_DATA_LOGGER::Context logger_context = HMI_DATA_LOGGER::create_context( argc, argv );
 
 	dump_config( logger_context.configuration );
 

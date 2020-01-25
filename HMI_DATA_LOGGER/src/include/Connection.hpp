@@ -25,28 +25,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace HMI_DATA_LOGGER
 {
-	class HMI_DATA_LOGGER_CONTEXT;
+	class Context;
 
-	class HMI_DATA_LOGGER_CONNECTION
+	class Connection
 	{
 		public:
 
-			HMI_DATA_LOGGER_CONNECTION( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* );
-			~HMI_DATA_LOGGER_CONNECTION();
+			Connection( HMI_DATA_LOGGER::Context* );
+			virtual ~Connection();
 
 			virtual bool connect( void ) = 0;
 			virtual bool disconnect( void ) = 0;
 			virtual bool read_status( void ) = 0;
 
 		protected:
-		private:
-			DEF_LOGGER;
-			BBB_HVAC::CLIENT::CLIENT_CONTEXT* client_context;
-			HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* logger_context;
 
+			bool connect_to_logic_core( void );
+
+			BBB_HVAC::CLIENT::CLIENT_CONTEXT* client_context;
+			HMI_DATA_LOGGER::Context* logger_context;
 			std::vector<std::string> logic_core_points;
 
-			bool opened_output;
+		private:
+			DEF_LOGGER;
 	};
 }
 

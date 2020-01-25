@@ -15,14 +15,28 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "include/hmi_data_logger_connection.hpp"
-#include "include/hmi_data_logger_context.hpp"
+#include "include/ConnectionFile.hpp"
+#include "include/Context.hpp"
 
 #include <vector>
 
 using namespace HMI_DATA_LOGGER;
 
-bool HMI_DATA_LOGGER_CONNECTION::read_status( void )
+ConnectionFile::ConnectionFile( HMI_DATA_LOGGER::Context* _ctx ) : Connection( _ctx )
+{
+	INIT_LOGGER( "HMI_DATA_LOGGER::ConnectionFile" );
+
+	this->opened_output = false;
+
+	return;
+}
+
+ConnectionFile::~ConnectionFile()
+{
+	return;
+}
+
+bool ConnectionFile::read_status( void )
 {
 	if ( !this->opened_output )
 	{
@@ -71,45 +85,15 @@ bool HMI_DATA_LOGGER_CONNECTION::read_status( void )
 	return true;
 }
 
-HMI_DATA_LOGGER_CONNECTION::HMI_DATA_LOGGER_CONNECTION( HMI_DATA_LOGGER::HMI_DATA_LOGGER_CONTEXT* _logger_context )
+
+bool ConnectionFile::connect( void )
 {
-	this->logger_context = _logger_context;
-	INIT_LOGGER( "HMI_DATA_LOGGER::HMIC_DATA_LOGGER_CONNECTION" );
-	LOG_DEBUG( "Instantiating." );
-	this->client_context = BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance( this->logger_context->configuration.command_line_parms->get_socket_type(), this->logger_context->configuration.command_line_parms->get_address(), this->logger_context->configuration.command_line_parms->get_port() );
-	this->opened_output = false;
-	return;
+	return this->connect_to_logic_core();
 }
 
-bool HMI_DATA_LOGGER_CONNECTION::connect( void )
-{
-	try
-	{
-		this->client_context->connect();
-	}
-	catch ( const BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR& e )
-	{
-		LOG_ERROR( "Failed to connect to logic core: " + std::string( e.what() ) );
-		return false;
-	}
-
-	return true;
-}
-
-bool HMI_DATA_LOGGER_CONNECTION::disconnect( void )
+bool ConnectionFile::disconnect( void )
 {
 	this->client_context->disconnect();
 	return true;
-}
-
-HMI_DATA_LOGGER_CONNECTION::~HMI_DATA_LOGGER_CONNECTION()
-{
-	if ( this->client_context )
-	{
-		this->client_context->disconnect();
-	}
-
-	//delete this->client_context;
-	this->logger_context->close_output_stream();
 }
 

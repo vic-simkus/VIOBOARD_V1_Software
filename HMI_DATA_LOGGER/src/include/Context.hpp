@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __HMI_DATA_LOGGER_HPP
 #define __HMI_DATA_LOGGER_HPP
 
-#include "hmi_data_logger_config.hpp"
+#include "Config.hpp"
 #include "lib/logger.hpp"
 
 #include <fstream>
@@ -29,12 +29,12 @@ namespace HMI_DATA_LOGGER
 	\brief Applications context.
 	Basically all of the stuff that would be in the global context is put here.
 	*/
-	class HMI_DATA_LOGGER_CONTEXT
+	class Context
 	{
 		public:
 			DEF_LOGGER;
 
-			HMI_DATA_LOGGER_CONTEXT() {
+			Context() {
 				INIT_LOGGER( "HMI_DATA_LOGGER_CONTEXT" );
 				return;
 			}
@@ -73,7 +73,7 @@ namespace HMI_DATA_LOGGER
 			void reset_new_file_flag( void );
 
 
-			HMI_DATA_LOGGER_CONFIG configuration;
+			Config configuration;
 
 		protected:
 
@@ -87,7 +87,7 @@ namespace HMI_DATA_LOGGER
 
 	};	// END HMI_DATA_LOGGER_CONTEXT
 
-	HMI_DATA_LOGGER_CONTEXT create_context( int _argc, const char** _argv );
+	Context create_context( int _argc, const char** _argv );
 
 }
 

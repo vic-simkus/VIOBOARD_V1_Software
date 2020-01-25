@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#include "include/hmi_data_logger_context.hpp"
+#include "include/Context.hpp"
 #include "lib/string_lib.hpp"
 #include "lib/exceptions.hpp"
 
@@ -65,7 +65,7 @@ For ostream
 
 using namespace HMI_DATA_LOGGER;
 
-bool HMI_DATA_LOGGER_CONTEXT::check_data_dir( void )
+bool Context::check_data_dir( void )
 {
 	this->full_data_dir.clear();
 	std::unique_ptr<char> _data_dir( realpath( this->configuration.log_dir.data(), nullptr ) );
@@ -103,7 +103,7 @@ bool HMI_DATA_LOGGER_CONTEXT::check_data_dir( void )
 	return true;
 }
 
-size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::runtime_error )
+size_t Context::get_next_data_file_index( void ) throw( std::runtime_error )
 {
 	size_t next_file_index = 0;
 	std::string pre_index_fluff = this->get_data_file_name_before_index();
@@ -208,7 +208,7 @@ size_t HMI_DATA_LOGGER_CONTEXT::get_next_data_file_index( void ) throw( std::run
 	return next_file_index + 1;
 }
 
-std::string HMI_DATA_LOGGER_CONTEXT::get_data_file_name_before_index( void )
+std::string Context::get_data_file_name_before_index( void )
 {
 	size_t idx = this->configuration.base_data_file_name.find( '#' );
 
@@ -225,7 +225,7 @@ std::string HMI_DATA_LOGGER_CONTEXT::get_data_file_name_before_index( void )
 	}
 }
 
-std::string HMI_DATA_LOGGER_CONTEXT::get_data_file_name_after_index( void )
+std::string Context::get_data_file_name_after_index( void )
 {
 	size_t idx = this->configuration.base_data_file_name.find( '#' );
 
@@ -242,7 +242,7 @@ std::string HMI_DATA_LOGGER_CONTEXT::get_data_file_name_after_index( void )
 	}
 }
 
-void HMI_DATA_LOGGER_CONTEXT::set_prog_name( const std::string& _p ) throw( std::logic_error )
+void Context::set_prog_name( const std::string& _p ) throw( std::logic_error )
 {
 	if ( !this->prog_name.empty() )
 	{
@@ -253,7 +253,7 @@ void HMI_DATA_LOGGER_CONTEXT::set_prog_name( const std::string& _p ) throw( std:
 	return;
 }
 
-void HMI_DATA_LOGGER_CONTEXT::set_prog_name_fixed( const std::string& _p ) throw( std::logic_error )
+void Context::set_prog_name_fixed( const std::string& _p ) throw( std::logic_error )
 {
 	if ( !this->prog_name_fixed.empty() )
 	{
@@ -264,7 +264,7 @@ void HMI_DATA_LOGGER_CONTEXT::set_prog_name_fixed( const std::string& _p ) throw
 	return;
 }
 
-std::string HMI_DATA_LOGGER_CONTEXT::get_next_data_file_name( void )
+std::string Context::get_next_data_file_name( void )
 {
 	std::stringstream ss;
 	ss << this->get_full_data_dir();
@@ -277,22 +277,22 @@ std::string HMI_DATA_LOGGER_CONTEXT::get_next_data_file_name( void )
 	return ss.str();
 }
 
-std::string HMI_DATA_LOGGER_CONTEXT::get_full_data_dir( void ) const
+std::string Context::get_full_data_dir( void ) const
 {
 	return this->full_data_dir;
 }
 
 
-bool HMI_DATA_LOGGER_CONTEXT::get_new_file_flag( void )
+bool Context::get_new_file_flag( void )
 {
 	return this->new_file_flag;
 }
-void HMI_DATA_LOGGER_CONTEXT::reset_new_file_flag( void )
+void Context::reset_new_file_flag( void )
 {
 	this->new_file_flag = false;
 }
 
-std::ofstream& HMI_DATA_LOGGER_CONTEXT::get_output_stream( void )
+std::ofstream& Context::get_output_stream( void )
 {
 	struct stat stat_buff;
 
@@ -322,7 +322,7 @@ std::ofstream& HMI_DATA_LOGGER_CONTEXT::get_output_stream( void )
 	return this->output_stream;
 }
 
-void HMI_DATA_LOGGER_CONTEXT::open_output_stream( void ) throw( exception )
+void Context::open_output_stream( void ) throw( exception )
 {
 	if ( this->output_stream.is_open() )
 	{
@@ -345,7 +345,7 @@ void HMI_DATA_LOGGER_CONTEXT::open_output_stream( void ) throw( exception )
 	this->new_file_flag = true;
 	return;
 }
-void HMI_DATA_LOGGER_CONTEXT::close_output_stream( void )
+void Context::close_output_stream( void )
 {
 	if ( this->output_stream.is_open() )
 	{
@@ -355,9 +355,9 @@ void HMI_DATA_LOGGER_CONTEXT::close_output_stream( void )
 	return;
 }
 
-HMI_DATA_LOGGER_CONTEXT HMI_DATA_LOGGER::create_context( int _argc, const char** _argv )
+Context HMI_DATA_LOGGER::create_context( int _argc, const char** _argv )
 {
-	HMI_DATA_LOGGER_CONTEXT ctx;
+	Context ctx;
 
 	if ( !create_configuration( ctx, _argc, _argv ) )
 	{

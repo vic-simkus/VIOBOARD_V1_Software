@@ -7,9 +7,12 @@ import os
 
 class MyContext(Context):
 	SOURCE_FILES = (
-			SourceFile("hmi_data_logger.cpp"),
-			SourceFile("hmi_data_logger_context.cpp"),
-			SourceFile("hmi_data_logger_connection.cpp"),
+			SourceFile("HmiDataLogger.cpp"),
+			SourceFile("Context.cpp"),
+			SourceFile("Config.cpp"),
+			SourceFile("Connection.cpp"),
+			SourceFile("ConnectionFile.cpp"),
+			SourceFile("ConnectionPgsql.cpp"),
 			)
 
 	TAG = "HMI_DATA_LOGGER"

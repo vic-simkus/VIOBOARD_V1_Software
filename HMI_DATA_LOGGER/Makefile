@@ -2,7 +2,7 @@
 #
 # This file is mechanically generated.  Any changes will most likely be lost.
 #
-# File generated on: 2018-07-29T11:51:00.599507
+# File generated on: 2020-01-24T22:39:24.656200
 #
 
 #
@@ -14,59 +14,113 @@ all: HMI_DATA_LOGGER_all
 clean: HMI_DATA_LOGGER_clean
 
 HMI_DATA_LOGGER_all: HMI_DATA_LOGGER_all_o
-	g++ -fexceptions  -o bin/HMI_DATA_LOGGER bin/hmi_data_logger.o bin/hmi_data_logger_context.o bin/hmi_data_logger_connection.o -L../HVAC_LIB/bin  -lHVAC_LIB  -pthread 
+	g++ -fexceptions  -o bin/HMI_DATA_LOGGER bin/HmiDataLogger.o bin/Context.o bin/Config.o bin/Connection.o bin/ConnectionFile.o bin/ConnectionPgsql.o -L../HVAC_LIB/bin  -lHVAC_LIB  -pthread 
 
-HMI_DATA_LOGGER_all_o: HMI_DATA_LOGGER_make_dirs bin/hmi_data_logger.o  bin/hmi_data_logger_context.o  bin/hmi_data_logger_connection.o  
+HMI_DATA_LOGGER_all_o: HMI_DATA_LOGGER_make_dirs bin/HmiDataLogger.o  bin/Context.o  bin/Config.o  bin/Connection.o  bin/ConnectionFile.o  bin/ConnectionPgsql.o  
 
 HMI_DATA_LOGGER_clean: 
 	@echo Cleaning stuff.
-	- @rm bin/hmi_data_logger.o 2> /dev/null || true
-	- @rm bin/hmi_data_logger_context.o 2> /dev/null || true
-	- @rm bin/hmi_data_logger_connection.o 2> /dev/null || true
+	- @rm bin/HmiDataLogger.o 2> /dev/null || true
+	- @rm bin/Context.o 2> /dev/null || true
+	- @rm bin/Config.o 2> /dev/null || true
+	- @rm bin/Connection.o 2> /dev/null || true
+	- @rm bin/ConnectionFile.o 2> /dev/null || true
+	- @rm bin/ConnectionPgsql.o 2> /dev/null || true
 	- @rm bin/HMI_DATA_LOGGER 2> /dev/null || true
 
 HMI_DATA_LOGGER_make_dirs: 
 	- @mkdir -p bin/
 
-bin/hmi_data_logger.o: src/hmi_data_logger.cpp \
- src/include/hmi_data_logger_context.hpp \
- src/include/hmi_data_logger_config.hpp \
+bin/HmiDataLogger.o: src/HmiDataLogger.cpp src/include/Context.hpp \
+ src/include/Config.hpp ../HVAC_LIB/src/include/lib/command_line_parms.h \
+ ../HVAC_LIB/src/include/lib/context.hpp \
  ../HVAC_LIB/src/include/lib/logger.hpp \
  ../HVAC_LIB/src/include/lib/hvac_types.hpp \
- ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
  ../HVAC_LIB/src/include/lib/exceptions.hpp \
  ../HVAC_LIB/src/include/lib/string_lib.hpp \
- src/include/hmi_data_logger_connection.hpp \
+ ../HVAC_LIB/src/include/lib/message_callbacks.hpp \
+ ../HVAC_LIB/src/include/lib/message_lib.hpp \
+ ../HVAC_LIB/src/include/lib/message_types.hpp \
+ ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/threads/thread_base.hpp \
+ ../HVAC_LIB/src/include/lib/config.hpp src/include/ConnectionFile.hpp \
+ src/include/Connection.hpp ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
+ ../HVAC_LIB/src/include/lib/message_processor.hpp \
+ ../HVAC_LIB/src/include/lib/configurator.hpp \
+ ../HVAC_LIB/src/include/lib/configurator/configurator_types.hpp \
+ ../HVAC_LIB/src/include/lib/globals.hpp \
+ ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
+ ../HVAC_LIB/src/include/lib/outgoing_message_queue.hpp \
+ ../HVAC_LIB/src/include/lib/board_state_cache.hpp \
+ ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
+ ../HVAC_LIB/src/include/lib/serial_io_type_operators.hpp \
+ src/include/ConnectionPgsql.hpp \
+ ../HVAC_LIB/src/include/lib/threads/thread_registry.hpp \
+ ../HVAC_LIB/src/include/lib/threads/serial_io_thread.hpp
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/HmiDataLogger.cpp -o bin/HmiDataLogger.o
+
+bin/Context.o: src/Context.cpp src/include/Context.hpp \
+ src/include/Config.hpp ../HVAC_LIB/src/include/lib/command_line_parms.h \
+ ../HVAC_LIB/src/include/lib/context.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/hvac_types.hpp \
+ ../HVAC_LIB/src/include/lib/exceptions.hpp \
+ ../HVAC_LIB/src/include/lib/string_lib.hpp \
+ ../HVAC_LIB/src/include/lib/message_callbacks.hpp \
+ ../HVAC_LIB/src/include/lib/message_lib.hpp \
+ ../HVAC_LIB/src/include/lib/message_types.hpp \
+ ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/threads/thread_base.hpp \
+ ../HVAC_LIB/src/include/lib/config.hpp
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/Context.cpp -o bin/Context.o
+
+bin/Config.o: src/Config.cpp src/include/Config.hpp \
+ ../HVAC_LIB/src/include/lib/command_line_parms.h \
+ ../HVAC_LIB/src/include/lib/context.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/hvac_types.hpp \
+ ../HVAC_LIB/src/include/lib/exceptions.hpp \
+ ../HVAC_LIB/src/include/lib/string_lib.hpp \
+ ../HVAC_LIB/src/include/lib/message_callbacks.hpp \
+ ../HVAC_LIB/src/include/lib/message_lib.hpp \
+ ../HVAC_LIB/src/include/lib/message_types.hpp \
+ ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/threads/thread_base.hpp \
+ ../HVAC_LIB/src/include/lib/config.hpp src/include/Context.hpp \
+ src/include/Config.hpp
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/Config.cpp -o bin/Config.o
+
+bin/Connection.o: src/Connection.cpp src/include/Connection.hpp \
  ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
  ../HVAC_LIB/src/include/lib/message_lib.hpp \
  ../HVAC_LIB/src/include/lib/message_types.hpp \
+ ../HVAC_LIB/src/include/lib/hvac_types.hpp \
+ ../HVAC_LIB/src/include/lib/exceptions.hpp \
+ ../HVAC_LIB/src/include/lib/string_lib.hpp \
  ../HVAC_LIB/src/include/lib/message_processor.hpp \
  ../HVAC_LIB/src/include/lib/configurator.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
+ ../HVAC_LIB/src/include/lib/configurator/configurator_types.hpp \
  ../HVAC_LIB/src/include/lib/globals.hpp \
  ../HVAC_LIB/src/include/lib/config.hpp \
  ../HVAC_LIB/src/include/lib/context.hpp \
  ../HVAC_LIB/src/include/lib/message_callbacks.hpp \
+ ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
  ../HVAC_LIB/src/include/lib/threads/thread_base.hpp \
  ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
  ../HVAC_LIB/src/include/lib/outgoing_message_queue.hpp \
- ../HVAC_LIB/src/include/lib/logger.hpp \
  ../HVAC_LIB/src/include/lib/board_state_cache.hpp \
  ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
- ../HVAC_LIB/src/include/lib/serial_io_type_operators.hpp
-	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -pthread  -c src/hmi_data_logger.cpp -o bin/hmi_data_logger.o
+ ../HVAC_LIB/src/include/lib/serial_io_type_operators.hpp \
+ src/include/Context.hpp src/include/Config.hpp \
+ ../HVAC_LIB/src/include/lib/command_line_parms.h
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/Connection.cpp -o bin/Connection.o
 
-bin/hmi_data_logger_context.o: src/hmi_data_logger_context.cpp \
- src/include/hmi_data_logger_context.hpp \
- src/include/hmi_data_logger_config.hpp \
- ../HVAC_LIB/src/include/lib/logger.hpp \
- ../HVAC_LIB/src/include/lib/hvac_types.hpp \
- ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
- ../HVAC_LIB/src/include/lib/exceptions.hpp \
- ../HVAC_LIB/src/include/lib/string_lib.hpp
-	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -pthread  -c src/hmi_data_logger_context.cpp -o bin/hmi_data_logger_context.o
-
-bin/hmi_data_logger_connection.o: src/hmi_data_logger_connection.cpp \
- src/include/hmi_data_logger_connection.hpp \
+bin/ConnectionFile.o: src/ConnectionFile.cpp src/include/Connection.hpp \
  ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
  ../HVAC_LIB/src/include/lib/message_lib.hpp \
  ../HVAC_LIB/src/include/lib/message_types.hpp \
@@ -76,19 +130,25 @@ bin/hmi_data_logger_connection.o: src/hmi_data_logger_connection.cpp \
  ../HVAC_LIB/src/include/lib/message_processor.hpp \
  ../HVAC_LIB/src/include/lib/configurator.hpp \
  ../HVAC_LIB/src/include/lib/logger.hpp \
- ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/configurator/configurator_types.hpp \
  ../HVAC_LIB/src/include/lib/globals.hpp \
  ../HVAC_LIB/src/include/lib/config.hpp \
  ../HVAC_LIB/src/include/lib/context.hpp \
  ../HVAC_LIB/src/include/lib/message_callbacks.hpp \
+ ../HVAC_LIB/src/include/lib/tprotect_base.hpp \
+ ../HVAC_LIB/src/include/lib/logger.hpp \
  ../HVAC_LIB/src/include/lib/threads/thread_base.hpp \
  ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
  ../HVAC_LIB/src/include/lib/outgoing_message_queue.hpp \
- ../HVAC_LIB/src/include/lib/logger.hpp \
  ../HVAC_LIB/src/include/lib/board_state_cache.hpp \
  ../HVAC_LIB/src/include/lib/serial_io_types.hpp \
- ../HVAC_LIB/src/include/lib/serial_io_type_operators.hpp
-	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -pthread  -c src/hmi_data_logger_connection.cpp -o bin/hmi_data_logger_connection.o
+ ../HVAC_LIB/src/include/lib/serial_io_type_operators.hpp \
+ src/include/Context.hpp src/include/Config.hpp \
+ ../HVAC_LIB/src/include/lib/command_line_parms.h
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/ConnectionFile.cpp -o bin/ConnectionFile.o
+
+bin/ConnectionPgsql.o: src/ConnectionPgsql.cpp
+	g++ -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/ConnectionPgsql.cpp -o bin/ConnectionPgsql.o
 
 #
 # EOF

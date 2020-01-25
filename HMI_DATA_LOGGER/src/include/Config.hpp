@@ -26,18 +26,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace HMI_DATA_LOGGER
 {
-	class HMI_DATA_LOGGER_CONTEXT;
+	class Context;
 	/**
 	\brief Application configuration
 	*/
-	class HMI_DATA_LOGGER_CONFIG
+	class Config
 	{
 		public:
 			/**
 			\brief Default constructor.
 			Initializes all of the instance values to their super reasonable defaults.
 			*/
-			HMI_DATA_LOGGER_CONFIG() {
+			Config() {
 				this->rotate_size = 0;
 				this->log_dir = "./log_data";
 				this->base_data_file_name = "sys_status_log.#.csv";
@@ -63,7 +63,7 @@ namespace HMI_DATA_LOGGER
 			std::shared_ptr<BBB_HVAC::COMMAND_LINE_PARMS> command_line_parms;
 	};
 
-	bool create_configuration( HMI_DATA_LOGGER_CONTEXT& _ctx, int _argc, const char** _argv );
+	bool create_configuration( Context& _ctx, int _argc, const char** _argv );
 }
 
 #endif

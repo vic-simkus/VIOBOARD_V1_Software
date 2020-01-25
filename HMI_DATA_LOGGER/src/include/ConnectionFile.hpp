@@ -18,5 +18,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __HMI_DATA_LOGGER_CONNECTION_FILE_HPP
 #define __HMI_DATA_LOGGER_CONNECTION_FILE_HPP
 
+#include "Connection.hpp"
+
+namespace HMI_DATA_LOGGER
+{
+	class Context;
+
+	class ConnectionFile : public Connection
+	{
+		public:
+			ConnectionFile( HMI_DATA_LOGGER::Context* );
+			virtual ~ConnectionFile();
+
+			virtual bool connect( void );
+			virtual bool disconnect( void );
+			virtual bool read_status( void );
+
+
+		protected:
+
+			bool opened_output;
+
+		private:
+			DEF_LOGGER;
+	};
+}
 #endif
 
