@@ -375,7 +375,7 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 
 int main( int argc, const char** argv )
 {
-	COMMAND_LINE_PARMS clp( argc, argv );
+	COMMAND_LINE_PARMS clp( (size_t)argc, argv );
 
 	// If there is an error in command line parms this method never returns.
 	clp.process();

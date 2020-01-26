@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 from make_makefile import SourceFile
+from make_makefile import CLANGContext
 from make_makefile import Context
 
 import os
 
-class MyContext(Context):
+class MyContext(CLANGContext):
+        def __init__(self):
+            super(MyContext,self).__init__()
+
 	SOURCE_FILES = (
 			SourceFile("bbb_hvac.cpp"),
 			)
