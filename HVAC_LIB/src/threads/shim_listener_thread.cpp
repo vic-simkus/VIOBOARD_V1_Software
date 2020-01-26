@@ -60,7 +60,7 @@ namespace BBB_HVAC
 				break;
 
 			case SOCKET_TYPE::DOMAIN:
-				if ( bind( this->server_ctx->remote_socket, ( const struct sockaddr* ) & ( this->server_ctx->socket_struct_domain ), sizeof( struct sockaddr_un ) ) == -1 )
+				if ( ::bind( this->server_ctx->remote_socket, ( const struct sockaddr* ) & ( this->server_ctx->socket_struct_domain ), sizeof( struct sockaddr_un ) ) == -1 )
 				{
 					throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to bind to domain socket" ) );
 				}
@@ -79,7 +79,7 @@ namespace BBB_HVAC
 					throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to set TPC/IP socket options (SO_REUSEADDR) on FD [" + num_to_str( this->server_ctx->remote_socket ) + "]" ) );
 				}
 
-				if ( bind( this->server_ctx->remote_socket, ( const struct sockaddr* ) & ( this->server_ctx->socket_struct_inet ), sizeof( struct sockaddr_in ) ) == -1 )
+				if ( ::bind( this->server_ctx->remote_socket, ( const struct sockaddr* ) & ( this->server_ctx->socket_struct_inet ), sizeof( struct sockaddr_in ) ) == -1 )
 				{
 					throw EXCEPTIONS::NETWORK_ERROR( create_perror_string( "Failed to bind to TCP/IP socket" ) );
 				}

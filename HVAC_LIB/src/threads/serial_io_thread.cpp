@@ -400,7 +400,9 @@ ENUM_ERRORS SER_IO_COMM::serial_port_open( void )
 	/*
 	 * Disable all input processing.  This fucker got me.  The port was automatically converting all 0x0D to 0x0A
 	 */
-	this->current_tio.c_iflag &= ( unsigned int )~( BRKINT | INLCR | ICRNL | IUCLC | BRKINT | IMAXBEL | IGNCR );
+	//this->current_tio.c_iflag &= ( unsigned int )~( BRKINT | INLCR | ICRNL | IUCLC | BRKINT | IMAXBEL | IGNCR );
+	// UICLC is not POSIX and doesnt exist on freebsd
+	this->current_tio.c_iflag &= ( unsigned int )~( BRKINT | INLCR | ICRNL |  BRKINT | IMAXBEL | IGNCR );
 	this->current_tio.c_iflag |= ( IGNBRK );
 	/*
 	 * disable postprocess output

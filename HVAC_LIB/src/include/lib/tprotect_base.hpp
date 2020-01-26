@@ -86,7 +86,7 @@ namespace BBB_HVAC
 			 * \brief Resets this->thread_sleep to the specified number of nanoseconds.
 			 * \param _nsecs Number of nanoseconds to initialize the struct to to.  If -1 is passed the struct is zeroed out.
 			 */
-			void reset_sleep_timespec( __syscall_slong_t _nsecs = -1 );
+			void reset_sleep_timespec( ssize_t _nsecs = -1 );
 
 		protected:
 

@@ -51,7 +51,7 @@ TPROTECT_BASE::TPROTECT_BASE( const string& _tag )
 	return;
 }
 
-void TPROTECT_BASE::reset_sleep_timespec( __syscall_slong_t _time )
+void TPROTECT_BASE::reset_sleep_timespec( ssize_t _time )
 {
 	memset( & ( this->thread_sleep ), 0, sizeof( struct timespec ) );
 

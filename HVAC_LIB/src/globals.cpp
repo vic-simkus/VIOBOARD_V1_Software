@@ -146,7 +146,7 @@ namespace BBB_HVAC
 			{
 				return "SIGTERM";
 			}
-
+#ifndef __FreeBSD__
 			if ( _sig == SIGSTKFLT )
 			{
 				return "SIGSTKFLT";
@@ -156,6 +156,7 @@ namespace BBB_HVAC
 			{
 				return "SIGCLD";
 			}
+#endif
 
 			if ( _sig == SIGCHLD )
 			{
@@ -217,20 +218,24 @@ namespace BBB_HVAC
 				return "SIGWINCH";
 			}
 
+#ifndef __FreeBSD__
 			if ( _sig == SIGPOLL )
 			{
 				return "SIGPOLL";
 			}
+#endif
 
 			if ( _sig == SIGIO )
 			{
 				return "SIGIO";
 			}
 
+#ifndef __FreeBSD__
 			if ( _sig == SIGPWR )
 			{
 				return "SIGPWR";
 			}
+#endif
 
 			if ( _sig == SIGSYS )
 			{

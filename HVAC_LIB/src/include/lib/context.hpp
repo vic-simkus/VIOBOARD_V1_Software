@@ -23,6 +23,8 @@
 #define SRC_LIB_CONTEXT_HPP_
 
 #include <sys/un.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 #include <netinet/ip.h>
 #include <pthread.h>
 

@@ -27,7 +27,12 @@
 
 #include <sys/types.h>
 #include <sys/syscall.h>
+
+#ifdef __FreeBSD__
+#define gettid() 	(unsigned long)pthread_self()
+#else
 #define gettid() syscall(SYS_gettid)
+#endif
 
 using namespace BBB_HVAC;
 

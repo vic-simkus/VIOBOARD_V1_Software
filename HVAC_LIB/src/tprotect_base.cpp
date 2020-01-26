@@ -51,7 +51,7 @@ TPROTECT_BASE::TPROTECT_BASE( const string& _tag )
 	this->logger = new LOGGING::LOGGER();
 	return;
 }
-void TPROTECT_BASE::reset_sleep_timespec( __syscall_slong_t _time )
+void TPROTECT_BASE::reset_sleep_timespec( ssize_t _time )
 {
 	memset( & ( this->thread_sleep ), 0, sizeof( struct timespec ) );
 
@@ -59,6 +59,8 @@ void TPROTECT_BASE::reset_sleep_timespec( __syscall_slong_t _time )
 	{
 		this->thread_sleep.tv_nsec = _time;
 	}
+
+	// XXX - what happens if _time is < 0???
 
 	return;
 }
