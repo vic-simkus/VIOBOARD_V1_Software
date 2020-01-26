@@ -122,7 +122,7 @@ void COMMAND_LINE_PARMS::process( void )
 		}
 		else if ( p == "-s" )
 		{
-			server_mode = true;
+			this->server_mode = true;
 		}
 		else if ( p == "-l" )
 		{
@@ -262,7 +262,7 @@ void COMMAND_LINE_PARMS::print_help( const string& _c )
 	cout << "\t-a <address> - Address to listen on.  File name (optional) if -d is specified.  Interface to bind to if -i is specified." << endl;
 	cout << "\t  For -i, the interface should be specified in x.x.x.x notation. Default is 127.0.0.1." << endl;
 	cout << "\t-p <port> - Port to listen to.  Relevant only if -i is specified.  Defaults to 6666" << endl;
-	cout << "\t-l <log> - Log file.  Defaults to /var/log/BBB_HVAC.log";
+	cout << "\t-l <log> - Log file.  Defaults to /var/log/BBB_HVAC.log" << endl;
 	cout << "\t-s - Server mode.  If not specified application runs in console." << endl;
 	cout << "\t-v - Verbose mode.  Produces extra debugging information to the console." << endl;
 	cout << "\t-h - This help" << endl;
