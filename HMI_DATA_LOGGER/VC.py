@@ -8,6 +8,9 @@ from make_makefile import CLANGContext
 import os
 
 class MyContext(CLANGContext):
+	def __init__(self):
+		super(MyContext,self).__init__()
+		
 	SOURCE_FILES = (
 			SourceFile("HmiDataLogger.cpp"),
 			SourceFile("Context.cpp"),
@@ -23,6 +26,7 @@ class MyContext(CLANGContext):
 
 	RELATED_PROJECTS=("../HVAC_LIB",)
 
+	LIBRARIES = ["pq"]
 
 def vc_init():
 	return MyContext()

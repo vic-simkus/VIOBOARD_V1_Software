@@ -16,28 +16,208 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "include/ConnectionPgsql.hpp"
+#include "include/Context.hpp"
+#include <postgresql/libpq-fe.h>
 
 using namespace HMI_DATA_LOGGER;
 
-ConnectionPgsql::ConnectionPgsql( HMI_DATA_LOGGER::Context* _ctx ) : Connection( _ctx )
+ConnectionPgsql::ConnectionPgsql( HMI_DATA_LOGGER::Context* _ctx )  noexcept : Connection( _ctx )
 {
+	INIT_LOGGER( "HMI_DATA_LOGGER::ConnectionPgsql" );
+	this->pg_connection = nullptr;
 	return;
 }
 
 ConnectionPgsql::~ConnectionPgsql()
 {
+	this->clear_connection();
+	return;
+}
+void ConnectionPgsql::clear_connection( void ) noexcept
+{
+	if ( this->pg_connection )
+	{
+		PQfinish( this->pg_connection );
+	}
+
+	this->pg_connection = nullptr;
+
 	return;
 }
 
-bool ConnectionPgsql::connect( void )
+bool ConnectionPgsql::connect( void ) noexcept
 {
+	if ( !this->connect_to_logic_core() )
+	{
+		return false;
+	}
+
+	if ( this->logger_context->configuration.pg_url.length() < 1 )
+	{
+		LOG_ERROR( "Must specify " + std::string( CFG_CMDP_PG_URL ) );
+		return false;
+	}
+
+	string url = this->logger_context->configuration.get_command_line_value( CFG_CMDP_PG_URL );
+
+	this->pg_connection = PQconnectdb( url.data() );
+
+	if ( PQstatus( this->pg_connection ) != CONNECTION_OK )
+	{
+		LOG_ERROR( "Failed to connect to database using [" + url + "]: " + std::string( PQerrorMessage( this->pg_connection ) ) );
+		this->clear_connection();
+		return false;
+	}
+
+
+
 	return true;
 }
-bool ConnectionPgsql::disconnect( void )
+
+bool ConnectionPgsql::disconnect( void ) noexcept
 {
+	this->clear_connection();
 	return true;
 }
-bool ConnectionPgsql::read_status( void )
+
+bool ConnectionPgsql::read_status( void ) noexcept
 {
-	return true;
+	if ( this->client_context == nullptr )
+	{
+		LOG_ERROR( "CLient context is null." );
+		return false;
+
+	}
+
+	BBB_HVAC::MESSAGE_PTR message;
+
+	try
+	{
+		message = this->client_context->message_processor->create_read_logic_status( );
+		message = this->client_context->send_message_and_wait( message );
+	}
+	catch ( const exception& e )
+	{
+		throw runtime_error( "Failed to read from remote: " + std::string( e.what() ) );
+	}
+
+	std::map<std::string, std::string> map;
+
+	std::list<std::string> names;
+	std::list<std::string> values;
+
+	//LOG_DEBUG( message->to_string() );
+	BBB_HVAC::MESSAGE::message_to_map( message, map );
+
+	for ( auto i = map.begin(); i != map.end(); ++i )
+	{
+		names.push_back( i->first );
+		values.push_back( i->second );
+	}
+
+	string sql = "INSERT INTO data. home_data (" + join_list( names, ',' ) + ") VALUES (" + join_list( values, ',' ) + ")";
+
+
+	PqResultGuard res(	this->execute_sql( sql ) );
+
+	if ( res.is_null() )
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+bool ConnectionPgsql::test_connection() noexcept
+{
+	LOG_DEBUG( "Testing DB connection." );
+
+
+	if ( !this->connect() )
+	{
+		LOG_ERROR( "Connection test failed.  See log output for details." );
+		return false;
+	}
+
+	PqResultGuard res( this->execute_sql( "select version();" ) );
+
+	if ( !res.is_null() )
+	{
+		if ( PQntuples( res.get() ) != 1 )
+		{
+			LOG_ERROR( "Received an unexpected number of tuples: " + num_to_str( PQntuples( res.get() ) ) );
+			return false;
+		}
+
+		if ( PQnfields( res.get() ) != 1 )
+		{
+			LOG_ERROR( "Received an unexpected number of fields: " + num_to_str( PQnfields( res.get() ) ) );
+			return false;
+		}
+
+		LOG_INFO( "Server response: " + std::string( PQgetvalue( res.get(), 0, 0 ) ) );
+
+
+		return true;
+	}
+	else
+	{
+		LOG_ERROR( "Failed to execute test SQL query." );
+		return false;
+	}
+}
+
+PGresult* ConnectionPgsql::execute_sql( const std::string& _sql ) noexcept
+{
+	if ( _sql.length() < 1 )
+	{
+		return nullptr;
+	}
+
+	PqResultGuard res( PQexec( this->pg_connection, _sql.data() ) );
+
+	if ( PQresultStatus( res.get() ) != PGRES_TUPLES_OK && PQresultStatus( res.get() ) != PGRES_COMMAND_OK )
+	{
+		LOG_ERROR( "Failed to execute SQL [" + _sql + "]: " + std::string( PQerrorMessage( this->pg_connection ) ) );
+
+		return nullptr;
+	}
+	else
+	{
+		return res.claim();
+	}
+}
+
+PqResultGuard::PqResultGuard( PGresult* _ptr )
+{
+	this->pg_result = _ptr;
+}
+PqResultGuard::~PqResultGuard()
+{
+	if ( this->pg_result != nullptr )
+	{
+		PQclear( this->pg_result );
+	}
+
+	this->pg_result = nullptr;
+
+	return;
+}
+
+bool PqResultGuard::is_null( void ) const
+{
+	return ( this->pg_result == nullptr );
+}
+PGresult* PqResultGuard::get( void )
+{
+	return this->pg_result;
+}
+PGresult* PqResultGuard::claim( void )
+{
+	PGresult* ret = this->pg_result;
+	this->pg_result = nullptr;
+
+	return ret;
 }

@@ -24,6 +24,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <memory>
 
+#define CFG_CMDP_FAIL_HARD 		"--fail_hard"
+#define CFG_CMDP_ROTATE_SIZE 	"--rotate_size"
+#define CFG_CMDP_LOG_DIR 		"--log_dir"
+#define CFG_CMDP_BASE_DATA_FILE "--base_data_file"
+#define CFG_CMDP_MODE 			"--mode"
+#define CFG_CMDP_PG_URL 		"--pg_url"
+#define CFG_CMDP_PG_TEST 		"--pg_test"
+
 namespace HMI_DATA_LOGGER
 {
 	class Context;
@@ -66,17 +74,14 @@ namespace HMI_DATA_LOGGER
 			\brief Default constructor.
 			Initializes all of the instance values to their super reasonable defaults.
 			*/
-			Config() {
-				this->rotate_size = 0;
-				this->log_dir = "./log_data";
-				this->base_data_file_name = "sys_status_log.#.csv";
-				this->current_file_index = 0;
-				this->fail_hard = true;
-				this->mode = MODE::NONE;
-				this->valid = false;
+			Config();
 
-				return;
-			}
+			bool does_command_line_exist( const std::string& _name );
+			std::string get_command_line_value( const std::string& _name );
+
+			void set_command_line_parms( BBB_HVAC::COMMAND_LINE_PARMS* _parms );
+			const BBB_HVAC::COMMAND_LINE_PARMS::EX_PARAM_LIST  get_command_line_parms( void ) const;
+			const std::shared_ptr<BBB_HVAC::COMMAND_LINE_PARMS> get_command_line_processor( void ) const;
 
 			size_t rotate_size;
 			size_t current_file_index;
@@ -89,6 +94,7 @@ namespace HMI_DATA_LOGGER
 			bool fail_hard;
 			bool valid;
 
+		protected:
 			std::shared_ptr<BBB_HVAC::COMMAND_LINE_PARMS> command_line_parms;
 	};
 

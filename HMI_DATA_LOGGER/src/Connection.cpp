@@ -45,7 +45,7 @@ Connection::~Connection()
 
 bool Connection::connect_to_logic_core( void )
 {
-	this->client_context = BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance( this->logger_context->configuration.command_line_parms->get_socket_type(), this->logger_context->configuration.command_line_parms->get_address(), this->logger_context->configuration.command_line_parms->get_port() );
+	this->client_context = BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance( this->logger_context->configuration.get_command_line_processor( )->get_socket_type(), this->logger_context->configuration.get_command_line_processor( )->get_address(), this->logger_context->configuration.get_command_line_processor( )->get_port() );
 
 	try
 	{

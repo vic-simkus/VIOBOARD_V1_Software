@@ -19,6 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define __HMI_DATA_LOGGER_CONNECTION_PGSQL_HPP
 
 #include "Connection.hpp"
+#include "lib/bbb_hvac.hpp"
+
+struct pg_conn;
+typedef struct pg_conn PGconn;
+
+
+struct pg_result;
+typedef struct pg_result PGresult;
 
 namespace  HMI_DATA_LOGGER
 {
@@ -27,13 +35,33 @@ namespace  HMI_DATA_LOGGER
 	class ConnectionPgsql : public Connection
 	{
 		public:
-			ConnectionPgsql( HMI_DATA_LOGGER::Context* );
+			ConnectionPgsql( HMI_DATA_LOGGER::Context* ) noexcept;
 			~ConnectionPgsql();
-			virtual bool connect( void );
-			virtual bool disconnect( void );
-			virtual bool read_status( void );
+			virtual bool connect( void ) noexcept;
+			virtual bool disconnect( void ) noexcept;
+			virtual bool read_status( void ) noexcept;
+			bool test_connection( void ) noexcept;
 		protected:
+			void clear_connection( void ) noexcept;
+
+			PGresult* execute_sql( const std::string& _sql ) noexcept;
 		private:
+			PGconn* pg_connection;
+			DEF_LOGGER;
+	};
+
+	class PqResultGuard
+	{
+		public:
+			PqResultGuard( PGresult* _ptr );
+			~PqResultGuard();
+
+			bool is_null( void ) const;
+			PGresult* get( void );
+			PGresult* claim( void );
+
+		private:
+			PGresult* pg_result;
 	};
 }
 #endif

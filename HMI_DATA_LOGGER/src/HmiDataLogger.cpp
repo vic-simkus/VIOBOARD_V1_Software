@@ -40,13 +40,13 @@ namespace HMI_DATA_LOGGER
 	static void dump_config( const Config& _config )
 	{
 		LOG_DEBUG( "Application configuration:" );
-		LOG_DEBUG( "log rotate size: " + num_to_str( _config.rotate_size ) );
-		LOG_DEBUG( "log dir: " + _config.log_dir );
-		LOG_DEBUG( "base data file name: " + _config.base_data_file_name );
-		LOG_DEBUG( "current file index: " + num_to_str( _config.current_file_index ) );
-		LOG_DEBUG( "fail hard: " + num_to_str( _config.fail_hard ) );
-		LOG_DEBUG( "mode: " + Config::mode_to_string( _config.mode ) );
-		LOG_DEBUG( "pg url: " + _config.pg_url );
+		LOG_DEBUG( "  log rotate size: " + num_to_str( _config.rotate_size ) );
+		LOG_DEBUG( "  log dir: " + _config.log_dir );
+		LOG_DEBUG( "  base data file name: " + _config.base_data_file_name );
+		LOG_DEBUG( "  current file index: " + num_to_str( _config.current_file_index ) );
+		LOG_DEBUG( "  fail hard: " + num_to_str( _config.fail_hard ) );
+		LOG_DEBUG( "  mode: " + Config::mode_to_string( _config.mode ) );
+		LOG_DEBUG( "  pg url: " + _config.pg_url );
 		return;
 	}
 }
@@ -89,6 +89,32 @@ bool dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
 
 	return true;
 }
+bool mode_pgsql( HMI_DATA_LOGGER::Context* _logger_context )
+{
+	std::shared_ptr<HMI_DATA_LOGGER::ConnectionPgsql> pgsql_conn( new HMI_DATA_LOGGER::ConnectionPgsql( _logger_context ) );
+
+	if ( _logger_context->configuration.does_command_line_exist( CFG_CMDP_PG_TEST ) )
+	{
+		if ( pgsql_conn->test_connection() )
+		{
+			LOG_INFO( "PostgreSQL connection test succeeded." );
+			return true;
+		}
+		else
+		{
+			LOG_ERROR( "PostgreSQL connection test failed." );
+			return false;
+		}
+	}
+	else
+	{
+		return collect_data_loop( pgsql_conn );
+	}
+}
+bool mode_file( HMI_DATA_LOGGER::Context* _logger_context )
+{
+	return collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
+}
 bool collect_data( HMI_DATA_LOGGER::Context* _logger_context )
 {
 	switch ( _logger_context->configuration.mode )
@@ -97,11 +123,11 @@ bool collect_data( HMI_DATA_LOGGER::Context* _logger_context )
 			throw logic_error( "Mode is none." );
 
 		case HMI_DATA_LOGGER::Config::MODE::FILE:
-			return collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
+			return mode_file( _logger_context );
 			break;
 
 		case HMI_DATA_LOGGER::Config::MODE::PGSQL:
-			return collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionPgsql( _logger_context ) ) );
+			return mode_pgsql( _logger_context );
 			break;
 
 		case HMI_DATA_LOGGER::Config::MODE::PFIELDS:
@@ -114,7 +140,7 @@ bool collect_data( HMI_DATA_LOGGER::Context* _logger_context )
 }
 int main( int argc, const char** argv )
 {
-	BBB_HVAC::GLOBALS::configure_logging( 1, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::ERROR );
+	BBB_HVAC::GLOBALS::configure_logging( 1, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals();
 
 
@@ -124,13 +150,17 @@ int main( int argc, const char** argv )
 
 	dump_config( logger_context.configuration );
 
-	if ( logger_context.check_data_dir() == false )
+	if ( logger_context.configuration.mode == HMI_DATA_LOGGER::Config::MODE::FILE )
 	{
-		LOG_ERROR( "Check of data log directory failed.  See previous error messages for hints.  Bailing." );
-		return -1;
-	}
 
-	LOG_DEBUG( "Next data file: " + logger_context.get_next_data_file_name() );
+		if ( logger_context.check_data_dir() == false )
+		{
+			LOG_ERROR( "Check of data log directory failed.  See previous error messages for hints.  Bailing." );
+			return -1;
+		}
+
+		LOG_DEBUG( "Next data file: " + logger_context.get_next_data_file_name() );
+	}
 
 	try
 	{
