@@ -10,10 +10,12 @@ import sys
 
 class MyContext(CLANGContext):
 	def __init__(self):
-            super(MyContext,self).__init__()
-	    if sys.platform == "freebsd11":
-                self.INCLUDE_DIRS += ["/usr/local/include",]
-                self.LIB_DIRS += ["/usr/local/lib",]
+		super(MyContext,self).__init__()
+		if sys.platform == "freebsd11":
+			self.INCLUDE_DIRS += ["/usr/local/include",]
+			self.LIB_DIRS += ["/usr/local/lib",]
+		else:
+			self.INCLUDE_DIRS += ["/usr/include/postgresql",]
 		
 	SOURCE_FILES = (
 			SourceFile("HmiDataLogger.cpp"),
