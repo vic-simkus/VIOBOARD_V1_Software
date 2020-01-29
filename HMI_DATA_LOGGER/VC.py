@@ -6,10 +6,14 @@ from make_makefile import GCCContext
 from make_makefile import CLANGContext
 
 import os
+import sys
 
 class MyContext(CLANGContext):
 	def __init__(self):
-		super(MyContext,self).__init__()
+            super(MyContext,self).__init__()
+	    if sys.platform == "freebsd11":
+                self.INCLUDE_DIRS += ["/usr/local/include",]
+                self.LIB_DIRS += ["/usr/local/lib",]
 		
 	SOURCE_FILES = (
 			SourceFile("HmiDataLogger.cpp"),
@@ -28,6 +32,8 @@ class MyContext(CLANGContext):
 
 	LIBRARIES = ["pq"]
 
+
+        
 def vc_init():
 	return MyContext()
 

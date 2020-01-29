@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "include/ConnectionPgsql.hpp"
 #include "include/Context.hpp"
-#include <postgresql/libpq-fe.h>
+#include <libpq-fe.h>
 
 using namespace HMI_DATA_LOGGER;
 
