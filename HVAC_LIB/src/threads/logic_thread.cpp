@@ -224,7 +224,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 					/*
 					No such thing as 0 volts on a 4-20 input.
 					*/
-					calculated_value = -DBL_MAX;
+					calculated_value = std::numeric_limits<float>::min();
 				}
 				else
 				{
@@ -239,7 +239,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 					/*
 					Only way this could be zero if we were reading 0K.
 					*/
-					calculated_value = -DBL_MAX;
+					calculated_value = std::numeric_limits<float>::min();
 				}
 				else
 				{
@@ -494,3 +494,4 @@ void LOGIC_PROCESSOR_BASE::clear_output( const string& _name ) throw ( exception
 	thread_handle->cmd_set_do_status( do_status );
 	return;
 }
+
