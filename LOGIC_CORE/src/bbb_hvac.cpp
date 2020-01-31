@@ -18,7 +18,6 @@
 * Copyright 2016,2017,2018 Vidas Simkus (vic.simkus@gmail.com)
 */
 
-
 #include "lib/bbb_hvac.hpp"
 #include "lib/message_processor.hpp"
 #include "lib/socket_reader.hpp"
@@ -44,15 +43,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
 #include <unistd.h>
 #include <errno.h>
-
-#include <pwd.h>
-#include <grp.h>
 
 #include <signal.h>
 #include <time.h>
@@ -69,119 +61,6 @@ DEF_LOGGER_STAT( "BBB_HVAC(MAIN)" );
 static CONFIGURATOR* config = nullptr;
 
 
-void daemon_self( void )
-{
-
-	int i = fork();
-
-	if ( i < 0 )
-	{
-		LOG_ERROR( create_perror_string( "Failed to fork" ) );
-		exit( -1 );
-	}
-
-	if ( i > 0 )
-	{
-		exit( 0 ); /* parent exits */
-	}
-
-	/* child (daemon) continues */
-
-	setsid(); /* obtain a new process group */
-
-	for ( i = getdtablesize(); i >= 0; --i )
-	{
-		close( i ); /* close all descriptors */
-	}
-
-	i = open( "/dev/null", O_RDWR ); /* open stdin */
-	dup( i ); /* stdout */
-	dup( i ); /* stderr */
-
-	umask( 027 );
-
-	return;
-}
-
-/**
- * Checks to see if privileges need to be dropped.
- * \return 1 if the process has a GID or UID of 0
- */
-int check_privs( void )
-{
-	uid_t uid = getuid();
-	gid_t gid = getgid();
-
-	if ( uid == 0 || gid == 0 )
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/**
- * Drops the privileges of the process.  The user and group IDs used are defined in lib/config.hpp
- */
-void drop_privs( void )
-{
-	if ( check_privs() == 0 )
-	{
-		return;
-	}
-
-	int rc = 0;
-	struct passwd* pwd = 0;
-	struct group* grp = 0;
-	errno = 0;
-	pwd = getpwnam( GC_PROC_USER );
-
-	if ( pwd == 0 )
-	{
-		perror( "Failed to get process user pwd entry.  Aborting." );
-		exit( -1 );
-	}
-
-	errno = 0;
-	grp = getgrnam( GC_PROC_GROUP );
-
-	if ( grp == 0 )
-	{
-		perror( "Failed to get process group grp entry.  Aborting." );
-		exit( -2 );
-	}
-
-	uid_t uid = pwd->pw_uid;
-	gid_t gid = grp->gr_gid;
-
-	if ( getgid() != gid )
-	{
-		errno = 0;
-		rc = setgid( gid );
-
-		if ( rc != 0 )
-		{
-			perror( "Failed to drop group privileges.  Aborting." );
-			exit( -4 );
-		}
-	}
-
-	if ( getuid() != uid )
-	{
-		errno = 0;
-		rc = setuid( uid );
-
-		if ( rc != 0 )
-		{
-			perror( "Failed to drop user privileges.  Aborting." );
-			exit( -4 );
-		}
-	}
-
-	return;
-}
 bool start_board_io_thread( const CONFIG_ENTRY& _board_config )
 {
 	const string board_name = _board_config.get_part_as_string( 0 );
@@ -310,28 +189,19 @@ bool start_threads( CONFIGURATOR* config, const COMMAND_LINE_PARMS& _clp )
 
 int do_main( const COMMAND_LINE_PARMS& _clp )
 {
-	string log_file_name = _clp.get_log_file();
-
-	std::cout << "Logging in: [" << log_file_name << "]" << std::endl;
-
-	if ( _clp.is_server_mode() )
-	{
-		daemon_self();
-	}
-
-	int fd = open( log_file_name.data(), O_WRONLY | O_APPEND | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP );
+	int fd = BBB_HVAC::GLOBALS::create_logger_fd( _clp, true );
 
 	if ( fd < 0 )
 	{
-		std::cerr << create_perror_string( "Failed to open log file" )  << std::endl;
-		exit( -1 );
+		return -1;
 	}
 
-	if ( write( fd, "TEST WRITE\n", 11 ) < 0 )
+	if ( _clp.is_server_mode() )
 	{
-		std::cerr << create_perror_string( "Failed to write to log file" ) << std::endl;
-		exit( -1 );
+		BBB_HVAC::GLOBALS::daemon_self();
 	}
+
+	fd = BBB_HVAC::GLOBALS::create_logger_fd( _clp, false );
 
 	GLOBALS::configure_logging( fd, LOGGING::ENUM_LOG_LEVEL::TRACE );
 
@@ -339,7 +209,7 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 
 	GLOBALS::configure_signals();
 
-	drop_privs();
+	BBB_HVAC::GLOBALS::drop_privs();
 
 	config = new CONFIGURATOR( "configuration.cfg" );
 	config->read_file();
@@ -375,7 +245,7 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 
 int main( int argc, const char** argv )
 {
-	COMMAND_LINE_PARMS clp( (size_t)argc, argv );
+	COMMAND_LINE_PARMS clp( ( size_t )argc, argv );
 
 	// If there is an error in command line parms this method never returns.
 	clp.process();
