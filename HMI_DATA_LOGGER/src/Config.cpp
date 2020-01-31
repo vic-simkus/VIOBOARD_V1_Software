@@ -39,14 +39,11 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 	ex_parms[CFG_CMDP_PG_URL] = "PostgreSQL connection string.\n\t\tRelevant only if mode is PGSQL.\n\t\tExample URL: postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]";
 	ex_parms[CFG_CMDP_PG_TEST] = "Try to connect to PostgreSQL server.\n\t\tMust supply connection URL via --pg_url and specify --mode as PGSQL.";
 
-	LOG_DEBUG( "Processing command line parameters." );
-
 	std::unique_ptr<char> _real_path_ptr( realpath( _argv[0], nullptr ) );
 
 	if ( !_real_path_ptr )
 	{
-		LOG_ERROR( BBB_HVAC::create_perror_string( "Failed to normalize our own executable path?" ) );
-		return false;
+		throw runtime_error( BBB_HVAC::create_perror_string( "Failed to normalize our own executable path?" ) );
 	}
 
 	std::string normalized_me = std::string( _real_path_ptr.get() );
@@ -61,7 +58,7 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 	{
 		std::string param = i->first;
 
-		LOG_DEBUG( "Param [" + i->first + "]: " + i->second );
+		//LOG_DEBUG( "Param [" + i->first + "]: " + i->second );
 
 		if ( param == CFG_CMDP_ROTATE_SIZE )
 		{
@@ -73,8 +70,7 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 			}
 			catch ( const std::exception& e )
 			{
-				LOG_ERROR( "Failed to convert value o LOG_SIZE parameter to number.  Value [" + i->second + "], error: " + e.what() );
-				return false;
+				throw runtime_error( "Failed to convert value o LOG_SIZE parameter to number.  Value [" + i->second + "], error: " + e.what() );
 			}
 
 			_ctx.configuration.rotate_size = rotate_size;
@@ -124,7 +120,6 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 	_ctx.configuration.valid = true;
 
 	return rc;
-
 }
 
 Config::Config()
