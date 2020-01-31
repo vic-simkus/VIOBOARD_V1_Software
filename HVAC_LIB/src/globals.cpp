@@ -34,9 +34,18 @@
 #include <unistd.h>
 #include <string.h>
 
-#include  "lib/threads/thread_registry.hpp"
+#include "lib/threads/thread_registry.hpp"
+#include "lib/command_line_parms.h"
 
 #include <iostream>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <pwd.h>
+#include <grp.h>
+
+
 
 DEF_LOGGER_STAT( "BBB_HVAC::GLOBALS" );
 
@@ -146,7 +155,9 @@ namespace BBB_HVAC
 			{
 				return "SIGTERM";
 			}
+
 #ifndef __FreeBSD__
+
 			if ( _sig == SIGSTKFLT )
 			{
 				return "SIGSTKFLT";
@@ -156,6 +167,7 @@ namespace BBB_HVAC
 			{
 				return "SIGCLD";
 			}
+
 #endif
 
 			if ( _sig == SIGCHLD )
@@ -219,10 +231,12 @@ namespace BBB_HVAC
 			}
 
 #ifndef __FreeBSD__
+
 			if ( _sig == SIGPOLL )
 			{
 				return "SIGPOLL";
 			}
+
 #endif
 
 			if ( _sig == SIGIO )
@@ -231,10 +245,12 @@ namespace BBB_HVAC
 			}
 
 #ifndef __FreeBSD__
+
 			if ( _sig == SIGPWR )
 			{
 				return "SIGPWR";
 			}
+
 #endif
 
 			if ( _sig == SIGSYS )
@@ -344,5 +360,171 @@ namespace BBB_HVAC
 
 			return;
 		}
-	}
-}
+
+		void daemon_self( void )
+		{
+
+			int i = fork();
+
+			if ( i < 0 )
+			{
+				LOG_ERROR( create_perror_string( "Failed to fork" ) );
+				exit( -1 );
+			}
+
+			if ( i > 0 )
+			{
+				exit( 0 ); /* parent exits */
+			}
+
+			/* child (daemon) continues */
+
+			setsid(); /* obtain a new process group */
+
+			for ( i = getdtablesize(); i >= 0; --i )
+			{
+				close( i ); /* close all descriptors */
+			}
+
+			i = open( "/dev/null", O_RDWR ); /* open stdin */
+			dup( i ); /* stdout */
+			dup( i ); /* stderr */
+
+			umask( 027 );
+
+			return;
+		}
+
+		/**
+		 * Checks to see if privileges need to be dropped.
+		 * \return 1 if the process has a GID or UID of 0
+		 */
+		int check_privs( void )
+		{
+			uid_t uid = getuid();
+			gid_t gid = getgid();
+
+			if ( uid == 0 || gid == 0 )
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+
+		/**
+		 * Drops the privileges of the process.  The user and group IDs used are defined in lib/config.hpp
+		 */
+		void drop_privs( void )
+		{
+			if ( check_privs() == 0 )
+			{
+				return;
+			}
+
+			int rc = 0;
+			struct passwd* pwd = 0;
+			struct group* grp = 0;
+			errno = 0;
+			pwd = getpwnam( GC_PROC_USER );
+
+			if ( pwd == 0 )
+			{
+				perror( "Failed to get process user pwd entry.  Aborting." );
+				exit( -1 );
+			}
+
+			errno = 0;
+			grp = getgrnam( GC_PROC_GROUP );
+
+			if ( grp == 0 )
+			{
+				perror( "Failed to get process group grp entry.  Aborting." );
+				exit( -2 );
+			}
+
+			uid_t uid = pwd->pw_uid;
+			gid_t gid = grp->gr_gid;
+
+			if ( getgid() != gid )
+			{
+				errno = 0;
+				rc = setgid( gid );
+
+				if ( rc != 0 )
+				{
+					perror( "Failed to drop group privileges.  Aborting." );
+					exit( -4 );
+				}
+			}
+
+			if ( getuid() != uid )
+			{
+				errno = 0;
+				rc = setuid( uid );
+
+				if ( rc != 0 )
+				{
+					perror( "Failed to drop user privileges.  Aborting." );
+					exit( -4 );
+				}
+			}
+
+			return;
+		}
+
+
+		int create_logger_fd( const COMMAND_LINE_PARMS& _clp, bool _test )
+		{
+			string log_file_name = _clp.get_log_file();
+
+			if ( log_file_name == "-" )
+			{
+				if ( _test )
+				{
+					return 0;
+				}
+				else
+				{
+					return 1;
+				}
+			}
+
+			if ( _test )
+			{
+				std::cout << "Logging in: [" << log_file_name << "]" << std::endl;
+			}
+
+			int fd = open( log_file_name.data(), O_WRONLY | O_APPEND | O_CREAT, S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP );
+
+			if ( fd < 0 )
+			{
+				std::cerr << create_perror_string( "Failed to open log file" )  << std::endl;
+				return ( -1 );
+			}
+
+			if ( _test )
+			{
+
+				if ( write( fd, "\n\n", 2 ) < 0 )
+				{
+					std::cerr << create_perror_string( "Failed to write to log file" ) << std::endl;
+					return ( -1 );
+				}
+			}
+
+			if ( _test )
+			{
+				close( fd );
+				return 0;
+			}
+			else
+			{
+				return fd;
+			}
+		}
+
+	} // END namespace GLOBALS
+} // END namespace BBB_HVAC

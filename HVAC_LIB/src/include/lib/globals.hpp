@@ -25,6 +25,8 @@
 
 namespace BBB_HVAC
 {
+	class COMMAND_LINE_PARMS;
+
 	/**
 	 * Forward definition
 	 */
@@ -47,6 +49,7 @@ namespace BBB_HVAC
 		 */
 		namespace GLOBALS
 	{
+
 		/**
 		 * Global exit flag.
 		 * This flag is more or less a vestige.  The main loop does break on this and some threads do set this to true,
@@ -73,6 +76,13 @@ namespace BBB_HVAC
 		extern void destroy_watchdog();
 
 		extern void configure_signals( void );
+
+
+		extern int create_logger_fd( const COMMAND_LINE_PARMS& _clp, bool _test );
+		extern void drop_privs( void );
+		extern int check_privs( void );
+		extern void daemon_self( void );
+
 
 	}
 }
