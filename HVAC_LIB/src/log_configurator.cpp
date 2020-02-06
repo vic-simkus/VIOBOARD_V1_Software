@@ -62,7 +62,7 @@ bool LOG_CONFIGURATOR::is_had_error( void ) const
 {
 	return this->had_error;
 }
-void LOG_CONFIGURATOR::log( const string& _log_name, const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& _function )
+void LOG_CONFIGURATOR::log( const string& _log_name, const ENUM_LOG_LEVEL& _level, const string& _msg, const string& _file, int _line, const string& )
 {
 	if ( _level < this->level )
 	{
@@ -74,7 +74,8 @@ void LOG_CONFIGURATOR::log( const string& _log_name, const ENUM_LOG_LEVEL& _leve
 	*/
 
 	stringstream output_buffer;
-	output_buffer << get_iso_date_time() << " - [" << LEVEL_NAMES[static_cast<unsigned int> ( _level )] << "] " << _log_name << ":" << _file << "@" << _line << ":" << _function << " -- " << _msg << endl;
+	//output_buffer << get_iso_date_time() << " - [" << LEVEL_NAMES[static_cast<unsigned int> ( _level )] << "] " << _log_name << ":" << _file << "@" << _line << ":" << _function << " -- " << _msg << endl;
+	output_buffer << get_iso_date_time() << " - [" << LEVEL_NAMES[static_cast<unsigned int> ( _level )] << "] " << _log_name << ":" << _file << "@" << _line << ":" << _msg << endl;
 	string str = output_buffer.str();
 
 	this->obtain_lock_ex();

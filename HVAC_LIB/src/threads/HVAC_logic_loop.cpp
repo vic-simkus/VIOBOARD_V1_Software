@@ -22,6 +22,7 @@
 #include "lib/threads/HVAC_logic_loop.hpp"
 #include "lib/configurator.hpp"
 #include <math.h>
+#include <exception>
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::HVAC_LOGIC;
 
@@ -32,56 +33,115 @@ HVAC_LOGIC_LOOP::HVAC_LOOP_INVOCATION_CONTEXT::HVAC_LOOP_INVOCATION_CONTEXT( HVA
 	Space temperature set point
 	*/
 	this->sp_space_temp = ( float )_parent->get_sp_value( SP_SPACE_TEMP );
+
+	/*
+	Space humidity set point
+	*/
 	this->sp_space_rh = ( float )_parent->get_sp_value( SP_SPACE_RH );
 
+	/*
+	Delta T relative to SP above which the system will switch into cooling mode.
+	*/
 	this->sp_space_temp_d_high = ( float )_parent->get_sp_value( SP_SPACE_TEMP_DELTA_HIGH );
+
+	/*
+	Delta T relative to SP bellow which the system will switch into heating mode.
+	*/
 	this->sp_space_temp_d_low = ( float )_parent->get_sp_value( SP_SPACE_TEMP_DELTA_LOW );
+
+	/*
+	Delta percent relative to the SP above which the system will switch into dehumidification mode.
+	*/
 	this->sp_space_rh_temp_d = ( float )_parent->get_sp_value( SP_SPACE_RH_TEMP_DELTA );
 
-	this->sp_ahu_delay_cooling = ( unsigned int )_parent->get_sp_value( SP_AHU_FAN_DELAY_COOLING );
-	this->sp_ahu_delay_heating = ( unsigned int )_parent->get_sp_value( SP_AHU_FAN_DELAY_HEATING );
+	/*
+	Delay before the AHU fan is switched on/off after the condenser is switched on/off.
+	*/
+	this->sp_ahu_delay_pre_cooling = ( unsigned int )_parent->get_sp_value( SP_AHU_FAN_DELAY_PRE_COOLING );
+	this->sp_ahu_delay_post_cooling = ( unsigned int )_parent->get_sp_value( SP_AHU_FAN_DELAY_POST_COOLING );
+
+	/*
+	Delay before the AHU fan is switch on/off after the heating coils are turned on/off.
+	*/
+	this->sp_ahu_delay_pre_heating = ( unsigned int )_parent->get_sp_value( SP_AHU_FAN_DELAY_PRE_HEATING );
+	this->sp_ahu_delay_post_heating = ( unsigned int )_parent->get_sp_value( SP_AHU_FAN_DELAY_POST_HEATING );
+
+	/*
+	Delay between any mode switches
+	*/
 	this->sp_mode_switch_delay = ( unsigned int )_parent->get_sp_value( SP_MODE_SWITCH_DELAY );
 
-	this->sp_heating_deadband = ( unsigned int )_parent->get_sp_value( SP_HEATING_DEADBAND );
-	this->sp_cooling_deadband = ( unsigned int )_parent->get_sp_value( SP_COOLING_DEADBAND );
-	this->sp_dehum_deadband = ( unsigned int )_parent->get_sp_value( SP_SPACE_RH_DEADBAND );
+	/*
+	Heating dead band.  System will shut off heating when the temperature reaches SP + HEATING_DEADBAND for a certain amount of time.
+	*/
+	this->sp_heating_deadband = ( float )_parent->get_sp_value( SP_HEATING_DEADBAND );
 
+	/*
+	Cooling dead band.  System will shut off cooling when the temperature reaches SP - COOLING_DEADBAND for a certain amount of time.
+	*/
+	this->sp_cooling_deadband = ( float )_parent->get_sp_value( SP_COOLING_DEADBAND );
+
+	/*
+	Dehumidification dead band.  System will shut off dehumidification when the temperature reaches SP - DEHUM_DEADBAND for a certain amount of time.
+	*/
+	this->sp_dehum_deadband = ( float )_parent->get_sp_value( SP_SPACE_RH_DEADBAND );
+
+	/*
+	Delay before cooling mode will disengage after temperature requirements met.
+	*/
 	this->sp_cooling_setpoint_delay = ( unsigned int )_parent->get_sp_value( SP_COOLING_SETPOINT_DELAY );
+
+	/*
+	Delay before heating mode will disengage after the temperature requirements are met.
+	*/
 	this->sp_heating_setpoint_delay = ( unsigned int )_parent->get_sp_value( SP_HEATING_SETPOINT_DELAY );
+
+	/*
+	Delay before dehumidification mode will disengage after the humidity requirements are met.
+	*/
 	this->sp_dehum_setpoint_delay = ( unsigned int )_parent->get_sp_value( SP_DEHUM_SETPOINT_DELAY );
 
+	this->sp_space_rh_d = ( unsigned int )_parent->get_sp_value( SP_SPACE_RH_DELTA );
+	/*
+	Calculated values
+	*/
 
 	/*
 	Get the temperature and relative humidity value and round it off to one decimal place.
 	*/
+
 	this->temp_value = float( int( ( _parent->get_ai_value( AI_SPACE_1_TEMP ) * 10 ) ) ) / 10;
 	this->rh_value = float( int( ( _parent->get_ai_value( AI_SPACE_1_RH ) * 10 ) ) ) / 10;
 
-	//double ai_ahu_supply_temp = this->get_ai_value("AHU_SUPPLY_TEMP");
-	//double ai_ahu_return_temp = this->get_ai_value("AHU_RETURN_TEMP");
 	/*
-	LOG_DEBUG("sp_space_temp: " + num_to_str(sp_space_temp));
-	LOG_DEBUG("sp_space_rh: " + num_to_str(sp_space_rh));
-	LOG_DEBUG("sp_space_temp_d_high: " + num_to_str(sp_space_temp_d_high));
-	LOG_DEBUG("sp_space_temp_d_low: " + num_to_str(sp_space_temp_d_low));
-	LOG_DEBUG("sp_space_rh_d: " + num_to_str(sp_space_rh_d));
-	LOG_DEBUG("sp_space_rh_temp_d: " + num_to_str(sp_space_rh_temp_d));
+	The space temp that the system will initiate switch to heating mode.
+	SP SPACE TEMP DELTA LOW is expected to be specified in negative units.
 	*/
-	//LOG_DEBUG( "++++++++++++++++++++++++++++++++++++++++" );
-	//LOG_DEBUG("ai_space_1_temp: " + num_to_str(ai_space_1_temp));
-	//LOG_DEBUG("ai_space_1_rh: " + num_to_str(ai_space_1_rh));
-	//LOG_DEBUG("ai_ahu_supply_temp: " + num_to_str(ai_ahu_supply_temp));
-	//LOG_DEBUG("ai_ahu_return_temp: " + num_to_str(ai_ahu_return_temp));
-	//LOG_DEBUG( "Space temp: " + num_to_str( temp_value ) );
-	//LOG_DEBUG( "Space RH % : " + num_to_str( rh_value ) );
-	//LOG_DEBUG( "**************************************** " );
-	//LOG_DEBUG( "Space temp: " + num_to_str( temp_value ) + "F, space RH: " + num_to_str( rh_value ) + " % " );
+	this->heating_action_on_point = ( sp_space_temp + sp_space_temp_d_low );
+	this->heating_action_off_point = ( this->heating_action_on_point + this->sp_heating_deadband );
 
-	// The space temp delta low is specified as a negative integer.
-	this->heating_point = sp_space_temp + sp_space_temp_d_low;
-	this->cooling_point = sp_space_temp + sp_space_temp_d_high;
-	this->dehum_action_point = sp_space_rh + sp_space_rh_d;
+	/*
+	The space temp that the system will initiate switch to cooling mode.
+	SP SPACE TEMP DELTA HIGH is expected to be specified in positive units.
+	*/
+	this->cooling_action_on_point = ( sp_space_temp + sp_space_temp_d_high );
+	this->cooling_action_off_point = ( this->cooling_action_on_point - this->sp_cooling_deadband );
+
+	/*
+	The space RH that the system will initiate switch to dehumidification mode.
+	*/
+	this->dehum_action_on_point = sp_space_rh + sp_space_rh_d;
+	this->dehum_action_off_point = sp_space_rh - this->sp_dehum_deadband;
+
+	/*
+	The space temp that the system will cancel dehumidification mode.
+	*/
 	this->dehum_cancel_temp_point = sp_space_temp - sp_space_rh_temp_d;
+
+	/*
+	Minimum temperature needed to initiate dehumidification
+	*/
+	this->dehum_min_temp_point = ( this->dehum_cancel_temp_point + ( this->sp_space_rh_temp_d / 2 ) );
 
 	return;
 }
@@ -91,7 +151,14 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 	 * We do not touch the mutex here.  The thread loop takes care of that
 	 * for us before calling process_logic
 	 */
+
+	// This is purely for infotainment value.  We don't use this anywhere in logic
 	this->logic_status_core.iterations += 1;
+
+	/*
+	Creates a context; pre-calculates values and such.
+	We do want to keep this dynamic because we want the various setpoints to be dynamic.
+	*/
 
 	const HVAC_LOOP_INVOCATION_CONTEXT ictx( this );
 
@@ -102,18 +169,293 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 			break;
 
 		case OPERATING_STATE::HEATING:
-			this->process_logic_heating( ictx );
+			this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_heating, &HVAC_LOGIC_LOOP::delay_decider_heating , &HVAC_LOGIC_LOOP::mode_switcher_heating , &HVAC_LOGIC_LOOP::output_setter_heating );
 			break;
 
 		case OPERATING_STATE::COOLING:
-			this->process_logic_cooling( ictx );
+			this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_cooling, &HVAC_LOGIC_LOOP::delay_decider_cooling , &HVAC_LOGIC_LOOP::mode_switcher_cooling , &HVAC_LOGIC_LOOP::output_setter_cooling );
 			break;
 
 		case OPERATING_STATE::DEHUMIDIFYING:
-			this->process_logic_dehumidification( ictx );
+			this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_dehumidification, &HVAC_LOGIC_LOOP::delay_decider_cooling , &HVAC_LOGIC_LOOP::mode_switcher_cooling , &HVAC_LOGIC_LOOP::output_setter_cooling );
 			break;
 	};
 
+	return;
+}
+
+void HVAC_LOGIC_LOOP::process_logic_none( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
+{
+	/*
+	There is a delay between switching modes.  If nothing else it's a safety to keep the system
+	from flip flopping in case of ... whatever.
+	*/
+	if ( this->switch_clicks >= _ctx.sp_mode_switch_delay )
+	{
+		if ( _ctx.temp_value >= _ctx.cooling_action_on_point )
+		{
+			LOG_DEBUG( "Space temp " + num_to_str( _ctx.temp_value ) + " >= cooling action point: " + num_to_str( _ctx.cooling_action_on_point ) + ".  Switching to cooling mode." );
+			this->switch_op_state( OPERATING_STATE::COOLING );
+		}
+		else if ( _ctx.temp_value <= _ctx.heating_action_on_point )
+		{
+			LOG_DEBUG( "Space temp " + num_to_str( _ctx.temp_value ) + " <= heating action point: " + num_to_str( _ctx.heating_action_on_point ) + ".  Switching to heating mode." );
+			this->switch_op_state( OPERATING_STATE::HEATING );
+		}
+		else if ( _ctx.rh_value > _ctx.dehum_action_on_point )
+		{
+			if ( _ctx.temp_value > _ctx.dehum_min_temp_point )
+			{
+				LOG_DEBUG( "Space RH " + num_to_str( _ctx.rh_value ) + " >= dehumidification action point: " + num_to_str( _ctx.dehum_action_on_point ) + ".  Switching to dehumidification mode." );
+				this->switch_op_state( OPERATING_STATE::DEHUMIDIFYING );
+			}
+			else
+			{
+				//LOG_DEBUG( "Dehum not initiated: space temp: " + num_to_str( _ctx.temp_value ) + " < " + num_to_str( _ctx.dehum_min_temp_point ) );
+			}
+		}
+	}
+	else
+	{
+		this->switch_clicks += 1;
+	}
+
+	return;
+}
+void HVAC_LOGIC_LOOP::process_logic_do( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx, ACTION_DECIDER_PTR _action_decider, DELAY_DECIDER_PTR _delay_decider, MODE_SWITCHER_PTR _mode_switcher, OUTPUT_SETTER_PTR _output_setter )
+{
+	// Set the digital outputs for this particular mode.
+	// There is one click delay between setting the mode and the outputs changing.
+
+	( this->*_output_setter )( this->op_mode );
+
+	switch ( this->op_mode )
+	{
+		case OPERATING_MODE::NONE:
+			( this->*_mode_switcher )( OPERATING_MODE::DELAY_ON );
+			break;
+
+		case OPERATING_MODE::DELAY_ON:
+			this->mode_clicks += 1;
+
+			if ( !( this->*_delay_decider )( _ctx ) )
+			{
+				( this->*_mode_switcher )( OPERATING_MODE::OPERATING );
+			}
+
+			break;
+
+		case OPERATING_MODE::OPERATING:
+			if ( ( this->*_action_decider )( _ctx ) )
+			{
+				// Decider returned TRUE which means we continue operating
+				this->mode_clicks = 0;
+			}
+			else
+			{
+				// Decider returned FALSE which means that we start the countdown for
+				// getting out of this operating mode.
+				this->mode_clicks += 1;
+
+				if ( !( this->*_delay_decider )( _ctx ) )
+				{
+					// The delay decider return FALSE which means that the we should not continue delaying
+					( this->*_mode_switcher )( OPERATING_MODE::DELAY_OFF );
+				}
+			}
+
+			break;
+
+		case OPERATING_MODE::DELAY_OFF:
+			this->mode_clicks += 1;
+
+			if ( !( this->*_delay_decider )( _ctx ) )
+			{
+				// The delay decider return FALSE which means that the we should not continue delaying
+				( this->*_mode_switcher )( OPERATING_MODE::NONE );
+				this->switch_op_state( OPERATING_STATE::NONE );
+			}
+
+			break;
+	}
+}
+bool HVAC_LOGIC_LOOP::action_decider_cooling( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
+{
+	if ( _ctx.temp_value >= _ctx.cooling_action_off_point )
+	{
+		return true;
+	}
+	else
+	{
+		LOG_DEBUG( "Cooling stop: space temp: " + num_to_str( _ctx.temp_value ) + " < " + num_to_str( _ctx.cooling_action_off_point ) );
+		return false;
+	}
+}
+bool HVAC_LOGIC_LOOP::action_decider_heating( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
+{
+	if ( _ctx.temp_value < _ctx.heating_action_off_point )
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+bool HVAC_LOGIC_LOOP::action_decider_dehumidification( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
+{
+
+	if ( _ctx.temp_value >= _ctx.dehum_cancel_temp_point )
+	{
+		// Space temperature is greater than the general set point minus the cooling dead band.
+		if ( _ctx.rh_value < _ctx.dehum_action_off_point )
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	else
+	{
+		// It got too cold.  Abort dehumidification
+		LOG_DEBUG( "Aborting dehum.  Space temp: " + num_to_str( _ctx.temp_value ) + " < " + num_to_str( _ctx.dehum_cancel_temp_point ) );
+		return false;
+	}
+}
+
+bool HVAC_LOGIC_LOOP::delay_decider( unsigned int _pre_sp, unsigned int _post_sp, unsigned int _sp ) const
+{
+	if ( this->op_mode == OPERATING_MODE::DELAY_ON )
+	{
+		if ( this->mode_clicks < _pre_sp )
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if ( this->op_mode == OPERATING_MODE::DELAY_OFF )
+	{
+		if ( this->mode_clicks < _post_sp )
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if ( this->op_mode == OPERATING_MODE::OPERATING )
+	{
+		if ( this->mode_clicks > _sp )
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		throw std::runtime_error( "Unexpected code path in delay_decider." );
+	}
+}
+bool HVAC_LOGIC_LOOP::delay_decider_heating( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
+{
+	return this->delay_decider( _ctx.sp_ahu_delay_pre_heating, _ctx.sp_ahu_delay_post_heating, _ctx.sp_heating_setpoint_delay );
+}
+bool HVAC_LOGIC_LOOP::delay_decider_cooling( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
+{
+	return this->delay_decider( _ctx.sp_ahu_delay_pre_cooling, _ctx.sp_ahu_delay_post_cooling, _ctx.sp_cooling_setpoint_delay );
+}
+bool HVAC_LOGIC_LOOP::delay_decider_dehumidification( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
+{
+	return this->delay_decider( _ctx.sp_ahu_delay_pre_cooling, _ctx.sp_ahu_delay_post_cooling, _ctx.sp_dehum_setpoint_delay );
+}
+
+void HVAC_LOGIC_LOOP::output_setter_heating( const OPERATING_MODE _mode )
+{
+	switch ( _mode )
+	{
+		case OPERATING_MODE::NONE:
+			this->clear_output( PN_AC_COMPRESSOR );
+			this->clear_output( PN_AHU_HEATER );
+			this->clear_output( PN_AHU_FAN );
+			break;
+
+		case OPERATING_MODE::DELAY_ON:
+			this->clear_output( PN_AC_COMPRESSOR );
+			this->set_output( PN_AHU_HEATER );
+			this->clear_output( PN_AHU_FAN );
+			break;
+
+		case OPERATING_MODE::OPERATING:
+			this->clear_output( PN_AC_COMPRESSOR );
+			this->set_output( PN_AHU_HEATER );
+			this->set_output( PN_AHU_FAN );
+			break;
+
+		case OPERATING_MODE::DELAY_OFF:
+			this->clear_output( PN_AC_COMPRESSOR );
+			this->clear_output( PN_AHU_HEATER );
+			this->set_output( PN_AHU_FAN );
+			break;
+	};
+
+	return;
+}
+
+void HVAC_LOGIC_LOOP::output_setter_cooling( const OPERATING_MODE _mode )
+{
+	switch ( _mode )
+	{
+		case OPERATING_MODE::NONE:
+			this->clear_output( PN_AC_COMPRESSOR );
+			this->clear_output( PN_AHU_HEATER );
+			this->clear_output( PN_AHU_FAN );
+			break;
+
+		case OPERATING_MODE::DELAY_ON:
+			this->set_output( PN_AC_COMPRESSOR );
+			this->clear_output( PN_AHU_FAN );
+			this->clear_output( PN_AHU_HEATER );
+			break;
+
+		case OPERATING_MODE::OPERATING:
+			this->set_output( PN_AC_COMPRESSOR );
+			this->set_output( PN_AHU_FAN );
+			this->clear_output( PN_AHU_HEATER );
+			break;
+
+		case OPERATING_MODE::DELAY_OFF:
+			this->clear_output( PN_AC_COMPRESSOR );
+			this->set_output( PN_AHU_FAN );
+			this->clear_output( PN_AHU_HEATER );
+			break;
+	};
+
+	return;
+}
+
+void HVAC_LOGIC_LOOP::mode_switcher_heating( OPERATING_MODE _new_mode )
+{
+	this->output_setter_heating( _new_mode );
+	this->op_mode = _new_mode;
+	this->mode_clicks = 0;
+	return;
+}
+
+void HVAC_LOGIC_LOOP::mode_switcher_cooling( OPERATING_MODE _new_mode )
+{
+	this->output_setter_cooling( _new_mode );
+	this->op_mode = _new_mode;
+	this->mode_clicks = 0;
 	return;
 }
 
@@ -123,10 +465,6 @@ void HVAC_LOGIC_LOOP::switch_op_state( OPERATING_STATE _new_state )
 	{
 		case OPERATING_STATE::NONE:
 			LOG_DEBUG( "Switching operating state to NONE." );
-
-			this->clear_output( PN_AHU_HEATER );
-			this->clear_output( PN_AC_COMPRESSOR );
-			this->clear_output( PN_AHU_FAN );
 			break;
 
 		case OPERATING_STATE::HEATING:
@@ -142,341 +480,18 @@ void HVAC_LOGIC_LOOP::switch_op_state( OPERATING_STATE _new_state )
 			break;
 	}
 
-	this->mode_heat = HEAT_MODE::NONE;
-	this->mode_cool = COOL_MODE::NONE;
-	this->mode_dehum = COOL_MODE::NONE;
+	this->clear_output( PN_AHU_HEATER );
+	this->clear_output( PN_AC_COMPRESSOR );
+	this->clear_output( PN_AHU_FAN );
 
-	this->set_outputs_for_heating( this->mode_heat );
-	this->set_outputs_for_cooling( this->mode_cool );
+	this->mode_clicks = 0;
 
-	this->cool_mode_clicks = 0;
-	this->heat_mode_clicks = 0;
-	this->dehum_mode_clicks = 0;
-
+	// We use this to delay switching between modes.
+	// See: SP MODE SWITCH DELAY
 	this->switch_clicks = 0;
 
+	this->op_mode = OPERATING_MODE::NONE;
 	this->op_state = _new_state;
-
-	return;
-}
-
-
-void HVAC_LOGIC_LOOP::set_outputs_for_dehumidification( const COOL_MODE _mode )
-{
-	this->set_outputs_for_cooling( _mode );
-
-	return;
-}
-
-void HVAC_LOGIC_LOOP::set_outputs_for_heating( const HEAT_MODE _mode )
-{
-	switch ( _mode )
-	{
-		case HEAT_MODE::NONE:
-			this->clear_output( PN_AC_COMPRESSOR );
-			this->clear_output( PN_AHU_HEATER );
-			this->clear_output( PN_AHU_FAN );
-			break;
-
-		case HEAT_MODE::DELAY_ON:
-			this->clear_output( PN_AC_COMPRESSOR );
-			this->set_output( PN_AHU_HEATER );
-			this->clear_output( PN_AHU_FAN );
-			break;
-
-		case HEAT_MODE::HEATING:
-			this->clear_output( PN_AC_COMPRESSOR );
-			this->set_output( PN_AHU_HEATER );
-			this->set_output( PN_AHU_FAN );
-			break;
-
-		case HEAT_MODE::DELAY_OFF:
-			this->clear_output( PN_AC_COMPRESSOR );
-			this->clear_output( PN_AHU_HEATER );
-			this->set_output( PN_AHU_FAN );
-			break;
-	};
-
-	return;
-}
-
-void HVAC_LOGIC_LOOP::set_outputs_for_cooling( const COOL_MODE _mode )
-{
-	switch ( _mode )
-	{
-		case COOL_MODE::NONE:
-			this->clear_output( PN_AC_COMPRESSOR );
-			this->clear_output( PN_AHU_HEATER );
-			this->clear_output( PN_AHU_FAN );
-			break;
-
-		case COOL_MODE::DELAY_ON:
-			this->set_output( PN_AC_COMPRESSOR );
-			this->clear_output( PN_AHU_FAN );
-			this->clear_output( PN_AHU_HEATER );
-			break;
-
-		case COOL_MODE::COOLING:
-			this->set_output( PN_AC_COMPRESSOR );
-			this->set_output( PN_AHU_FAN );
-			this->clear_output( PN_AHU_HEATER );
-			break;
-
-		case COOL_MODE::DELAY_OFF:
-			this->clear_output( PN_AC_COMPRESSOR );
-			this->set_output( PN_AHU_FAN );
-			this->clear_output( PN_AHU_HEATER );
-			break;
-	};
-
-	return;
-}
-
-void HVAC_LOGIC_LOOP::switch_heating_mode( HEAT_MODE _new_mode )
-{
-	this->set_outputs_for_heating( _new_mode );
-
-	this->mode_heat = _new_mode;
-	this->heat_mode_clicks = 0;
-	return;
-}
-void HVAC_LOGIC_LOOP::switch_cooling_mode( COOL_MODE _new_mode )
-{
-	this->mode_cool = _new_mode;
-	this->cool_mode_clicks = 0;
-	return;
-}
-
-void HVAC_LOGIC_LOOP::switch_dehumidification_mode( COOL_MODE _new_mode )
-{
-	this->mode_dehum = _new_mode;
-	this->dehum_mode_clicks = 0;
-	return;
-}
-
-void HVAC_LOGIC_LOOP::process_logic_dehumidification( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
-{
-	this->set_outputs_for_dehumidification( this->mode_dehum );
-
-	switch ( this->mode_dehum )
-	{
-		case COOL_MODE::NONE:
-		{
-			// Initial entry into the heating logic.
-			this->switch_dehumidification_mode( COOL_MODE::DELAY_ON );
-
-			break;
-		}
-
-		case COOL_MODE::DELAY_ON:
-		{
-			this->dehum_mode_clicks += 1;
-
-			if ( this->dehum_mode_clicks >= _ctx.sp_ahu_delay_cooling )
-			{
-				this->switch_dehumidification_mode( COOL_MODE::COOLING );
-			}
-
-			break;
-		}
-
-		case COOL_MODE::COOLING:
-		{
-			if ( _ctx.temp_value <= ( ( ( float )_ctx.cooling_point - ( float )_ctx.sp_space_rh_temp_d ) ) )
-			{
-				LOG_DEBUG( "temp_value is " + num_to_str( _ctx.temp_value ) + " which is <=  than " + num_to_str( ( ( float ) _ctx.cooling_point - ( float )_ctx.sp_space_rh_temp_d ) ) + ".  click: " + num_to_str( this->cool_mode_clicks ) ) ;
-				this->cool_mode_clicks += 1;
-
-				// Current space temp is above heating point plus deadband
-				if ( this->dehum_mode_clicks >= _ctx.sp_cooling_setpoint_delay )
-				{
-					this->switch_dehumidification_mode( COOL_MODE::DELAY_OFF );
-				}
-			}
-			else if ( _ctx.rh_value <= ( ( float )_ctx.sp_space_rh - ( float )_ctx.sp_dehum_deadband ) )
-			{
-				LOG_DEBUG( "RH value is " + num_to_str( _ctx.rh_value ) + " which is <= " + num_to_str( ( ( float )_ctx.sp_space_rh - ( float )_ctx.sp_dehum_deadband ) ) + ". click" + num_to_str( this->cool_mode_clicks ) );
-
-				if ( this->dehum_mode_clicks >= _ctx.sp_cooling_setpoint_delay )
-				{
-					this->switch_dehumidification_mode( COOL_MODE::DELAY_OFF );
-				}
-			}
-			else
-			{
-				this->dehum_mode_clicks = 0;
-			}
-
-			break;
-		}
-
-		case COOL_MODE::DELAY_OFF:
-		{
-			this->dehum_mode_clicks += 1;
-
-			if ( this->dehum_mode_clicks >= _ctx.sp_ahu_delay_cooling )
-			{
-				this->switch_dehumidification_mode( COOL_MODE::NONE );
-				this->switch_op_state( OPERATING_STATE::NONE );
-			}
-
-			break;
-		}
-	};
-
-	return;
-}
-
-void HVAC_LOGIC_LOOP::process_logic_none( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
-{
-	if ( this->switch_clicks >= _ctx.sp_mode_switch_delay )
-	{
-		if ( _ctx.temp_value >= _ctx.cooling_point )
-		{
-			LOG_DEBUG( "Space temp " + num_to_str( _ctx.temp_value ) + " is greater than cooling switch over point: " + num_to_str( _ctx.cooling_point ) + ".  Switching to cooling mode." );
-			this->switch_op_state( OPERATING_STATE::COOLING );
-		}
-		else if ( _ctx.temp_value <= _ctx.heating_point )
-		{
-			LOG_DEBUG( "Space temp " + num_to_str( _ctx.temp_value ) + " is less than heating switch over point: " + num_to_str( _ctx.heating_point ) + ".  Switching to heating mode." );
-			this->switch_op_state( OPERATING_STATE::HEATING );
-		}
-		else if ( _ctx.rh_value > _ctx.dehum_action_point )
-		{
-			LOG_DEBUG( "Space RH " + num_to_str( _ctx.rh_value ) + " is greater than dehumidification action point: " + num_to_str( _ctx.dehum_action_point ) + ".  Switching to dehumidification mode." );
-			this->switch_op_state( OPERATING_STATE::DEHUMIDIFYING );
-		}
-	}
-	else
-	{
-		this->switch_clicks += 1;
-	}
-
-	return;
-}
-void HVAC_LOGIC_LOOP::process_logic_cooling( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
-{
-	this->set_outputs_for_cooling( this->mode_cool );
-
-	switch ( this->mode_cool )
-	{
-		case COOL_MODE::NONE:
-		{
-			// Initial entry into the heating logic.
-			this->switch_cooling_mode( COOL_MODE::DELAY_ON );
-
-			break;
-		}
-
-		case COOL_MODE::DELAY_ON:
-		{
-			this->cool_mode_clicks += 1;
-
-			if ( this->cool_mode_clicks >= _ctx.sp_ahu_delay_cooling )
-			{
-				this->switch_cooling_mode( COOL_MODE::COOLING );
-			}
-
-			break;
-		}
-
-		case COOL_MODE::COOLING:
-		{
-			if ( _ctx.temp_value <= ( ( ( float )_ctx.cooling_point - ( float )_ctx.sp_cooling_deadband ) ) )
-			{
-				LOG_DEBUG( "temp_value is " + num_to_str( _ctx.temp_value ) + " which is <=  than " + num_to_str( ( ( float ) _ctx.cooling_point - ( float )_ctx.sp_cooling_deadband ) ) + ".  click: " + num_to_str( this->cool_mode_clicks ) ) ;
-				this->cool_mode_clicks += 1;
-
-				// Current space temp is above heating point plus deadband
-				if ( this->cool_mode_clicks >= _ctx.sp_cooling_setpoint_delay )
-				{
-					this->switch_cooling_mode( COOL_MODE::DELAY_OFF );
-				}
-			}
-			else
-			{
-				this->cool_mode_clicks = 0;
-			}
-
-			break;
-		}
-
-		case COOL_MODE::DELAY_OFF:
-		{
-			this->cool_mode_clicks += 1;
-
-			if ( this->cool_mode_clicks >= _ctx.sp_ahu_delay_cooling )
-			{
-				this->switch_cooling_mode( COOL_MODE::NONE );
-				this->switch_op_state( OPERATING_STATE::NONE );
-			}
-
-			break;
-		}
-	};
-
-	return;
-}
-void HVAC_LOGIC_LOOP::process_logic_heating( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
-{
-	this->set_outputs_for_heating( this->mode_heat );
-
-	switch ( this->mode_heat )
-	{
-		case HEAT_MODE::NONE:
-		{
-			// Initial entry into the heating logic.
-			this->switch_heating_mode( HEAT_MODE::DELAY_ON );
-
-			break;
-		}
-
-		case HEAT_MODE::DELAY_ON:
-		{
-			this->heat_mode_clicks += 1;
-
-			if ( this->heat_mode_clicks >= _ctx.sp_ahu_delay_heating )
-			{
-				this->switch_heating_mode( HEAT_MODE::HEATING );
-			}
-
-			break;
-		}
-
-		case HEAT_MODE::HEATING:
-		{
-			if ( _ctx.temp_value >= ( ( float )_ctx.heating_point + ( float )_ctx.sp_heating_deadband ) )
-			{
-				LOG_DEBUG( "temp_value is " + num_to_str( _ctx.temp_value ) + " which is <=  than " + num_to_str( ( ( float ) _ctx.heating_point + ( float )_ctx.sp_heating_deadband ) ) + ".  click: " + num_to_str( this->heat_mode_clicks ) ) ;
-				this->heat_mode_clicks += 1;
-
-				// Current space temp is above heating point plus deadband
-				if ( this->heat_mode_clicks >= _ctx.sp_heating_setpoint_delay )
-				{
-					this->switch_heating_mode( HEAT_MODE::DELAY_OFF );
-				}
-			}
-			else
-			{
-				this->heat_mode_clicks = 0;
-			}
-
-			break;
-		}
-
-		case HEAT_MODE::DELAY_OFF:
-		{
-			this->heat_mode_clicks += 1;
-
-			if ( this->heat_mode_clicks >= _ctx.sp_ahu_delay_heating )
-			{
-				this->switch_heating_mode( HEAT_MODE::NONE );
-				this->switch_op_state( OPERATING_STATE::NONE );
-			}
-
-			break;
-		}
-	}
 
 	return;
 }
