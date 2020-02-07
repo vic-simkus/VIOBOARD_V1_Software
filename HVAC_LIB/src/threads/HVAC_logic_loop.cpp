@@ -206,7 +206,7 @@ void HVAC_LOGIC_LOOP::process_logic_none( const HVAC_LOOP_INVOCATION_CONTEXT& _c
 		{
 			if ( _ctx.temp_value > _ctx.dehum_min_temp_point )
 			{
-				LOG_DEBUG( "Space RH " + num_to_str( _ctx.rh_value ) + " >= dehumidification action point: " + num_to_str( _ctx.dehum_action_on_point ) + ".  Switching to dehumidification mode." );
+				LOG_DEBUG( "Space RH " + num_to_str( _ctx.rh_value ) + " >= dehumidification action point: " + num_to_str( _ctx.dehum_action_on_point ) + " and space temp: " + num_to_str( _ctx.temp_value ) + " > " + num_to_str( _ctx.dehum_min_temp_point ) + ".  Switching to dehumidification mode." );
 				this->switch_op_state( OPERATING_STATE::DEHUMIDIFYING );
 			}
 			else
