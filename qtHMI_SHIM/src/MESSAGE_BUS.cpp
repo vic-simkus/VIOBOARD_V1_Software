@@ -212,7 +212,7 @@ void MESSAGE_BUS::force_value( const MESSAGE_BUS::MESSAGE& _message )
 
 	message = this->ctx->message_processor->create_force_ai( _message.board_id.toStdString(), ai_idx, ai_value );
 
-	LOG_DEBUG( "Message: " + message->to_string() );
+	//LOG_DEBUG( "Message: " + message->to_string() );
 
 	this->ctx->send_message( message );
 
