@@ -48,29 +48,37 @@ CONFIGURATOR::CONFIGURATOR( const string& _file )
 	this->file_name = _file;
 	this->buffer = ( char* ) malloc( GC_BUFFER_SIZE );
 	memset( this->buffer, 0, GC_BUFFER_SIZE );
+
 	return;
 }
 CONFIGURATOR::~CONFIGURATOR()
 {
 	memset( this->buffer, 0, GC_BUFFER_SIZE );
 	free( this->buffer );
+
 	this->buffer = nullptr;
 	this->config_entries.clear();
+
 	return;
 }
 
 void CONFIGURATOR::normalize_file_names( void ) throw( exception )
 {
 	char* _buff = ( char* ) malloc( PATH_MAX );
+
 	memset( _buff, 0, PATH_MAX );
 	getcwd( _buff, PATH_MAX );
 	this->cwd = string( _buff );
+
 	memset( _buff, 0, PATH_MAX );
 	realpath( this->file_name.data(), _buff );
 	this->file_name = string( _buff );
+
 	this->overlay_file_name = this->file_name + ".overlay";
+
 	memset( _buff, 0, PATH_MAX );
 	free( _buff );
+
 	return;
 }
 
@@ -89,6 +97,7 @@ void CONFIGURATOR::check_file_permissions( void ) throw( exception )
 	if ( access( this->overlay_file_name.data(), F_OK ) != 0 )
 	{
 		LOG_DEBUG( this->overlay_file_name + " does not exist." );
+
 		int fd = open( this->overlay_file_name.data(), O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR );
 
 		if ( fd == -1 )
@@ -102,14 +111,16 @@ void CONFIGURATOR::check_file_permissions( void ) throw( exception )
 	return;
 }
 
-void CONFIGURATOR::process_file( void ) throw( exception )
+void CONFIGURATOR::process_file( const char* _file_name ) throw( exception )
 {
 	memset( buffer, 0, GC_BUFFER_SIZE );
+
 	int c = 0;
 	size_t buff_idx = 0;
 	size_t line_idx = 1;
 	char cin = 0;
-	FILE* file = fopen( this->file_name.data(), "rt" );
+
+	FILE* file = fopen( _file_name, "rt" );
 
 	while ( ( c = fgetc( file ) ) != EOF )
 	{
@@ -337,7 +348,7 @@ void CONFIGURATOR::read_file( void ) throw( exception )
 	LOG_DEBUG( "Configuration file: " + this->file_name );
 	LOG_DEBUG( "Overlay file: " + this->overlay_file_name );
 	this->check_file_permissions();
-	this->process_file();
+	this->process_file( this->file_name.data() );
 	return;
 }
 void CONFIGURATOR::write_file( void ) const throw( exception )

@@ -286,7 +286,15 @@ namespace BBB_HVAC
 
 			void normalize_file_names( void ) throw( exception );
 			void check_file_permissions( void ) throw( exception );
-			void process_file( void ) throw( exception );
+
+			/**
+			 Loops through a file looking for EOL characters.  Once a line is built calls
+			 process_line(size_t).
+			*/
+			void process_file( const char* _file_name ) throw( exception );
+			/**
+			Parses a configuration line.
+			*/
 			void process_line( size_t _line_idx ) throw( exception );
 			void process_mapping( const CONFIG_ENTRY& _ce ) throw( exception );
 
