@@ -381,7 +381,7 @@ void MESSAGE_BUS::emit_map_data_mesage( COMMANDS _command, const BBB_HVAC::MESSA
 
 	for ( auto map_iterator = map.cbegin( ); map_iterator != map.cend( ); ++map_iterator )
 	{
-		LOG_DEBUG( map_iterator->second );
+		//LOG_DEBUG( map_iterator->second );
 		BBB_HVAC::BOARD_POINT board_point = BBB_HVAC::BOARD_POINT::from_string( map_iterator->second );
 		QVector<QString> temp_vect( 4 );
 		temp_vect[0] = QString( board_point.get_board_tag( ).data( ) ) ;

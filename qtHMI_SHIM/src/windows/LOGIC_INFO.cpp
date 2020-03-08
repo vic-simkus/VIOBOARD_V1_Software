@@ -239,12 +239,12 @@ void LOGIC_INFO::slot_mb_label_data( MESSAGE_BUS::COMMANDS _cmd, const QVector<Q
 {
 	if ( _cmd == MESSAGE_BUS::COMMANDS::GET_LABELS_DO )
 	{
-		LOG_DEBUG( "DO labels" );
+		//LOG_DEBUG( "DO labels" );
 		populate_table_widget( this->table_do_points, _data );
 	}
 	else if ( _cmd == MESSAGE_BUS::COMMANDS::GET_LABELS_AI )
 	{
-		LOG_DEBUG( "AI labels" );
+		//LOG_DEBUG( "AI labels" );
 		populate_table_widget( this->table_ai_points, _data );
 	}
 	else
@@ -254,7 +254,7 @@ void LOGIC_INFO::slot_mb_label_data( MESSAGE_BUS::COMMANDS _cmd, const QVector<Q
 }
 void LOGIC_INFO::slot_mb_map_data( MESSAGE_BUS::COMMANDS, const QMap<QString, QVector<QString>>& _data )
 {
-	LOG_DEBUG( "MAP labels:" );
+	//LOG_DEBUG( "MAP labels:" );
 	this->table_map_points->clearContents( );
 	this->table_map_points->setRowCount( _data.size( ) );
 	int row_index = 0;
