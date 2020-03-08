@@ -21,6 +21,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QCommandLineParser>
+#include <QStringList>
+
 #include <iostream>
 #include "windows/MAIN_WINDOW.h"
 
@@ -76,11 +78,13 @@ int main( int argc, char* argv[] )
 	QCommandLineOption clo_domain_inet( "i", "Connect using a TCPIP socket." );
 	QCommandLineOption clo_address( "a", "Remote address.  Relevant only if -i is specified.  Defaults to " + QString( GC_DEFAULT_LISTEN_INTERFACE ) + "." , "address", QString( GC_DEFAULT_LISTEN_INTERFACE ) );
 	QCommandLineOption clo_port( "p", "Remote port.  Mandatory if -i is specified.  Relevant only if -i is specified.  Defaults to " + QString::number( GC_DEFAULT_TCPIP_PORT ) + "." , "port", QString::number( GC_DEFAULT_TCPIP_PORT ) );
+	QCommandLineOption clo_board_list( "b", "Board list. Specify multiple times for multiple boards.  Defaults to BOARD1", "board_list", "BOARD1" );
 
 	parser.addOption( clo_domain_unix );
 	parser.addOption( clo_domain_inet );
 	parser.addOption( clo_address );
 	parser.addOption( clo_port );
+	parser.addOption( clo_board_list );
 
 	parser.process( app );
 
@@ -88,6 +92,7 @@ int main( int argc, char* argv[] )
 	bool domain_inet = parser.isSet( clo_domain_inet );
 	uint16_t port = parser.value( clo_port ).toUInt();
 	QString address = parser.value( clo_address );
+	QStringList board_list = parser.values( clo_board_list );
 
 	if ( !domain_unix && !domain_inet )
 	{
@@ -117,7 +122,7 @@ int main( int argc, char* argv[] )
 		exit( -1 );
 	}
 
-	MAIN_WINDOW main_window;
+	MAIN_WINDOW main_window( board_list );
 	main_window.show( );
 	app.exec( );
 

@@ -13,7 +13,7 @@
 #include <QVBoxLayout>
 #include <QSplitter>
 
-MAIN_WIDGET::MAIN_WIDGET( QWidget* _parent ) : QFrame( _parent )
+MAIN_WIDGET::MAIN_WIDGET( QWidget* _parent , const QStringList& _board_list ) : QFrame( _parent )
 {
 
 	this->setLayout( new QVBoxLayout() );
@@ -26,11 +26,11 @@ MAIN_WIDGET::MAIN_WIDGET( QWidget* _parent ) : QFrame( _parent )
 	QTabWidget* tab_widget = new QTabWidget( this );
 
 	tab_widget->addTab( ( logic_widget = new LOGIC_INFO( nullptr ) ), "LOGIC INFO" );
-	tab_widget->addTab( new RAW_BOARD_INFO( nullptr ), "RAW BOARD INFO" );
+	tab_widget->addTab( new RAW_BOARD_INFO( nullptr, _board_list ), "RAW BOARD INFO" );
 
 	main_splitter->addWidget( tab_widget );
 
-	DEBUG_FRAME* debug_frame = new DEBUG_FRAME( nullptr );
+	DEBUG_FRAME* debug_frame = new DEBUG_FRAME( nullptr, _board_list );
 
 	main_splitter->addWidget( debug_frame );
 

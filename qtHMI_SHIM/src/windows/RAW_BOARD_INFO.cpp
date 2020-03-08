@@ -24,15 +24,19 @@
 #include <QHBoxLayout>
 #include <QSpacerItem>
 
-RAW_BOARD_INFO::RAW_BOARD_INFO( QWidget* _p ) : QFrame( _p )
+RAW_BOARD_INFO::RAW_BOARD_INFO( QWidget* _p, const QStringList& _board_list ) : QFrame( _p )
 {
 	this->main_widget = new QTabWidget( this );
 	QHBoxLayout* h_layout = new QHBoxLayout();
 	QVBoxLayout* v_layout = new QVBoxLayout();
 	h_layout->addWidget( this->main_widget );
 	h_layout->addItem( new QSpacerItem( 1, 1, QSizePolicy::MinimumExpanding, QSizePolicy::Fixed ) );
-	this->main_widget->addTab( new BOARD_INFO_WIDGET( "BOARD1" ), "BOARD1" );
-	this->main_widget->addTab( new BOARD_INFO_WIDGET( "BOARD2" ), "BOARD2" );
+
+	for ( auto b = _board_list.begin(); b != _board_list.end(); ++b )
+	{
+		this->main_widget->addTab( new BOARD_INFO_WIDGET( *b ), *b );
+	}
+
 	v_layout->addItem( h_layout );
 	v_layout->addItem( new QSpacerItem( 1, 1, QSizePolicy::Fixed, QSizePolicy::MinimumExpanding ) );
 	this->setLayout( v_layout );

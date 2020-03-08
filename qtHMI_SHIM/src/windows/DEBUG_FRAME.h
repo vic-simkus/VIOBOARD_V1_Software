@@ -22,6 +22,7 @@
 #define DEBUG_FRAME_H
 
 #include <QFrame>
+#include <QStringList>
 
 
 class QTabWidget;
@@ -30,7 +31,7 @@ class DEBUG_FRAME : public QFrame
 {
 		Q_OBJECT;
 	public:
-		DEBUG_FRAME( QWidget* _p );
+		DEBUG_FRAME( QWidget* _p, const QStringList& _board_list );
 		virtual ~DEBUG_FRAME( );
 
 	protected:

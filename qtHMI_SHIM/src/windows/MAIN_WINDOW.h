@@ -22,6 +22,7 @@
 #define _MAIN_WINDOW_H
 
 #include <QMainWindow>
+#include <QStringList>
 
 class MAIN_WIDGET;
 
@@ -29,7 +30,7 @@ class MAIN_WINDOW : public QMainWindow
 {
 		Q_OBJECT;
 	public:
-		MAIN_WINDOW( );
+		MAIN_WINDOW( const QStringList& _board_list );
 
 	protected:
 		MAIN_WIDGET* main_widget;

@@ -23,11 +23,12 @@
 
 #include <QFrame>
 #include <QTabWidget>
+#include <QStringList>
 
 class RAW_BOARD_INFO : public QFrame
 {
 	public:
-		RAW_BOARD_INFO( QWidget* _p );
+		RAW_BOARD_INFO( QWidget* _p, const QStringList& _board_list );
 		virtual ~RAW_BOARD_INFO( );
 
 	protected:

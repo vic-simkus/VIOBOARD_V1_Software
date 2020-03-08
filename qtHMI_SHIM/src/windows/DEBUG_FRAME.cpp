@@ -24,15 +24,17 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 
-DEBUG_FRAME::DEBUG_FRAME( QWidget* _p ) : QFrame( _p )
+DEBUG_FRAME::DEBUG_FRAME( QWidget* _p, const QStringList& _board_list ) : QFrame( _p )
 {
 	this->main_widget = new QTabWidget( this );
 	this->setLayout( new QVBoxLayout( this ) );
 	this->layout()->addWidget( this->main_widget );
-	this->main_widget->addTab( new DEBUG_WIDGET( "BOARD1" ), "BOARD1" );
-	this->main_widget->addTab( new DEBUG_WIDGET( "BOARD2" ), "BOARD2" );
-}
 
+	for ( auto b = _board_list.begin(); b != _board_list.end(); ++b )
+	{
+		this->main_widget->addTab( new DEBUG_WIDGET( *b ), *b );
+	}
+}
 
 DEBUG_FRAME::~DEBUG_FRAME( )
 {

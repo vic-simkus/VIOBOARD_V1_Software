@@ -31,9 +31,9 @@
 
 DEF_LOGGER_STAT( "QT_HMI" );
 
-MAIN_WINDOW::MAIN_WINDOW( )
+MAIN_WINDOW::MAIN_WINDOW( const QStringList& _board_list )
 {
-	this->main_widget = new MAIN_WIDGET( this );
+	this->main_widget = new MAIN_WIDGET( this, _board_list );
 	this->setCentralWidget( main_widget );
 
 	this->statusBar()->showMessage( "Application started." );
