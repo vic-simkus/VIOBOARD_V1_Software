@@ -253,6 +253,13 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for an UNFORCE_IN_VALUE message.  Expecting >2, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
 		}
 	}
+	else if ( mt->type == ENUM_MESSAGE_TYPE::SET_SP )
+	{
+		if ( parts.size() != 2 )
+		{
+			THROW_EXCEPTION( EXCEPTIONS::PROTOCOL_ERROR, "Invalid number of parts for a SET_TP message.  Expecting 2, received: " + num_to_str( ( unsigned int ) parts.size() ) + "." );
+		}
+	}
 
 	MESSAGE_PTR ret( new MESSAGE( mt, parts ) );
 	ret->tag_received();
@@ -428,6 +435,16 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l1_cal_vals( const std::string& _board
 	parts.push_back( _board_tag );
 	convert_vector_to_string( _vals, parts );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::SET_L1_CAL_VALS ), parts ) );
+}
+
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_sp( const std::string& _sp_name, double _value ) throw( exception )
+{
+	vector<string> parts;
+
+	parts.push_back( _sp_name );
+	parts.push_back( num_to_str( _value ) );
+
+	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::SET_SP ), parts ) );
 }
 
 MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l2_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals ) throw( exception )

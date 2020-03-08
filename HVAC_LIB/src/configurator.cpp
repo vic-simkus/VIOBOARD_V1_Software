@@ -113,6 +113,8 @@ void CONFIGURATOR::check_file_permissions( void ) throw( exception )
 
 void CONFIGURATOR::process_file( const char* _file_name ) throw( exception )
 {
+	LOG_DEBUG( "Processing file: " + string( _file_name ) );
+
 	memset( buffer, 0, GC_BUFFER_SIZE );
 
 	int c = 0;
@@ -154,14 +156,16 @@ void CONFIGURATOR::process_file( const char* _file_name ) throw( exception )
 		}
 	}
 
-	LOG_DEBUG( "Point mappings:" );
+	/*
+		LOG_DEBUG( "Point mappings:" );
 
-	for ( auto i = this->point_map.begin(); i != this->point_map.end(); ++i )
-	{
-		LOG_DEBUG( i->first + " --> " + i->second.to_string() );
-	}
+		for ( auto i = this->point_map.begin(); i != this->point_map.end(); ++i )
+		{
+			LOG_DEBUG( i->first + " --> " + i->second.to_string() );
+		}
+	*/
 
-	//LOG_DEBUG("Lines processed: " + num_to_str(line_idx));
+	LOG_DEBUG( "Lines processed: " + num_to_str( line_idx ) );
 	fclose( file );
 	return;
 }
@@ -348,19 +352,21 @@ void CONFIGURATOR::read_file( void ) throw( exception )
 	LOG_DEBUG( "Configuration file: " + this->file_name );
 	LOG_DEBUG( "Overlay file: " + this->overlay_file_name );
 	this->check_file_permissions();
+
 	this->process_file( this->file_name.data() );
+	this->process_file( this->overlay_file_name.data() );
+
 	return;
 }
 void CONFIGURATOR::write_file( void ) const throw( exception )
 {
 	FILE* out_file = fopen( this->overlay_file_name.data(), "wt" );
-	fprintf( out_file, "#\n" );
-	fprintf( out_file, "# This file is mechanically generated.  Manual edits will most likely be lost.  So don't do it.\n" );
-	fprintf( out_file, "#\n" );
+
+	fprintf( out_file, "#\n# This file is mechanically generated.  Manual edits will most likely be lost.  So don't do it.\n#\n" );
 
 	for ( CONFIG_ENTRY_LIST_TYPE::const_iterator i = this->config_entries.cbegin(); i != this->config_entries.cend(); ++i )
 	{
-		if ( i->get_is_dirty() )
+		if ( i->get_type() == ENUM_CONFIG_TYPES::SP )
 		{
 			fprintf( out_file, "%s\n", i->write_self_to_file().data() );
 		}
@@ -368,6 +374,7 @@ void CONFIGURATOR::write_file( void ) const throw( exception )
 
 	fprintf( out_file, "# EOF\n" );
 	fclose( out_file );
+
 	return;
 }
 

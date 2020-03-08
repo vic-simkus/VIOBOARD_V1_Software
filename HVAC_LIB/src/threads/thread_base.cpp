@@ -29,9 +29,9 @@
 #include <sys/syscall.h>
 
 #ifdef __FreeBSD__
-#define gettid() 	(unsigned long)pthread_self()
+	#define gettid() 	(unsigned long)pthread_self()
 #else
-#define gettid() syscall(SYS_gettid)
+	#define gettid() syscall(SYS_gettid)
 #endif
 
 using namespace BBB_HVAC;
@@ -51,7 +51,7 @@ THREAD_BASE::~THREAD_BASE()
 	return;
 }
 
-TPROTECT_BASE* THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
+void THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
 {
 	try
 	{
@@ -60,11 +60,13 @@ TPROTECT_BASE* THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
 	catch ( const LOCK_ERROR& _ex )
 	{
 		LOG_ERROR( "Failed to obtain lock: " + string( _ex.what() ) );
+
 		this->abort_thread = true;
+
 		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in thread [" + this->thread_tag + "]" );
 	}
 
-	return this;
+	return;
 }
 
 void THREAD_BASE::pthread_func( void )

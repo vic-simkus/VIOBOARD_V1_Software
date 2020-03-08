@@ -51,7 +51,7 @@ namespace BBB_HVAC
 
 			string get_thread_tag( void ) const;
 
-			TPROTECT_BASE* obtain_lock( void ) throw( LOCK_ERROR );
+			void obtain_lock( void ) throw( LOCK_ERROR );
 
 			inline bool get_is_io_thread( void ) const {
 				return this->is_io_thread;

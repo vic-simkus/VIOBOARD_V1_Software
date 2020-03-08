@@ -80,6 +80,11 @@
 #define GC_LOGIC_THREAD_SLEEP 999000000
 
 /**
+ * Number of logic loop iterations between saving of configuration
+*/
+#define GC_LOGIC_CONFIG_SAVE_INTERVAL	10
+
+/**
  * Number of attempts the logic thread will try to obtain a mutex.  Between tries it will sleep for a random number of nanoseconds.
  */
 #define GC_MUTEX_LOCK_ATTEMPT 400

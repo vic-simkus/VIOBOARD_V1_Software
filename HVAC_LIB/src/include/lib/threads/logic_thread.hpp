@@ -212,6 +212,8 @@ namespace BBB_HVAC
 
 			void get_logic_status_fluff( LOGIC_STATUS_FLUFF& ) const;
 
+			void set_sp_value( const string& _name, double _value ) throw ( exception );
+
 		protected:
 			static double calculate_420_value( double _voltage, long _min, long _max );
 			static double calculate_ICTD_value( double _voltage );
@@ -230,7 +232,7 @@ namespace BBB_HVAC
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 			*/
-			void set_sp_value( const string& _name, double _value ) throw ( exception );
+			void set_sp_value_ns( const string& _name, double _value ) throw ( exception );
 
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
@@ -267,6 +269,8 @@ namespace BBB_HVAC
 			CONFIGURATOR* configurator;
 
 			std::vector<std::string> involved_board_tags;
+
+			size_t config_save_counter;
 
 		private:
 

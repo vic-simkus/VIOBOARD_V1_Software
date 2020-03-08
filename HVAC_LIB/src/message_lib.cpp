@@ -55,7 +55,7 @@ MESSAGE::MESSAGE( const MESSAGE_TYPE& _type, const vector<string>& _payload )
 
 void MESSAGE::get_timestamp( timespec* _tm ) throw( runtime_error )
 {
-	if( clock_gettime( CLOCK_MONOTONIC, _tm ) != 0 )
+	if ( clock_gettime( CLOCK_MONOTONIC, _tm ) != 0 )
 	{
 		throw runtime_error( create_perror_string( "Failed to get timestamp from system clock" ) );
 	}
@@ -117,7 +117,7 @@ uint16_t MESSAGE::get_part_as_ui( size_t _part ) throw( exception )
 	{
 		return ( ( uint16_t ) stoi( this->parts[_part] ) );
 	}
-	catch( const exception& e )
+	catch ( const exception& e )
 	{
 		throw runtime_error( string( "Failed to parse part " ) + this->parts[_part] + " to an unsigned integer: " + e.what() );
 	}
@@ -130,9 +130,23 @@ int16_t MESSAGE::get_part_as_si( size_t _part ) throw( exception )
 	{
 		return ( ( int16_t ) stoi( this->parts[_part] ) );
 	}
-	catch( const exception& e )
+	catch ( const exception& e )
 	{
 		throw runtime_error( string( "Failed to parse part " ) + this->parts[_part] + " to a signed integer: " + e.what() );
+	}
+}
+
+double MESSAGE::get_part_as_d( size_t _part ) throw( exception )
+{
+	this->check_part_index( _part );
+
+	try
+	{
+		return ( ( double ) stod( this->parts[_part] ) );
+	}
+	catch ( const exception& e )
+	{
+		throw runtime_error( string( "Failed to parse part " ) + this->parts[_part] + " to a double: " + e.what() );
 	}
 }
 string MESSAGE::get_part_as_s( size_t _part ) throw( exception )
@@ -147,7 +161,7 @@ size_t MESSAGE::get_part_count( void ) const
 }
 void MESSAGE::check_part_index( size_t _idx ) throw( exception )
 {
-	if( this->parts.size() == 0 || _idx >= this->parts.size() )
+	if ( this->parts.size() == 0 || _idx >= this->parts.size() )
 	{
 		throw runtime_error( string( "Supplied part index is out of range.  Part count: " ) + num_to_str( ( unsigned int ) this->parts.size() ) + string( ", index: " ) + num_to_str( _idx ) );
 	}
@@ -155,7 +169,7 @@ void MESSAGE::check_part_index( size_t _idx ) throw( exception )
 
 void MESSAGE::tag_received( void ) throw( runtime_error )
 {
-	if( this->message_received->tv_sec != 0 )
+	if ( this->message_received->tv_sec != 0 )
 	{
 		throw runtime_error( "Attempt was made to tag a message instance as received more than once." );
 	}
@@ -166,7 +180,7 @@ void MESSAGE::tag_received( void ) throw( runtime_error )
 
 void MESSAGE::tag_sent( void ) throw( runtime_error )
 {
-	if( this->message_sent->tv_sec != 0 )
+	if ( this->message_sent->tv_sec != 0 )
 	{
 		throw runtime_error( "Attempt was made to tag a message instance as sent more than once." );
 	}
@@ -243,17 +257,17 @@ string MESSAGE::to_string( void ) const
 
 void MESSAGE::message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) throw( exception )
 {
-	if( _message->get_part_count() < 2 )
+	if ( _message->get_part_count() < 2 )
 	{
 		throw logic_error( "Message part count too low." );
 	}
 
-	if( ( _message->get_part_count() % 2 ) != 0 )
+	if ( ( _message->get_part_count() % 2 ) != 0 )
 	{
 		throw logic_error( "Message part count is not even." );
 	}
 
-	for( size_t i = 0; i < _message->get_part_count(); i += 2 )
+	for ( size_t i = 0; i < _message->get_part_count(); i += 2 )
 	{
 		_dest_map.emplace( std::make_pair( _message->get_part_as_s( i ), _message->get_part_as_s( i + 1 ) ) );
 	}

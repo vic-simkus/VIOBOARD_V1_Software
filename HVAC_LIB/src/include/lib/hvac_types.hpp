@@ -117,6 +117,7 @@ namespace BBB_HVAC
 		READ_LOGIC_STATUS,			/// Gets the point statuses from the logic thread.  This will include all calculated analog values as the logic thread sees it.
 		FORCE_AI_VALUE,				/// Forces an input value.
 		UNFORCE_AI_VALUE,			/// Unfores an input value.
+		SET_SP,						/// Sets a setpoint value.
 		__MSG_END__					/// Terminator of the enum.  Used in iterating through the enum values.
 	} ;
 

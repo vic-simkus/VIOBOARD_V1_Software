@@ -22,7 +22,6 @@
 
 #include <string>
 
-//PING = 0, PONG, HELLO, READ_STATUS, SET_STATUS, GET_LABELS, __MSG_END__
 static std::string __message_type_list[] = { "INVALID", \
 											 "PING", \
 											 "PONG", \
@@ -41,7 +40,8 @@ static std::string __message_type_list[] = { "INVALID", \
 											 "GET_BOOT_COUNT", \
 											 "READ_LOGIC_STATUS", \
 											 "FORCE_AI_VALUE", \
-											 "UNFORCE_AI_VALUE" \
+											 "UNFORCE_AI_VALUE", \
+											 "SET_SP" \
 										   };
 
 using namespace BBB_HVAC;

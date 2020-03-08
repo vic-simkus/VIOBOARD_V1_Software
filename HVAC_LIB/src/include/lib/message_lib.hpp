@@ -40,166 +40,171 @@ namespace BBB_HVAC
 	 */
 	class MESSAGE
 	{
-	public:
-		/**
-		 * Constructor.
-		 * \param _type Message type
-		 * \param _payload A vector of strings of the parts/payload of the message
-		 */
-		MESSAGE( const MESSAGE_TYPE& _type, const vector<string>& _payload = vector<string>() );
+		public:
+			/**
+			 * Constructor.
+			 * \param _type Message type
+			 * \param _payload A vector of strings of the parts/payload of the message
+			 */
+			MESSAGE( const MESSAGE_TYPE& _type, const vector<string>& _payload = vector<string>() );
 
-		/**
-		 * Destructor
-		 */
-		~MESSAGE();
+			/**
+			 * Destructor
+			 */
+			~MESSAGE();
 
-		/**
-		 * Returns the message type
-		 * \return Message type
-		 */
-		MESSAGE_TYPE get_message_type( void ) const;
+			/**
+			 * Returns the message type
+			 * \return Message type
+			 */
+			MESSAGE_TYPE get_message_type( void ) const;
 
-		/**
-		 * Returns the message payload length as it will be sent or was received.
-		 * \return Total message length including the terminating new line
-		 */
-		size_t get_length( void ) const;
+			/**
+			 * Returns the message payload length as it will be sent or was received.
+			 * \return Total message length including the terminating new line
+			 */
+			size_t get_length( void ) const;
 
-		/**
-		Returns the number of parts in the message's payload.
-		*/
-		size_t get_part_count( void ) const;
+			/**
+			Returns the number of parts in the message's payload.
+			*/
+			size_t get_part_count( void ) const;
 
-		/**
-		 * Returns the message payload as it will be sent or was received.
-		 * \return Payload including the terminating new line.
-		 */
-		const string& get_payload( void ) const;
+			/**
+			 * Returns the message payload as it will be sent or was received.
+			 * \return Payload including the terminating new line.
+			 */
+			const string& get_payload( void ) const;
 
-		/**
-		 * Returns the parsed message parts/payload.
-		 * \return Message parts/payload as a vector of strings.
-		 */
-		const vector<string>& get_parts( void ) const;
+			/**
+			 * Returns the parsed message parts/payload.
+			 * \return Message parts/payload as a vector of strings.
+			 */
+			const vector<string>& get_parts( void ) const;
 
-		/**
-		 * Tags the message as being received.  Calling this method more than once will raise a runtime_exception
-		 */
-		void tag_received( void ) throw( runtime_error );
+			/**
+			 * Tags the message as being received.  Calling this method more than once will raise a runtime_exception
+			 */
+			void tag_received( void ) throw( runtime_error );
 
-		/**
-		 * Tags the message as being sent.  Calling this method more than once will raise a runtime_exception
-		 */
-		void tag_sent( void ) throw( runtime_error );
+			/**
+			 * Tags the message as being sent.  Calling this method more than once will raise a runtime_exception
+			 */
+			void tag_sent( void ) throw( runtime_error );
 
-		/**
-		 * Generates a string that is intended to be used for human consumption for debugging purposes.  The format is not guaranteed to be stable.
-		 * \return A string containing debuging information intended for human consumption.
-		 */
-		string to_string( void ) const;
+			/**
+			 * Generates a string that is intended to be used for human consumption for debugging purposes.  The format is not guaranteed to be stable.
+			 * \return A string containing debuging information intended for human consumption.
+			 */
+			string to_string( void ) const;
 
-		/**
-		 * Gets a message part as an unsigned integer.
-		 * \param _part Index of the part to convert to a number.
-		 * \return Value of the part as an unsigned integer.  Throws an exception if the part payload can not be parsed into a numerical form.
-		 */
-		uint16_t get_part_as_ui( size_t _part ) throw( exception );
-		/**
-		 * Gets a message part as a signed integer.
-		 * \see get_par_as_ui(_part)
-		 */
-		int16_t get_part_as_si( size_t _part ) throw( exception );
+			/**
+			 * Gets a message part as an unsigned integer.
+			 * \param _part Index of the part to convert to a number.
+			 * \return Value of the part as an unsigned integer.  Throws an exception if the part payload can not be parsed into a numerical form.
+			 */
+			uint16_t get_part_as_ui( size_t _part ) throw( exception );
+			/**
+			 * Gets a message part as a signed integer.
+			 * \see get_par_as_ui(_part)
+			 */
+			int16_t get_part_as_si( size_t _part ) throw( exception );
 
-		/**
-		 * Gets a message part as a string
-		 * \return Part as a string.
-		 */
-		string get_part_as_s( size_t _part ) throw( exception );
+			/**
+			 * Gets a message part as a string
+			 * \return Part as a string.
+			 */
+			string get_part_as_s( size_t _part ) throw( exception );
+			/**
+			 * Gets a message part as a double
+			 * \return Part as a string.
+			 */
+			double get_part_as_d( size_t _part ) throw( exception );
 
-		/**
-		 * Gets the timestamp of when this message instance was sent to remote.
-		 * \return Timestamp of the event.
-		 */
-		const timespec* get_message_sent_timestamp( void ) const;
+			/**
+			 * Gets the timestamp of when this message instance was sent to remote.
+			 * \return Timestamp of the event.
+			 */
+			const timespec* get_message_sent_timestamp( void ) const;
 
-		/**
-		 * Gets the timestamp of when this message instance was created.
-		 * \return Timestamp of the event.
-		 */
-		const timespec* get_message_created_timestamp( void ) const;
+			/**
+			 * Gets the timestamp of when this message instance was created.
+			 * \return Timestamp of the event.
+			 */
+			const timespec* get_message_created_timestamp( void ) const;
 
-		/**
-		 * Gets the timestamp of when this message was received.
-		 * \return Timestamp of the event.
-		 */
-		const timespec* get_message_received_timestamp( void ) const;
+			/**
+			 * Gets the timestamp of when this message was received.
+			 * \return Timestamp of the event.
+			 */
+			const timespec* get_message_received_timestamp( void ) const;
 
-		//void trim_message( void );
+			//void trim_message( void );
 
-		/**
-		 * Separating character that is used to create or parse message payloads.
-		 */
-		static const char sep_char;
+			/**
+			 * Separating character that is used to create or parse message payloads.
+			 */
+			static const char sep_char;
 
-		static void message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) throw( exception );
+			static void message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) throw( exception );
 
-	protected:
-		/**
-		 * Checks to see if the supplied part index is valid (is in range)
-		 * \param _part Part index.
-		 */
-		void check_part_index( size_t _part ) throw( exception );
+		protected:
+			/**
+			 * Checks to see if the supplied part index is valid (is in range)
+			 * \param _part Part index.
+			 */
+			void check_part_index( size_t _part ) throw( exception );
 
-		/**
-		 * Protected initializer.  Zeros out and resets all of the classe's properties.
-		 */
-		void init( void );
+			/**
+			 * Protected initializer.  Zeros out and resets all of the classe's properties.
+			 */
+			void init( void );
 
-		/**
-		 * Builds the messages payload.
-		 */
-		void build_message( void );
+			/**
+			 * Builds the messages payload.
+			 */
+			void build_message( void );
 
-		/**
-		 * Message type.
-		 */
-		MESSAGE_TYPE message_type;
+			/**
+			 * Message type.
+			 */
+			MESSAGE_TYPE message_type;
 
-		/**
-		 * Length of the payload including the terminating new line.
-		 */
-		size_t length;
+			/**
+			 * Length of the payload including the terminating new line.
+			 */
+			size_t length;
 
-		/**
-		 * Raw payload.
-		 */
-		string payload;
+			/**
+			 * Raw payload.
+			 */
+			string payload;
 
-		/**
-		 * Parsed parts of the message.
-		 */
-		vector<string> parts;
+			/**
+			 * Parsed parts of the message.
+			 */
+			vector<string> parts;
 
-		/**
-		 * Timestamp of when the class was instantiated.
-		 */
-		struct timespec* class_created;
+			/**
+			 * Timestamp of when the class was instantiated.
+			 */
+			struct timespec* class_created;
 
-		/**
-		 * Timestamp of when this message was received from remote.
-		 */
-		struct timespec* message_received;
+			/**
+			 * Timestamp of when this message was received from remote.
+			 */
+			struct timespec* message_received;
 
-		/**
-		 * Timestamp of when this message was sent to remote.
-		 */
-		struct timespec* message_sent;
+			/**
+			 * Timestamp of when this message was sent to remote.
+			 */
+			struct timespec* message_sent;
 
-		/**
-		 * Gets the current timestamp and places the supplied buffer.
-		 * \param _tm Destination buffer.
-		 */
-		static void get_timestamp( timespec* _tm ) throw( runtime_error );
+			/**
+			 * Gets the current timestamp and places the supplied buffer.
+			 * \param _tm Destination buffer.
+			 */
+			static void get_timestamp( timespec* _tm ) throw( runtime_error );
 	};
 }
 

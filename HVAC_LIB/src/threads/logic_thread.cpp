@@ -42,8 +42,11 @@ using namespace BBB_HVAC;
 LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
 	THREAD_BASE( "LOGIC_PROCESSOR_BASE" )
 {
-	this->configurator = _config;
 	INIT_LOGGER( "BBB_HVAC::LOGIC_PROCESSOR_BASE" );
+
+	this->configurator = _config;
+	this->config_save_counter = 0;
+
 	/*
 	Populate the logic fluff stuff.  Logic fluff is used by user-facing stuffs to extract operational information out of the logic processor
 	*/
@@ -253,11 +256,6 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 			this->logic_status_core.calculated_adc_values[point_name] = calculated_value;
 		}
 
-		/*
-		Update the set point values in the logic core status
-
-		XXX -- And we're doing this because ... the user might change the setpoints???
-		*/
 		const SET_POINT_MAP& set_points = this->configurator->get_sp_points();
 
 		for ( auto i = set_points.begin(); i != set_points.end(); ++i )
@@ -279,6 +277,21 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 			LOG_ERROR( "process_logic() emitted an unspecified exception.  Logic thread will abort." );
 			this->abort_thread = true;
 		}
+
+
+		/*
+			Deal with writing out the configuration changes.
+		*/
+		{
+			this->config_save_counter += 1;
+
+			if ( this->config_save_counter >= GC_LOGIC_CONFIG_SAVE_INTERVAL )
+			{
+				this->configurator->write_file();
+				this->config_save_counter = 0;
+			}
+		}
+
 
 		/*
 		 * Done with the logic processing.  Unlock the mutex so that some other thread may get the status.
@@ -375,6 +388,25 @@ double LOGIC_PROCESSOR_BASE::get_sp_value( const string& _name ) const throw( ex
 	}
 }
 void LOGIC_PROCESSOR_BASE::set_sp_value( const string& _name, double _value ) throw ( exception )
+{
+
+	this->obtain_lock();
+	// Lock is either obtained or an exception is thrown
+
+	try
+	{
+		this->set_sp_value_ns( _name, _value );
+		this->release_lock();
+	}
+	catch ( const exception& e )
+	{
+		this->release_lock();
+		THROW_EXCEPTION( runtime_error, "Failed to set SP:" + e.what() );
+	}
+
+}
+
+void LOGIC_PROCESSOR_BASE::set_sp_value_ns( const string& _name, double _value ) throw ( exception )
 {
 	try
 	{
