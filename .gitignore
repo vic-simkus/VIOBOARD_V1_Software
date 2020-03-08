@@ -4,3 +4,4 @@
 bin
 *.o
 *.swp
+configuration.cfg.overlay
