@@ -37,6 +37,11 @@
  */
 #define GC_LOCAL_COMMAND_SOCKET "/tmp/bbb_hvac"
 
+/**
+Default PID file name
+*/
+#define GC_PID_FILE "/tmp/bbb_hvac.pid"
+
 #define GC_DEFAULT_TCPIP_PORT 6666
 #define GC_DEFAULT_LISTEN_INTERFACE "127.0.0.1"
 

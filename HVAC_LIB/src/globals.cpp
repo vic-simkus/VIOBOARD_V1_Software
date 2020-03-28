@@ -381,6 +381,8 @@ namespace BBB_HVAC
 
 			setsid(); /* obtain a new process group */
 
+			umask( S_IWGRP | S_IWOTH );
+
 			for ( i = getdtablesize(); i >= 0; --i )
 			{
 				close( i ); /* close all descriptors */
@@ -390,7 +392,25 @@ namespace BBB_HVAC
 			dup( i ); /* stdout */
 			dup( i ); /* stderr */
 
-			umask( 027 );
+			/*
+			We're pretty much ignoring all error handling here.
+			*/
+			std::string pid_txt = num_to_str( getpid() ) + "\n";
+			i = open( GC_PID_FILE, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR |  S_IRGRP | S_IROTH );
+			write( i, pid_txt.data(), pid_txt.size() );
+			close( i );
+
+
+
+			return;
+		}
+
+		void exit_function( void )
+		{
+			if ( unlink( GC_PID_FILE ) != 0 )
+			{
+				LOG_ERROR( create_perror_string( "Failed to unlink PID file" ) );
+			}
 
 			return;
 		}

@@ -82,6 +82,7 @@ namespace BBB_HVAC
 		extern void drop_privs( void );
 		extern int check_privs( void );
 		extern void daemon_self( void );
+		extern void exit_function( void );
 
 
 	}

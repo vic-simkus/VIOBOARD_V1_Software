@@ -240,6 +240,8 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 
 	LOGGING::LOG_CONFIGURATOR::destroy_root_configurator();
 
+	BBB_HVAC::GLOBALS::exit_function();
+
 	return EXIT_SUCCESS;
 }
 
