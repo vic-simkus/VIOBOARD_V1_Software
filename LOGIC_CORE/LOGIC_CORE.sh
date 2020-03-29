@@ -3,7 +3,8 @@
 
 me=`realpath $0`
 my_dir=`dirname $me`
+me=`basename $me`
+my_parms="$@"
 
-export LD_LIBRARY_PATH="$my_dir/../HVAC_LIB/bin:$LD_LIBRARY_PATH"
-cd $my_dir
-$my_dir/bin/LOGIC_CORE $@
+$my_dir/LOGIC_CORE.py $my_parms
+
