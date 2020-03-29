@@ -50,6 +50,7 @@ LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
 	/*
 	Populate the logic fluff stuff.  Logic fluff is used by user-facing stuffs to extract operational information out of the logic processor
 	*/
+
 	this->logic_status_fluff.do_labels = this->configurator->get_do_points();
 	this->logic_status_fluff.ai_labels = this->configurator->get_ai_points();
 	this->logic_status_fluff.sp_labels = this->configurator->get_sp_points();
@@ -80,9 +81,12 @@ LOGIC_PROCESSOR_BASE::LOGIC_PROCESSOR_BASE( CONFIGURATOR* _config ) :
 		this->logic_status_core.current_state_map.emplace( std::make_pair( *i, BOARD_STATE_STRUCT() ) );
 	}
 
+	/*
 	LOG_DEBUG( "adc_vref_max: " + num_to_str( this->logic_status_core.adc_vref_max ) );
 	LOG_DEBUG( "adc_steps: " + num_to_str( this->logic_status_core.adc_steps ) );
 	LOG_DEBUG( "adc_step_val: " + num_to_str( this->logic_status_core.adc_step_val ) );
+	*/
+
 	return;
 }
 
@@ -166,10 +170,11 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 			The boards IO thread handle.
 			*/
 			IOCOMM::SER_IO_COMM* thread_handle;
+			std::string board_id = *i;
 
 			try
 			{
-				thread_handle = THREAD_REGISTRY::get_serial_io_thread( *i );
+				thread_handle = THREAD_REGISTRY::get_serial_io_thread( board_id );
 			}
 			catch ( const exception& _e )
 			{
@@ -183,21 +188,118 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 				Get the board state for the current board.
 				*i is the board name.
 				*/
-				auto board_state_iterator = this->logic_status_core.current_state_map.find( ( *i ) );
+				auto board_state_iterator = this->logic_status_core.current_state_map.find( board_id );
 
 				if ( board_state_iterator == this->logic_status_core.current_state_map.end() )
 				{
-					LOG_ERROR( "Failed to find state map for the current board tag: " + ( *i ) );
+					LOG_ERROR( "Failed to find state map for the current board tag: " + board_id );
 					goto _end;
 				}
 
 				BOARD_STATE_STRUCT* board_state_ptr = &board_state_iterator->second;
-				BBB_HVAC::IOCOMM::BOARD_STATE_CACHE board_state_cache( ( *i ) + "[t]" );
+				BBB_HVAC::IOCOMM::BOARD_STATE_CACHE board_state_cache( board_id + "[t]" );
 				thread_handle->get_latest_state_values( board_state_cache );
 				board_state_cache.get_latest_do_status( board_state_ptr->do_state );
 				board_state_cache.get_latest_do_status( board_state_ptr->do_state );
 				board_state_cache.get_latest_pmic_status( board_state_ptr->pmic_state );
 				board_state_cache.get_latest_adc_values( board_state_ptr->ai_state );
+
+				/*
+				Get PMIC status bits.  Writing the PMIC status to the board will reset both PMICs if they have the error flag set.
+				*/
+
+				uint8_t pmic_val = board_state_ptr->pmic_state.get_value();
+
+				if ( pmic_val & GC_PMIC_AI_ERR_MASK || pmic_val & GC_PMIC_DO_ERR_MASK )
+				{
+					if ( pmic_reset_counters.count( board_id ) == 0 )
+					{
+						// First time resetting this board.
+
+						pmic_reset_counters.emplace( std::make_pair( board_id, PMIC_RESET() ) );
+						pmic_reset_counters[board_id].last_reset = GLOBALS::get_time_usec();
+						pmic_reset_counters[board_id].count = 1;
+						pmic_reset_counters[board_id].failed = false;
+
+						LOG_INFO( "A PMIC overcurrent condition sensed on board: " + board_id + ".  Trying to reset (0)." );
+						thread_handle->obtain_lock_ex( &( this->abort_thread ) );
+						thread_handle->cmd_set_pmic_status( pmic_val );
+						thread_handle->release_lock();
+					} // This board has NOT had PMIC overcurrent events before.
+					else
+					{
+
+						//
+						// This is not the first time we've tried to reset the PMIC
+						//
+
+						if ( pmic_reset_counters[board_id].failed == false )
+						{
+							//
+							// The board has not been flagged as a failed board
+
+							//
+							// XXX - Need to figure out why timings don't work right
+							//
+
+							if ( GLOBALS::get_time_usec() - pmic_reset_counters[board_id].last_reset > GP_PMIC_RESET_PERIOD )
+							{
+								//
+								// The last reset was more than GP_PMIC_RESET_PERIOD ago
+								//
+
+								pmic_reset_counters[board_id].count = 1;
+								pmic_reset_counters[board_id].last_reset = GLOBALS::get_time_usec();
+
+								LOG_INFO( "A PMIC overcurrent condition sensed on board: " + board_id + ".  Trying to reset.  (1)" );
+								thread_handle->obtain_lock_ex( &( this->abort_thread ) );
+								thread_handle->cmd_set_pmic_status( pmic_val );
+								thread_handle->release_lock();
+							}
+							else
+							{
+								//
+								// Last reset was less than GP_PMIC_RESET_PERIOD ago
+								//
+
+								if ( pmic_reset_counters[board_id].count <= GC_PMIC_RESET_COUNT )
+								{
+									//
+									// Maximum reset count within GP_PMIC_RESET_PERIOD has NOT been reached.p
+									//
+
+									LOG_INFO( "A PMIC overcurrent condition sensed on board: " + board_id + ".  Trying to reset.  (2)" );
+									thread_handle->obtain_lock_ex( &( this->abort_thread ) );
+									thread_handle->cmd_set_pmic_status( pmic_val );
+									thread_handle->release_lock();
+									pmic_reset_counters[board_id].count = pmic_reset_counters[board_id].count + 1;
+								}
+								else
+								{
+									//
+									//  Maximum reset count within GP_PMIC_RESET_PERIOD has been reached.p
+									//
+
+									pmic_reset_counters[board_id].failed = true;
+									LOG_ERROR( "One of the PMICs on board " + board_id + " failed to reset too many times in a given period.  We will no longer try to reset any PMICs on this board." );
+								}
+
+							}
+						} // This board has not been marked as failed due to previous rapid overcurrent events.
+					}// This board has had PMIC overcurrent events before.
+				}  // There is a failed PMIC on this board.
+				else
+				{
+					if ( pmic_reset_counters.count( board_id ) != 0 )
+					{
+						if ( ( GLOBALS::get_time_usec() - pmic_reset_counters[board_id].last_reset ) > GP_PMIC_RESET_PERIOD )
+						{
+							LOG_DEBUG( "Removing board " + board_id + " from PMIC failure counters." )
+							pmic_reset_counters.erase( board_id );
+						}
+
+					} // This board has had previous PMIC overcurrent events before.
+				} // There is no failed PMICs on this board.
 			}
 			catch ( const exception& _e )
 			{

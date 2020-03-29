@@ -25,7 +25,7 @@
 using std::string;
 
 #include <pthread.h>
-
+#include <time.h>
 #include "lib/exceptions.hpp"
 #include "lib/tprotect_base.hpp"
 #include "lib/logger.hpp"

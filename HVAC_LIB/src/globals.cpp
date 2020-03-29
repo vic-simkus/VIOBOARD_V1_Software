@@ -41,6 +41,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
@@ -544,6 +546,15 @@ namespace BBB_HVAC
 			{
 				return fd;
 			}
+		}
+
+		unsigned long long int get_time_usec( void )
+		{
+			struct timeval tv;
+
+			gettimeofday( &tv, nullptr );
+
+			return ( ( unsigned long long int )tv.tv_sec * ( unsigned long long int )1000000 + ( unsigned long long int )tv.tv_usec );
 		}
 
 	} // END namespace GLOBALS

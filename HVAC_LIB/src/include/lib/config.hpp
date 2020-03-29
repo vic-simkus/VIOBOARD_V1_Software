@@ -203,9 +203,7 @@ XXX - need to update to reflect changes in timing mechanism
 #define GC_DO_2_MASK 0x02
 #define GC_DO_1_MASK 0x01
 
-#define GC_PMIC_AI_EN_MASK 0x01
-#define GC_PMIC_DO_EN_MASK 0x02
-#define GC_PMIC_AI_ERR_MASK 0x04
-#define GC_PMIC_DO_ERR_MASK 0x08
+#define GC_PMIC_RESET_COUNT		3
+#define GP_PMIC_RESET_PERIOD	5000000
 
 #endif /* CONFIG_H_ */

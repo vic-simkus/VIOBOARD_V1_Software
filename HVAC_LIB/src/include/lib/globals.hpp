@@ -77,13 +77,16 @@ namespace BBB_HVAC
 
 		extern void configure_signals( void );
 
-
 		extern int create_logger_fd( const COMMAND_LINE_PARMS& _clp, bool _test );
+
 		extern void drop_privs( void );
 		extern int check_privs( void );
+
 		extern void daemon_self( void );
+
 		extern void exit_function( void );
 
+		extern unsigned long long int get_time_usec( void );
 
 	}
 }

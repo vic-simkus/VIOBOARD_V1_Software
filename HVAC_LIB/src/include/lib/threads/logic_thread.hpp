@@ -34,9 +34,17 @@
 #include <map>
 #include <string.h>
 #include <string>
+#include <time.h>
+
 
 namespace BBB_HVAC
 {
+	typedef struct
+	{
+		unsigned long long int last_reset;
+		uint8_t count;
+		bool failed;
+	} PMIC_RESET;
 
 	typedef struct
 	{
@@ -272,6 +280,7 @@ namespace BBB_HVAC
 
 			size_t config_save_counter;
 
+			std::map<std::string, PMIC_RESET> pmic_reset_counters;
 		private:
 
 			DEF_LOGGER;
