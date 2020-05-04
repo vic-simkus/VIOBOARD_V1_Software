@@ -26,6 +26,8 @@
 using namespace BBB_HVAC;
 using namespace BBB_HVAC::HVAC_LOGIC;
 
+#include <iostream>
+
 
 HVAC_LOGIC_LOOP::HVAC_LOOP_INVOCATION_CONTEXT::HVAC_LOOP_INVOCATION_CONTEXT( HVAC_LOGIC_LOOP* _parent )
 {
@@ -102,6 +104,13 @@ HVAC_LOGIC_LOOP::HVAC_LOOP_INVOCATION_CONTEXT::HVAC_LOOP_INVOCATION_CONTEXT( HVA
 	this->sp_dehum_setpoint_delay = ( unsigned int )_parent->get_sp_value( SP_DEHUM_SETPOINT_DELAY );
 
 	this->sp_space_rh_d = ( unsigned int )_parent->get_sp_value( SP_SPACE_RH_DELTA );
+
+	this->sp__temp_input_min = ( float )_parent->get_sp_value( SP__TEMP_INPUT_MIN );
+	this->sp__temp_input_max = ( float )_parent->get_sp_value( SP__TEMP_INPUT_MAX );
+
+	this->sp__rh_input_min = ( float )_parent->get_sp_value( SP__RH_INPUT_MIN );
+	this->sp__rh_input_max = ( float )_parent->get_sp_value( SP__RH_INPUT_MAX );
+
 	/*
 	Calculated values
 	*/
@@ -110,7 +119,16 @@ HVAC_LOGIC_LOOP::HVAC_LOOP_INVOCATION_CONTEXT::HVAC_LOOP_INVOCATION_CONTEXT( HVA
 	Get the temperature and relative humidity value and round it off to one decimal place.
 	*/
 
+	this->temp_value = AI_VALUE( this->sp__temp_input_min, this->sp__temp_input_max );
+
+	//float v = float( int( ( _parent->get_ai_value( AI_SPACE_1_TEMP ) * 10 ) ) ) / 10;
+	//std::cout << "Temp: " + num_to_str( v )  << std::endl;
+
 	this->temp_value = float( int( ( _parent->get_ai_value( AI_SPACE_1_TEMP ) * 10 ) ) ) / 10;
+
+	//std::cout << "FTemp: " + num_to_str( ( float )this->temp_value )  << "[" << this->temp_value.getMin() << "," << this->temp_value.getMax() << "]" << std::endl;
+
+	this->rh_value = AI_VALUE( this->sp__rh_input_min, this->sp__rh_input_max );
 	this->rh_value = float( int( ( _parent->get_ai_value( AI_SPACE_1_RH ) * 10 ) ) ) / 10;
 
 	/*
@@ -162,24 +180,45 @@ void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
 
 	const HVAC_LOOP_INVOCATION_CONTEXT ictx( this );
 
-	switch ( this->op_state )
+	if ( !ictx.temp_value )
 	{
-		case OPERATING_STATE::NONE:
-			this->process_logic_none( ictx );
-			break;
+		// Temperature input has failed.
 
-		case OPERATING_STATE::HEATING:
-			this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_heating, &HVAC_LOGIC_LOOP::delay_decider_heating , &HVAC_LOGIC_LOOP::mode_switcher_heating , &HVAC_LOGIC_LOOP::output_setter_heating );
-			break;
+		if ( !this->in_ai_failure )
+		{
+			LOG_ERROR( "Main temperature input has failed." );
+			this->in_ai_failure = true;
+			this->switch_op_state( OPERATING_STATE::NONE );
+		}
+		else
+		{
+			this->ai_failure_clicks += 1;
+		}
+	}
+	else
+	{
+		this->in_ai_failure = false;
+		this->ai_failure_clicks = 0;
 
-		case OPERATING_STATE::COOLING:
-			this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_cooling, &HVAC_LOGIC_LOOP::delay_decider_cooling , &HVAC_LOGIC_LOOP::mode_switcher_cooling , &HVAC_LOGIC_LOOP::output_setter_cooling );
-			break;
+		switch ( this->op_state )
+		{
+			case OPERATING_STATE::NONE:
+				this->process_logic_none( ictx );
+				break;
 
-		case OPERATING_STATE::DEHUMIDIFYING:
-			this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_dehumidification, &HVAC_LOGIC_LOOP::delay_decider_cooling , &HVAC_LOGIC_LOOP::mode_switcher_cooling , &HVAC_LOGIC_LOOP::output_setter_cooling );
-			break;
-	};
+			case OPERATING_STATE::HEATING:
+				this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_heating, &HVAC_LOGIC_LOOP::delay_decider_heating , &HVAC_LOGIC_LOOP::mode_switcher_heating , &HVAC_LOGIC_LOOP::output_setter_heating );
+				break;
+
+			case OPERATING_STATE::COOLING:
+				this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_cooling, &HVAC_LOGIC_LOOP::delay_decider_cooling , &HVAC_LOGIC_LOOP::mode_switcher_cooling , &HVAC_LOGIC_LOOP::output_setter_cooling );
+				break;
+
+			case OPERATING_STATE::DEHUMIDIFYING:
+				this->process_logic_do( ictx, &HVAC_LOGIC_LOOP::action_decider_dehumidification, &HVAC_LOGIC_LOOP::delay_decider_cooling , &HVAC_LOGIC_LOOP::mode_switcher_cooling , &HVAC_LOGIC_LOOP::output_setter_cooling );
+				break;
+		};
+	}
 
 	return;
 }
@@ -192,21 +231,21 @@ void HVAC_LOGIC_LOOP::process_logic_none( const HVAC_LOOP_INVOCATION_CONTEXT& _c
 	*/
 	if ( this->switch_clicks >= _ctx.sp_mode_switch_delay )
 	{
-		if ( _ctx.temp_value >= _ctx.cooling_action_on_point )
+		if ( ( ( float )_ctx.temp_value ) >= _ctx.cooling_action_on_point )
 		{
-			LOG_DEBUG( "Space temp " + num_to_str( _ctx.temp_value ) + " >= cooling action point: " + num_to_str( _ctx.cooling_action_on_point ) + ".  Switching to cooling mode." );
+			LOG_DEBUG( "Space temp " + num_to_str( ( float )_ctx.temp_value ) + " >= cooling action point: " + num_to_str( _ctx.cooling_action_on_point ) + ".  Switching to cooling mode." );
 			this->switch_op_state( OPERATING_STATE::COOLING );
 		}
-		else if ( _ctx.temp_value <= _ctx.heating_action_on_point )
+		else if ( ( ( float )_ctx.temp_value ) <= _ctx.heating_action_on_point )
 		{
-			LOG_DEBUG( "Space temp " + num_to_str( _ctx.temp_value ) + " <= heating action point: " + num_to_str( _ctx.heating_action_on_point ) + ".  Switching to heating mode." );
+			LOG_DEBUG( "Space temp " + num_to_str( ( float ) _ctx.temp_value ) + " <= heating action point: " + num_to_str( _ctx.heating_action_on_point ) + ".  Switching to heating mode." );
 			this->switch_op_state( OPERATING_STATE::HEATING );
 		}
 		else if ( _ctx.rh_value > _ctx.dehum_action_on_point )
 		{
-			if ( _ctx.temp_value > _ctx.dehum_min_temp_point )
+			if ( ( ( float )_ctx.temp_value ) > _ctx.dehum_min_temp_point )
 			{
-				LOG_DEBUG( "Space RH " + num_to_str( _ctx.rh_value ) + " >= dehumidification action point: " + num_to_str( _ctx.dehum_action_on_point ) + " and space temp: " + num_to_str( _ctx.temp_value ) + " > " + num_to_str( _ctx.dehum_min_temp_point ) + ".  Switching to dehumidification mode." );
+				LOG_DEBUG( "Space RH " + num_to_str( _ctx.rh_value ) + " >= dehumidification action point: " + num_to_str( _ctx.dehum_action_on_point ) + " and space temp: " + num_to_str( ( float )_ctx.temp_value ) + " > " + num_to_str( _ctx.dehum_min_temp_point ) + ".  Switching to dehumidification mode." );
 				this->switch_op_state( OPERATING_STATE::DEHUMIDIFYING );
 			}
 			else
@@ -281,19 +320,19 @@ void HVAC_LOGIC_LOOP::process_logic_do( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx
 }
 bool HVAC_LOGIC_LOOP::action_decider_cooling( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
 {
-	if ( _ctx.temp_value >= _ctx.cooling_action_off_point )
+	if ( ( ( float )_ctx.temp_value ) >= _ctx.cooling_action_off_point )
 	{
 		return true;
 	}
 	else
 	{
-		LOG_DEBUG( "Cooling stop: space temp: " + num_to_str( _ctx.temp_value ) + " < " + num_to_str( _ctx.cooling_action_off_point ) );
+		LOG_DEBUG( "Cooling stop: space temp: " + num_to_str( ( float )_ctx.temp_value ) + " < " + num_to_str( _ctx.cooling_action_off_point ) );
 		return false;
 	}
 }
 bool HVAC_LOGIC_LOOP::action_decider_heating( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
 {
-	if ( _ctx.temp_value < _ctx.heating_action_off_point )
+	if ( ( ( float )_ctx.temp_value ) < _ctx.heating_action_off_point )
 	{
 		return true;
 	}
@@ -306,7 +345,7 @@ bool HVAC_LOGIC_LOOP::action_decider_heating( const HVAC_LOOP_INVOCATION_CONTEXT
 bool HVAC_LOGIC_LOOP::action_decider_dehumidification( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx )
 {
 
-	if ( _ctx.temp_value >= _ctx.dehum_cancel_temp_point )
+	if ( ( ( float )_ctx.temp_value ) >= _ctx.dehum_cancel_temp_point )
 	{
 		// Space temperature is greater than the general set point minus the cooling dead band.
 		if ( _ctx.rh_value < _ctx.dehum_action_off_point )
@@ -321,7 +360,7 @@ bool HVAC_LOGIC_LOOP::action_decider_dehumidification( const HVAC_LOOP_INVOCATIO
 	else
 	{
 		// It got too cold.  Abort dehumidification
-		LOG_DEBUG( "Aborting dehum.  Space temp: " + num_to_str( _ctx.temp_value ) + " < " + num_to_str( _ctx.dehum_cancel_temp_point ) );
+		LOG_DEBUG( "Aborting dehum.  Space temp: " + num_to_str( ( float )_ctx.temp_value ) + " < " + num_to_str( _ctx.dehum_cancel_temp_point ) );
 		return false;
 	}
 }
@@ -511,6 +550,9 @@ HVAC_LOGIC_LOOP::HVAC_LOGIC_LOOP( CONFIGURATOR* _config ) : LOGIC_PROCESSOR_BASE
 {
 	INIT_LOGGER( "BBB_HVAC::HVAC_LOGIC_LOOP" );
 	this->switch_op_state( OPERATING_STATE::NONE );
+
+	this->in_ai_failure = false;
+	this->ai_failure_clicks = 0;
 
 	return;
 }

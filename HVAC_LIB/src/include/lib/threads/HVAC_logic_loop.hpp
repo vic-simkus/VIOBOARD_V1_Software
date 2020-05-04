@@ -65,6 +65,82 @@ namespace BBB_HVAC
 			DELAY_OFF
 		};
 
+		class AI_VALUE
+		{
+			public:
+				AI_VALUE( float _min, float _max ) {
+					this->__init();
+					this->setRange( _min, _max );
+
+					this->valid = false;
+					this->value = 0;
+
+					return;
+				}
+
+				AI_VALUE() {
+					this->__init();
+
+					return;
+				}
+
+				~AI_VALUE() {
+					this->__init();
+
+					return;
+				}
+
+				void setRange( float _min, float _max ) {
+					this->min = _min;
+					this->max = _max;
+
+					return;
+				}
+
+				float getMin( void ) const {
+					return min;
+				}
+
+				float getMax( void ) const {
+					return max;
+				}
+
+				bool isValid( void ) const {
+					return this->valid;
+				}
+
+				void operator=( const float& _v ) {
+					this->value = _v;
+					this->valid = ( _v >= this->min && _v <= this->max );
+
+					return;
+				}
+
+				operator float() const {
+					return this->value;
+				}
+
+				operator bool() const {
+					return this->valid;
+				}
+
+
+
+			protected:
+				float min;
+				float max;
+
+				float value;
+				bool valid;
+
+				void __init( void ) {
+					this->min = 0;
+					this->max = 0;
+					this->valid = false;
+					this->value = 0;
+				}
+		};
+
 
 		/**
 		 * Class for controlling a basic home HVAC system.
@@ -122,6 +198,9 @@ namespace BBB_HVAC
 				unsigned int switch_clicks;
 				unsigned int mode_clicks;
 
+				bool in_ai_failure;
+				unsigned long ai_failure_clicks;
+
 				class HVAC_LOOP_INVOCATION_CONTEXT
 				{
 					public:
@@ -149,7 +228,13 @@ namespace BBB_HVAC
 						float sp_cooling_deadband;
 						float sp_dehum_deadband;
 
-						float temp_value;
+						float sp__temp_input_min;
+						float sp__temp_input_max;
+
+						float sp__rh_input_min;
+						float sp__rh_input_max;
+
+						AI_VALUE temp_value;
 						float rh_value;
 
 						float heating_action_on_point;
@@ -244,6 +329,15 @@ namespace BBB_HVAC
 #define SP_DEHUM_SETPOINT_DELAY 		"DEHUM SETPOINT DELAY"
 
 #define SP_SPACE_RH_TEMP_DELTA			"SPACE RH TEMP DELTA"
+
+#define SP__TEMP_INPUT_MIN				"_TEMP_INPUT_MIN"
+#define SP__TEMP_INPUT_MAX				"_TEMP_INPUT_MAX"
+
+#define SP__TEMP_INPUT_MIN				"_TEMP_INPUT_MIN"
+#define SP__TEMP_INPUT_MAX				"_TEMP_INPUT_MAX"
+
+#define SP__RH_INPUT_MIN				"_RH_INPUT_MIN"
+#define SP__RH_INPUT_MAX				"_RH_INPUT_MAX"
 
 #define AI_SPACE_1_TEMP 				"SPACE_1_TEMP"
 #define AI_SPACE_1_RH 					"SPACE_1_RH"
