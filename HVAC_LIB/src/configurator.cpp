@@ -362,8 +362,43 @@ void CONFIGURATOR::read_file( void ) throw( exception )
 	LOG_DEBUG( "Overlay file: " + this->overlay_file_name );
 	this->check_file_permissions();
 
+	struct stat stat_config;
+	struct stat stat_overlay;
+
+	memset( &stat_config, 0, sizeof( struct stat ) );
+	memset( &stat_overlay, 0, sizeof( struct stat ) );
+
+	if ( stat( this->file_name.data(), &stat_config ) != 0 )
+	{
+		throw runtime_error( create_perror_string( "Failed to stat main config file." ) );
+	}
+
+	if ( stat( this->overlay_file_name.data(), &stat_overlay ) != 0 )
+	{
+		throw runtime_error( create_perror_string( "Failed to stat config overlay file." ) );
+	}
+
 	this->process_file( this->file_name.data() );
-	this->process_file( this->overlay_file_name.data() );
+
+	LOG_DEBUG( "Config modification time: " + num_to_str( stat_config.st_mtime ) + "; overlay modification time: " + num_to_str( stat_overlay.st_mtime ) );
+
+	if ( stat_config.st_mtime <= stat_overlay.st_mtime )
+	{
+		//
+		// Main config file is older than the overlay.
+		// If the main config file is neweer than the overlay we do not read in the overlay.
+		// Doing so makes setpoint changes in the configuration file impossible to change (without deleting the overlay file)
+		// as the overlay file is read in after the configuration file.
+		//
+
+		LOG_INFO( "Reading in the overlay file because it is newer than the configuration file." );
+
+		this->process_file( this->overlay_file_name.data() );
+	}
+	else
+	{
+		LOG_INFO( "Not reading overlay file because configuration file is newer." );
+	}
 
 	return;
 }
