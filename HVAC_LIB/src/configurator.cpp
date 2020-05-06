@@ -412,7 +412,7 @@ void CONFIGURATOR::write_file( void ) const throw( exception )
 
 	for ( CONFIG_ENTRY_LIST_TYPE::const_iterator i = this->config_entries.cbegin(); i != this->config_entries.cend(); ++i )
 	{
-		LOG_DEBUG( "Processing config entry: " + num_to_str( line_idx ) );
+		//LOG_DEBUG( "Processing config entry: " + num_to_str( line_idx ) );
 
 		if ( i->get_type() == ENUM_CONFIG_TYPES::SP )
 		{
