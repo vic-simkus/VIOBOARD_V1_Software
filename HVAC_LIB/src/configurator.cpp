@@ -267,6 +267,15 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 	line_parts.erase( line_parts.begin() );
 	size_t ces = this->config_entries.size();
 	CONFIG_ENTRY ce = CONFIG_ENTRY( type, line_parts );
+
+	for ( auto i = this->config_entries.begin(); i != this->config_entries.end(); ++i )
+	{
+		if ( ce == ( *i ) )
+		{
+			this->config_entries.erase( i );
+		}
+	}
+
 	this->config_entries.push_back( ce );
 
 	switch ( type )
@@ -362,14 +371,20 @@ void CONFIGURATOR::write_file( void ) const throw( exception )
 {
 	FILE* out_file = fopen( this->overlay_file_name.data(), "wt" );
 
-	fprintf( out_file, "#\n# This file is mechanically generated.  Manual edits will most likely be lost.  So don't do it.\n#\n" );
+	fprintf( out_file, "#\n# This file is mechanically generated.  Manual edits will likely be lost.\n#\n" );
+
+	unsigned int line_idx = 0;
 
 	for ( CONFIG_ENTRY_LIST_TYPE::const_iterator i = this->config_entries.cbegin(); i != this->config_entries.cend(); ++i )
 	{
+		LOG_DEBUG( "Processing config entry: " + num_to_str( line_idx ) );
+
 		if ( i->get_type() == ENUM_CONFIG_TYPES::SP )
 		{
 			fprintf( out_file, "%s\n", i->write_self_to_file().data() );
 		}
+
+		line_idx += 1;
 	}
 
 	fprintf( out_file, "# EOF\n" );

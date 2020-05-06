@@ -123,6 +123,13 @@ namespace BBB_HVAC
 			*/
 			static ENUM_CONFIG_TYPES string_to_type( const string& _type ) throw( exception );
 
+			/**
+			Comparison operator.
+			Used by configurator.cpp
+			*/
+			bool operator==( const CONFIG_ENTRY& _other );
+
+
 		protected:
 			/**
 			Type of the current instance.

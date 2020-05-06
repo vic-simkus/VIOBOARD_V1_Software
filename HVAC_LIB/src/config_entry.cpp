@@ -53,7 +53,7 @@ unsigned char CONFIG_ENTRY::get_part_as_uchar( size_t _idx ) const throw( except
 }
 int CONFIG_ENTRY::get_part_as_int( size_t _idx ) const throw( exception )
 {
-	if( _idx >= this->parts.size() )
+	if ( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "get_part: Specified index is >= size of parts vector" );
 	}
@@ -62,7 +62,7 @@ int CONFIG_ENTRY::get_part_as_int( size_t _idx ) const throw( exception )
 }
 double CONFIG_ENTRY::get_part_as_double( size_t _idx ) const throw( exception )
 {
-	if( _idx >= this->parts.size() )
+	if ( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "get_part: Specified index is >= size of parts vector" );
 	}
@@ -71,12 +71,12 @@ double CONFIG_ENTRY::get_part_as_double( size_t _idx ) const throw( exception )
 }
 bool CONFIG_ENTRY::get_part_as_bool( size_t _idx ) const throw( exception )
 {
-	if( _idx >= this->parts.size() )
+	if ( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "get_part: Specified index is >= size of parts vector" );
 	}
 
-	if( this->parts[_idx] == "T" || this->parts[_idx] == "t" || this->parts[_idx] == "TRUE" || this->parts[_idx] == "true" )
+	if ( this->parts[_idx] == "T" || this->parts[_idx] == "t" || this->parts[_idx] == "TRUE" || this->parts[_idx] == "true" )
 	{
 		return true;
 	}
@@ -87,7 +87,7 @@ bool CONFIG_ENTRY::get_part_as_bool( size_t _idx ) const throw( exception )
 }
 string CONFIG_ENTRY::get_part_as_string( size_t _idx ) const throw( exception )
 {
-	if( _idx >= this->parts.size() )
+	if ( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "get_part: Specified index is >= size of parts vector" );
 	}
@@ -97,7 +97,7 @@ string CONFIG_ENTRY::get_part_as_string( size_t _idx ) const throw( exception )
 
 void CONFIG_ENTRY::set_part( size_t _idx, int _val ) throw( exception )
 {
-	if( _idx >= this->parts.size() )
+	if ( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "set_part: Specified index is >= size of parts vector" );
 	}
@@ -108,7 +108,7 @@ void CONFIG_ENTRY::set_part( size_t _idx, int _val ) throw( exception )
 }
 void CONFIG_ENTRY::set_part( size_t _idx, double _val ) throw( exception )
 {
-	if( _idx >= this->parts.size() )
+	if ( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "set_part: Specified index is >= size of parts vector" );
 	}
@@ -119,7 +119,7 @@ void CONFIG_ENTRY::set_part( size_t _idx, double _val ) throw( exception )
 }
 void CONFIG_ENTRY::set_part( size_t _idx, const string& _val ) throw( exception )
 {
-	if( _idx >= this->parts.size() )
+	if ( _idx >= this->parts.size() )
 	{
 		throw out_of_range( "set_part: Specified index is >= size of parts vector: " + num_to_str( this->parts.size() ) );
 	}
@@ -140,37 +140,37 @@ bool CONFIG_ENTRY::get_is_dirty( void ) const
 
 ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type ) throw( exception )
 {
-	if( _type.length() == 0 )
+	if ( _type.length() == 0 )
 	{
 		THROW_EXCEPTION( runtime_error, "Called with type string empty." );
 	}
 
-	if( _type.length() > 7 )
+	if ( _type.length() > 7 )
 	{
 		THROW_EXCEPTION( runtime_error, "Called with type string of unexpected length." );
 	}
 
-	if( _type == "DO" )
+	if ( _type == "DO" )
 	{
 		return ENUM_CONFIG_TYPES::DO;
 	}
-	else if( _type == "AI" )
+	else if ( _type == "AI" )
 	{
 		return ENUM_CONFIG_TYPES::AI;
 	}
-	else if( _type == "SP" )
+	else if ( _type == "SP" )
 	{
 		return ENUM_CONFIG_TYPES::SP;
 	}
-	else if( _type == "INVALID" )
+	else if ( _type == "INVALID" )
 	{
 		return ENUM_CONFIG_TYPES::INVALID;
 	}
-	else if( _type == "BOARD" )
+	else if ( _type == "BOARD" )
 	{
 		return ENUM_CONFIG_TYPES::BOARD;
 	}
-	else if( _type == "MAP" )
+	else if ( _type == "MAP" )
 	{
 		return ENUM_CONFIG_TYPES::MAP;
 	}
@@ -182,7 +182,7 @@ ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type ) throw( exc
 
 string CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception )
 {
-	switch( _type )
+	switch ( _type )
 	{
 		case ENUM_CONFIG_TYPES::AI:
 			return ( "AI" );
@@ -215,7 +215,7 @@ string CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception 
 }
 string CONFIG_ENTRY::write_self_to_file( void ) const throw( exception )
 {
-	if( this->type == ENUM_CONFIG_TYPES::INVALID )
+	if ( this->type == ENUM_CONFIG_TYPES::INVALID )
 	{
 		throw runtime_error( "CONFIG_ENTRY::write_self_to_file was called while its type is INVALID" );
 	}
@@ -240,4 +240,27 @@ std::string CONFIG_ENTRY::to_string( void ) const
 	ss << join_vector( ret, ',' );
 	ss << ")";
 	return ss.str();
+}
+
+bool CONFIG_ENTRY::operator==( const CONFIG_ENTRY& _other )
+{
+	if ( this->type != _other.type )
+	{
+		return false;
+	}
+
+	if ( this->parts.size() != _other.parts.size() )
+	{
+		return false;
+	}
+
+	for ( CONFIG_PARTS_TYPE::size_type i = 0; i < this->parts.size(); i++ )
+	{
+		if ( this->parts[i] != _other.parts[i] )
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
