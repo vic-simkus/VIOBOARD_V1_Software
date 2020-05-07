@@ -128,7 +128,7 @@ Config::Config()
 	this->log_dir = "./log_data";
 	this->base_data_file_name = "sys_status_log.#.csv";
 	this->current_file_index = 0;
-	this->fail_hard = true;
+	this->fail_hard = false;
 	this->mode = MODE::NONE;
 	this->valid = false;
 
