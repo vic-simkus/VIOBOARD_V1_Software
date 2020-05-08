@@ -199,7 +199,7 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR )
 		}
 	}
 
-	THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Lock acquisition loop aborted on condition.  Lock may or may not be held." );
+	THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Lock acquisition loop aborted on condition." );
 }
 
 bool TPROTECT_BASE::release_lock() throw( LOCK_ERROR )

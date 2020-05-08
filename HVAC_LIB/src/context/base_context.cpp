@@ -109,14 +109,21 @@ bool BASE_CONTEXT::select_timeout_happened( void ) throw( exception )
 			/*
 			 * We have not received a PONG response ever  That includes the initial ping.
 			 */
-			if ( ( curr_time.tv_sec - o_ping->get_message_sent_timestamp()->tv_sec ) >= ( time_t )this->max_pp_timeout )
+			if ( i_pong != nullptr )
 			{
-				/*
-				 * If the alloted time for the initial PONG response has elapsed, drop the connection.
-				 */
-				LOG_ERROR( "Dropping connection; failed to get a PONG response from remote in the last " + num_to_str( this->max_pp_timeout ) + " seconds." );
-				LOG_DEBUG( "timeout_counter=" + num_to_str( timeout_counter ) );
-				rc = true;
+				if ( ( curr_time.tv_sec - o_ping->get_message_sent_timestamp()->tv_sec ) >= ( time_t )this->max_pp_timeout )
+				{
+					/*
+					 * If the alloted time for the initial PONG response has elapsed, drop the connection.
+					 */
+					LOG_ERROR( "Dropping connection; failed to get a PONG response from remote in the last " + num_to_str( this->max_pp_timeout ) + " seconds." );
+					LOG_DEBUG( "timeout_counter=" + num_to_str( timeout_counter ) );
+					rc = true;
+				}
+			}
+			else
+			{
+				LOG_ERROR( "o_ping is null?" );
 			}
 		}
 		else
@@ -407,7 +414,7 @@ bool BASE_CONTEXT::thread_func( void )
 	}
 	catch ( exception& e )   // main "try" block.
 	{
-		LOG_DEBUG( string( "Unhandled exception caught in the client thread: " ) + e.what() );
+		LOG_DEBUG( string( "Exception in the client thread: " ) + e.what() );
 	}
 	catch ( ... )
 	{

@@ -31,7 +31,7 @@ using namespace std;
 namespace BBB_HVAC
 {
 
-#define THROW_EXCEPTION(type,msg) throw type(string(__PRETTY_FUNCTION__) + "@" + num_to_str(__LINE__) + ": " + msg)
+#define THROW_EXCEPTION(type,msg) throw type(string(__FILE__) + "@" + num_to_str(__LINE__) + ": " + msg)
 
 	/**
 	 * Utility function to create an std::string out of the system error string.
@@ -51,16 +51,16 @@ namespace BBB_HVAC
 		 */
 		class NETWORK_ERROR : public runtime_error
 		{
-		public:
+			public:
 
-			/**
-			 * Constructor.
-			 * \param _what Description of the error.
-			 */
-			inline NETWORK_ERROR( const string& _what ) :
-				runtime_error( _what ) {
-				return;
-			}
+				/**
+				 * Constructor.
+				 * \param _what Description of the error.
+				 */
+				inline NETWORK_ERROR( const string& _what ) :
+					runtime_error( _what ) {
+					return;
+				}
 		};
 
 		/**
@@ -68,16 +68,16 @@ namespace BBB_HVAC
 		 */
 		class CONNECTION_ERROR : public NETWORK_ERROR
 		{
-		public:
+			public:
 
-			/**
-			 * Constructor.
-			 * \param _what Description of the error.
-			 */
-			inline CONNECTION_ERROR( const string& _what ) :
-				NETWORK_ERROR( _what ) {
-				return;
-			}
+				/**
+				 * Constructor.
+				 * \param _what Description of the error.
+				 */
+				inline CONNECTION_ERROR( const string& _what ) :
+					NETWORK_ERROR( _what ) {
+					return;
+				}
 		};
 
 		/**
@@ -85,55 +85,55 @@ namespace BBB_HVAC
 		 */
 		class PROTOCOL_ERROR : public NETWORK_ERROR
 		{
-		public:
+			public:
 
-			/**
-			 * Constructor.
-			 * \param _what Description of the error.
-			 */
-			inline PROTOCOL_ERROR( const string& _what ) :
-				NETWORK_ERROR( _what ) {
-				return;
-			}
+				/**
+				 * Constructor.
+				 * \param _what Description of the error.
+				 */
+				inline PROTOCOL_ERROR( const string& _what ) :
+					NETWORK_ERROR( _what ) {
+					return;
+				}
 		};
 
 		class MESSAGE_ERROR : public runtime_error
 		{
-		public:
+			public:
 
-			inline MESSAGE_ERROR( const string& _what ) :
-				runtime_error( _what ) {
-				return;
-			}
+				inline MESSAGE_ERROR( const string& _what ) :
+					runtime_error( _what ) {
+					return;
+				}
 		};
 
 		class MESSAGE_OVERFLOW : public MESSAGE_ERROR
 		{
-		public:
+			public:
 
-			inline MESSAGE_OVERFLOW( const string& _what ) :
-				MESSAGE_ERROR( _what ) {
-				return;
-			}
+				inline MESSAGE_OVERFLOW( const string& _what ) :
+					MESSAGE_ERROR( _what ) {
+					return;
+				}
 		};
 
 		class MESSAGE_UNDERFLOW : public MESSAGE_ERROR
 		{
-		public:
+			public:
 
-			inline MESSAGE_UNDERFLOW( const string& _what ) :
-				MESSAGE_ERROR( _what ) {
-				return;
-			}
+				inline MESSAGE_UNDERFLOW( const string& _what ) :
+					MESSAGE_ERROR( _what ) {
+					return;
+				}
 		};
 
 		class LOCK_ERROR : public runtime_error
 		{
-		public:
+			public:
 
-			inline LOCK_ERROR( const string& _what ) : runtime_error( _what ) {
-				return;
-			}
+				inline LOCK_ERROR( const string& _what ) : runtime_error( _what ) {
+					return;
+				}
 		};
 	}
 }

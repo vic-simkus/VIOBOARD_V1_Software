@@ -182,7 +182,7 @@ MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message ) throw
 
 		if ( rc == ETIMEDOUT )
 		{
-			LOG_ERROR( "Timed out waiting on a conditional.  Suspect something hinky.  Aborting." );
+			//LOG_ERROR( "Timed out waiting on a conditional.  Suspect something hinky.  Aborting." );
 			THROW_EXCEPTION( runtime_error, "Time out on a conditional." );
 		}
 		else

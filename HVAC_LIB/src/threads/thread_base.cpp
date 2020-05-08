@@ -59,11 +59,10 @@ void THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
 	}
 	catch ( const LOCK_ERROR& _ex )
 	{
-		LOG_ERROR( "Failed to obtain lock: " + string( _ex.what() ) );
+		//LOG_ERROR( "Failed to obtain lock: " + string( _ex.what() ) );
 
 		this->abort_thread = true;
-
-		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in thread [" + this->thread_tag + "]" );
+		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in thread [" + this->thread_tag + "]: " + _ex.what() );
 	}
 
 	return;
@@ -108,7 +107,8 @@ void THREAD_BASE::pthread_func( void )
 	}
 
 	this->is_running = false;
-	LOG_DEBUG( "Thread stopped." )
+
+	LOG_DEBUG( "Thread stopped." );
 	pthread_exit( nullptr );
 	return;
 }
