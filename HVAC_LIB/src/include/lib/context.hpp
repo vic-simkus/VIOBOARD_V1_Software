@@ -119,7 +119,6 @@ namespace BBB_HVAC
 			DEF_LOGGER;
 
 			bool is_in_client_mode;
-
 	};
 
 	/**
@@ -151,7 +150,6 @@ namespace BBB_HVAC
 		class HS_CLIENT_CONTEXT: public BASE_CONTEXT
 		{
 			public:
-				DEF_LOGGER;
 				/**
 				 * Constructor
 				 * \param _client_socket Client file descriptor returned by the 'accept' call.
@@ -223,8 +221,6 @@ namespace BBB_HVAC
 				CLIENT_CONTEXT( SOCKET_TYPE _st, const string& _path, uint16_t _port );
 
 				pthread_cond_t incomming_message_cond;
-
-			private:
 
 		};
 	}

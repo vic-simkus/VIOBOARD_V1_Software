@@ -61,6 +61,7 @@ HS_CLIENT_CONTEXT::HS_CLIENT_CONTEXT( int _client_socket ) :
 {
 	//INIT_LOGGER( "BBB_HVAC::HS_CLIENT_CONTEXT" );
 	this->remote_socket = _client_socket;
+	LOG_DEBUG( "Created new HS_CLIENT_CONTEXT" );
 	return;
 }
 
