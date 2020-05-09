@@ -363,7 +363,7 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void daemon_self( void )
+		void daemon_self( const char* _pid_file_name )
 		{
 
 			int i = fork();
@@ -398,7 +398,7 @@ namespace BBB_HVAC
 			We're pretty much ignoring all error handling here.
 			*/
 			std::string pid_txt = num_to_str( getpid() ) + "\n";
-			i = open( GC_PID_FILE, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR |  S_IRGRP | S_IROTH );
+			i = open( _pid_file_name, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR |  S_IRGRP | S_IROTH );
 			write( i, pid_txt.data(), pid_txt.size() );
 			close( i );
 

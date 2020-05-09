@@ -198,7 +198,7 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 
 	if ( _clp.is_server_mode() )
 	{
-		BBB_HVAC::GLOBALS::daemon_self();
+		BBB_HVAC::GLOBALS::daemon_self( GC_PID_FILE );
 	}
 
 	fd = BBB_HVAC::GLOBALS::create_logger_fd( _clp, false );
