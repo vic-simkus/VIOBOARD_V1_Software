@@ -33,6 +33,8 @@ Connection::Connection( HMI_DATA_LOGGER::Context* _logger_context )
 }
 Connection::~Connection()
 {
+	LOG_DEBUG( "Closing connection" );
+
 	if ( this->client_context )
 	{
 		this->client_context->disconnect();
@@ -51,11 +53,13 @@ bool Connection::connect_to_logic_core( void )
 	{
 		this->client_context->connect();
 	}
-	catch ( const BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR& e )
+	catch ( const exception& e )
 	{
 		LOG_ERROR( "Failed to connect to logic core: " + std::string( e.what() ) );
 		return false;
 	}
+
+	LOG_DEBUG( "Connected successfully." );
 
 	this->get_item_names();
 

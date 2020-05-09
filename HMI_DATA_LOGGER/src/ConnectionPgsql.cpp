@@ -45,13 +45,8 @@ void ConnectionPgsql::clear_connection( void ) noexcept
 	return;
 }
 
-bool ConnectionPgsql::connect( void ) noexcept
+bool ConnectionPgsql::connect( void )
 {
-	if ( !this->connect_to_logic_core() )
-	{
-		return false;
-	}
-
 	if ( this->logger_context->configuration.pg_url.length() < 1 )
 	{
 		LOG_ERROR( "Must specify " + std::string( CFG_CMDP_PG_URL ) );
@@ -69,7 +64,13 @@ bool ConnectionPgsql::connect( void ) noexcept
 		return false;
 	}
 
+	LOG_DEBUG( "Connected to the database." );
 
+	if ( !this->connect_to_logic_core() )
+	{
+		LOG_ERROR( "Failed to connect to logic core." );
+		return false;
+	}
 
 	return true;
 }
@@ -98,7 +99,13 @@ bool ConnectionPgsql::read_status( void ) noexcept
 	}
 	catch ( const exception& e )
 	{
-		throw runtime_error( "Failed to read from remote: " + std::string( e.what() ) );
+		LOG_ERROR( "Exception in remote comms: " + std::string( e.what() ) );
+		return false;
+	}
+	catch ( ... )
+	{
+		LOG_ERROR( "Unspecified exception." );
+		return false;
 	}
 
 	std::map<std::string, std::string> map;

@@ -70,6 +70,7 @@ bool collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection
 		sleep( 1 );
 	}
 
+	LOG_DEBUG( "Data collection finished." );
 	return true;
 }
 bool dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
@@ -193,23 +194,31 @@ int main( int argc, const char** argv )
 
 			while ( 1 )
 			{
-				if ( collect_data( &logger_context ) )
+				try
 				{
-					LOG_INFO( "Data collection ended successfully.  Exiting." );
-					break;
+					if ( collect_data( &logger_context ) )
+					{
+						LOG_INFO( "Data collection ended successfully.  Exiting." );
+						break;
+					}
+					else
+					{
+						LOG_ERROR( "Error in data collection process.  FAIL_HARD is false.  Looping." );
+					}
+
+					if ( BBB_HVAC::GLOBALS::global_exit_flag == true )
+					{
+						LOG_INFO( "Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true." );
+						break;
+					}
+
+					BBB_HVAC::THREAD_REGISTRY::global_cleanup();
 				}
-				else
+				catch ( const exception& _e )
 				{
-					LOG_ERROR( "Error in data collection process.  FAIL_HARD is false.  Looping." );
+					LOG_ERROR( "*** Unexpected exception caught: " + string( _e.what() ) );
 				}
 
-				if ( BBB_HVAC::GLOBALS::global_exit_flag == true )
-				{
-					LOG_INFO( "Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true." );
-					break;
-				}
-
-				BBB_HVAC::THREAD_REGISTRY::global_cleanup();
 				sleep( 1 );
 			}
 		}
