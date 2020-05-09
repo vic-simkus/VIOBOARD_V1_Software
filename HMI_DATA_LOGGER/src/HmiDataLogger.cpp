@@ -155,7 +155,7 @@ int main( int argc, const char** argv )
 	if ( logger_context.configuration.get_command_line_processor()->is_server_mode() )
 	{
 		LOG_INFO( "Daemoning self." )
-		BBB_HVAC::GLOBALS::daemon_self();
+		BBB_HVAC::GLOBALS::daemon_self( logger_context.configuration.pid_file.data() );
 	}
 
 	fd = BBB_HVAC::GLOBALS::create_logger_fd( *logger_context.configuration.get_command_line_processor().get(), false );

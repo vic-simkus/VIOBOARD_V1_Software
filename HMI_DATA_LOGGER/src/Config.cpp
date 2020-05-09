@@ -38,6 +38,7 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 	ex_parms[CFG_CMDP_MODE] = "Where to save the data [FILE|PGSQL|PFIELDS]\n\t\tSpecify --pg_host if mode = PGSQL";
 	ex_parms[CFG_CMDP_PG_URL] = "PostgreSQL connection string.\n\t\tRelevant only if mode is PGSQL.\n\t\tExample URL: postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]";
 	ex_parms[CFG_CMDP_PG_TEST] = "Try to connect to PostgreSQL server.\n\t\tMust supply connection URL via --pg_url and specify --mode as PGSQL.";
+	ex_parms[CFG_CMDP_PID_FILE] = "PID file.  Defaults to /tmp/hmi_data_logger.pid";
 
 	std::unique_ptr<char> _real_path_ptr( realpath( _argv[0], nullptr ) );
 
@@ -115,6 +116,10 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 				_ctx.configuration.fail_hard = false;
 			}
 		}
+		else if ( param == CFG_CMDP_PID_FILE )
+		{
+			_ctx.configuration.pid_file = i->second;
+		}
 	}
 
 	_ctx.configuration.valid = true;
@@ -131,7 +136,7 @@ Config::Config()
 	this->fail_hard = false;
 	this->mode = MODE::NONE;
 	this->valid = false;
-
+	this->pid_file = "/tmp/hmi_data_logger.pid";
 	return;
 }
 

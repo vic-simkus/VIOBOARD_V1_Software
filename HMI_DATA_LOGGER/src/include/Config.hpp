@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define CFG_CMDP_MODE 			"--mode"
 #define CFG_CMDP_PG_URL 		"--pg_url"
 #define CFG_CMDP_PG_TEST 		"--pg_test"
+#define CFG_CMDP_PID_FILE 		"--pid_file"
 
 namespace HMI_DATA_LOGGER
 {
@@ -93,6 +94,8 @@ namespace HMI_DATA_LOGGER
 
 			bool fail_hard;
 			bool valid;
+
+			std::string pid_file;
 
 		protected:
 			std::shared_ptr<BBB_HVAC::COMMAND_LINE_PARMS> command_line_parms;
