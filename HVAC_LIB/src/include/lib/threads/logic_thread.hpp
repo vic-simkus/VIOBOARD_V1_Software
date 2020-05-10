@@ -42,7 +42,7 @@ namespace BBB_HVAC
 	typedef struct
 	{
 		unsigned long long int last_reset;
-		uint8_t count;
+		unsigned int count;
 		bool failed;
 	} PMIC_RESET;
 

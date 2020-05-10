@@ -103,7 +103,7 @@ HVAC_LOGIC_LOOP::HVAC_LOOP_INVOCATION_CONTEXT::HVAC_LOOP_INVOCATION_CONTEXT( HVA
 	*/
 	this->sp_dehum_setpoint_delay = ( unsigned int )_parent->get_sp_value( SP_DEHUM_SETPOINT_DELAY );
 
-	this->sp_space_rh_d = ( unsigned int )_parent->get_sp_value( SP_SPACE_RH_DELTA );
+	this->sp_space_rh_d = ( float )_parent->get_sp_value( SP_SPACE_RH_DELTA );
 
 	this->sp__temp_input_min = ( float )_parent->get_sp_value( SP__TEMP_INPUT_MIN );
 	this->sp__temp_input_max = ( float )_parent->get_sp_value( SP__TEMP_INPUT_MAX );

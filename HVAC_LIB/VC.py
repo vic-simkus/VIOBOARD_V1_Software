@@ -24,6 +24,7 @@
 from make_makefile import SourceFile
 from make_makefile import Context
 from make_makefile import CLANGContext
+from make_makefile import GCCContext
 
 import os
 
