@@ -1398,7 +1398,7 @@ bool SER_IO_COMM::main_event_loop( void )
 	return true;
 }
 
-bool SER_IO_COMM::write_event_loop( void ) throw( LOCK_ERROR )
+bool SER_IO_COMM::write_event_loop( void )
 {
 	std::queue<OUTGOING_MESSAGE> work_queue;
 

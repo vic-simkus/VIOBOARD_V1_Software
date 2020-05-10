@@ -34,7 +34,7 @@ namespace BBB_HVAC
 			SHIM_LISTENER( SOCKET_TYPE _st, const string& _path, uint16_t _port );
 			~SHIM_LISTENER();
 
-			void init( void ) throw( exception );
+			void init( void );
 		protected:
 			bool thread_func( void );
 

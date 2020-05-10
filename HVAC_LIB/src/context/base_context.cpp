@@ -52,7 +52,7 @@ using namespace BBB_HVAC::CLIENT;
 using namespace BBB_HVAC::SERVER;
 using namespace BBB_HVAC::EXCEPTIONS;
 
-bool BASE_CONTEXT::send_initial_ping( void ) throw( exception )
+bool BASE_CONTEXT::send_initial_ping( void )
 {
 	/*
 	 * We have never sent a PING.  Send out a PING to the remote
@@ -75,7 +75,7 @@ bool BASE_CONTEXT::send_initial_ping( void ) throw( exception )
 	return rc;
 }
 
-bool BASE_CONTEXT::select_timeout_happened( void ) throw( exception )
+bool BASE_CONTEXT::select_timeout_happened( void )
 {
 	/*
 	 * Gets invoked whenever a select timeout happens in the comm thread.  Here we decide if we're gonna drop the client connection or not.
@@ -201,8 +201,6 @@ BASE_CONTEXT::BASE_CONTEXT( const string& _tag, SOCKET_TYPE _st, const string& _
 
 	if ( this->st != SOCKET_TYPE::NONE )
 	{
-		LOG_DEBUG( "Creating socket." );
-
 		if ( ( this->remote_socket = socket( socket_type, SOCK_STREAM, 0 ) ) == -1 )
 		{
 			throw CONNECTION_ERROR( create_perror_string( "Failed to create connection socket" ) );
@@ -234,7 +232,7 @@ BASE_CONTEXT::~BASE_CONTEXT()
 	return;
 }
 
-ENUM_MESSAGE_CALLBACK_RESULT BASE_CONTEXT::process_message( ENUM_MESSAGE_DIRECTION, BASE_CONTEXT*, const MESSAGE_PTR& _message ) throw( exception )
+ENUM_MESSAGE_CALLBACK_RESULT BASE_CONTEXT::process_message( ENUM_MESSAGE_DIRECTION, BASE_CONTEXT*, const MESSAGE_PTR& _message )
 {
 	if ( _message->get_message_type()->type == ENUM_MESSAGE_TYPE::PING )
 	{

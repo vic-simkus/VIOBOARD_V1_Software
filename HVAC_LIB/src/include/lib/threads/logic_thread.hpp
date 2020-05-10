@@ -200,17 +200,17 @@ namespace BBB_HVAC
 			/**
 			 * Pure virtual method that is invoked by the owning thread.  Within this method is where the in-time logic processing is done.  This method will be called repeatedly by the owning thread.
 			 */
-			virtual void process_logic( void ) throw( exception ) = 0;
+			virtual void process_logic( void )  = 0;
 
 			/**
 			 * Pure virtual method that is invoked by the owning thread.  This method will be exactly called once, by the owning thread, before process_logic.
 			 */
-			virtual void pre_process( void ) throw( exception ) = 0;
+			virtual void pre_process( void )  = 0;
 
 			/**
 			 * Pure virtual method that is invoked by the owning thread.  This method will be called exactly once, by the owning thread, after process_logic.
 			 */
-			virtual void post_process( void ) throw( exception ) = 0;
+			virtual void post_process( void )  = 0;
 
 			/**
 			 * Returns a copy of the in-time status of the logic core.
@@ -220,7 +220,7 @@ namespace BBB_HVAC
 
 			void get_logic_status_fluff( LOGIC_STATUS_FLUFF& ) const;
 
-			void set_sp_value( const string& _name, double _value ) throw ( exception );
+			void set_sp_value( const string& _name, double _value ) ;
 
 		protected:
 			static double calculate_420_value( double _voltage, long _min, long _max );
@@ -235,32 +235,32 @@ namespace BBB_HVAC
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 			*/
-			double get_sp_value( const string& _name ) const throw( exception );
+			double get_sp_value( const string& _name ) const;
 
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 			*/
-			void set_sp_value_ns( const string& _name, double _value ) throw ( exception );
+			void set_sp_value_ns( const string& _name, double _value );
 
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 			*/
-			double get_ai_value( const string& _name ) const throw ( exception );
+			double get_ai_value( const string& _name ) const;
 
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 			*/
-			bool is_output_set( const string& _name ) const throw ( exception );
+			bool is_output_set( const string& _name ) const;
 
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 			*/
-			void set_output( const string& _name ) throw ( exception );
+			void set_output( const string& _name );
 
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.
 			*/
-			void clear_output( const string& _name ) throw ( exception );
+			void clear_output( const string& _name );
 
 			/**
 			\note This method does not acquire the thread lock and thus is expected to only be used once the lock has already been acquired.

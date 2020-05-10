@@ -171,11 +171,11 @@ namespace BBB_HVAC
 				/**
 				 * Method that is called to perform in-time processing.
 				 */
-				void process_logic( void ) throw( exception );
+				void process_logic( void );
 
-				void pre_process( void ) throw( exception );
+				void pre_process( void );
 
-				void post_process( void ) throw( exception );
+				void post_process( void );
 
 
 			protected:

@@ -155,7 +155,7 @@ namespace BBB_HVAC
 				 * Write event loop for the sub-thread.
 				 * @return
 				 */
-				bool write_event_loop( void ) throw( LOCK_ERROR );
+				bool write_event_loop( void );
 
 				/**
 				 * Destructor.  Should not be invoked casually.

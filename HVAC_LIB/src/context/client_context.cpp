@@ -60,7 +60,7 @@ CLIENT_CONTEXT::CLIENT_CONTEXT( SOCKET_TYPE _st, const string& _path, uint16_t _
 	pthread_cond_init( & ( this->incomming_message_cond ), NULL );
 }
 
-ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception )
+ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message )
 {
 	/*
 	 * This method will only be called by comm_thread.  At time of calling the mutex will have been obtained by the thread.
@@ -93,7 +93,7 @@ CLIENT_CONTEXT::~CLIENT_CONTEXT()
 	pthread_cond_destroy( & ( this->incomming_message_cond ) );
 }
 
-void CLIENT_CONTEXT::connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR )
+void CLIENT_CONTEXT::connect( void )
 {
 	switch ( this->st )
 	{
@@ -133,7 +133,7 @@ void CLIENT_CONTEXT::connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERR
 	return;
 }
 
-bool CLIENT_CONTEXT::send_message( MESSAGE_PTR& _message ) throw( exception )
+bool CLIENT_CONTEXT::send_message( MESSAGE_PTR& _message )
 {
 	this->obtain_lock();
 
@@ -151,7 +151,7 @@ bool CLIENT_CONTEXT::send_message( MESSAGE_PTR& _message ) throw( exception )
 	return true;
 }
 
-MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message ) throw( exception )
+MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message )
 {
 	MESSAGE_PTR ret;
 	ENUM_MESSAGE_TYPE msg_type = _message->get_message_type()->type;
@@ -197,7 +197,7 @@ MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message ) throw
 	return ret;
 }
 
-void CLIENT_CONTEXT::disconnect( void ) throw( EXCEPTIONS::PROTOCOL_ERROR )
+void CLIENT_CONTEXT::disconnect( void )
 {
 	this->abort_thread = true;
 	pthread_join( this->thread_ctx, nullptr );

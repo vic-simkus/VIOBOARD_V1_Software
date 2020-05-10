@@ -63,7 +63,7 @@ namespace BBB_HVAC
 			 * Invoked by the comm_thread every time a new message comes in.  The base implementation handles the HELLO, PING, and PONG messages.  It ignores all other
 			 * types of messages.  The subclasses are expected to call the method in the base class and handle any messages that are not ignored any way they see fit.
 			 */
-			ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
+			ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message );
 
 			/**
 			 * Constructor
@@ -111,9 +111,8 @@ namespace BBB_HVAC
 			SOCKET_TYPE st;
 
 		protected:
-			bool select_timeout_happened( void ) throw( exception );
-			bool send_initial_ping( void ) throw( exception );
-
+			bool select_timeout_happened( void );
+			bool send_initial_ping( void );
 			bool thread_func( void );
 
 			DEF_LOGGER;
@@ -164,7 +163,7 @@ namespace BBB_HVAC
 				/**
 				 * Processes all incoming messages.  Message is first offered to BASE_CONTEXT implementation of the method.  If that method ignores it then this method will handle the message.
 				 */
-				virtual ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
+				virtual ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message );
 
 		};
 	}
@@ -190,23 +189,23 @@ namespace BBB_HVAC
 				/**
 				 * Connets to the server process.
 				 */
-				void connect( void ) throw( BBB_HVAC::EXCEPTIONS::CONNECTION_ERROR );
+				void connect( void );
 
 				/**
 				 * Disconnects from the server process.
 				 */
-				void disconnect( void ) throw( EXCEPTIONS::PROTOCOL_ERROR );
+				void disconnect( void );
 
 				/**
 				 * Sends a message to the remote peer and waits for a response.
 				 * \return An instance of the reply message
 				 */
-				MESSAGE_PTR send_message_and_wait( MESSAGE_PTR& _message ) throw( exception );
+				MESSAGE_PTR send_message_and_wait( MESSAGE_PTR& _message );
 
-				bool send_message( MESSAGE_PTR& _message ) throw( exception );
+				bool send_message( MESSAGE_PTR& _message );
 
 
-				ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception );
+				ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message );
 
 				inline static CLIENT_CONTEXT* create_instance( SOCKET_TYPE _st, const string& _path, uint16_t _port ) {
 					return new CLIENT_CONTEXT( _st, _path, _port );

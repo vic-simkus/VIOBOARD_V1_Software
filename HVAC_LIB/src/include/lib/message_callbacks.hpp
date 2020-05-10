@@ -37,12 +37,12 @@ namespace BBB_HVAC
 	 */
 	class MESSAGE_CALLBACK_BASE
 	{
-	public:
-		virtual ~MESSAGE_CALLBACK_BASE();
-		virtual ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) throw( exception ) = 0;
+		public:
+			virtual ~MESSAGE_CALLBACK_BASE();
+			virtual ENUM_MESSAGE_CALLBACK_RESULT process_message( ENUM_MESSAGE_DIRECTION _direction, BASE_CONTEXT* _ctx, const MESSAGE_PTR& _message ) = 0;
 
-	protected:
-	private:
+		protected:
+		private:
 	};
 }
 

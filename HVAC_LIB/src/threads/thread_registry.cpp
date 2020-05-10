@@ -42,22 +42,22 @@ THREAD_REGISTRY::~THREAD_REGISTRY()
 	return;
 }
 
-void THREAD_REGISTRY::register_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type ) throw( runtime_error )
+void THREAD_REGISTRY::register_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type )
 {
 	get_instance()->reg_thread( _thread, _type );
 }
 
-void THREAD_REGISTRY::delete_thread( THREAD_BASE* _thread ) throw( runtime_error )
+void THREAD_REGISTRY::delete_thread( THREAD_BASE* _thread )
 {
 	get_instance()->del_thread( _thread, true );
 }
 
-void THREAD_REGISTRY::stop_all( void ) throw( runtime_error )
+void THREAD_REGISTRY::stop_all( void )
 {
 	get_instance()->stop_all_threads();
 }
 
-void THREAD_REGISTRY::init_cleanup( void ) throw( runtime_error )
+void THREAD_REGISTRY::init_cleanup( void )
 {
 	get_instance()->cleanup( true );
 }
@@ -88,7 +88,7 @@ bool THREAD_REGISTRY::is_thread_active( const THREAD_BASE* _ptr ) const
 	return false;
 }
 
-void THREAD_REGISTRY::reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type ) throw( runtime_error )
+void THREAD_REGISTRY::reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type )
 {
 	if ( this->in_stop_all )
 	{
@@ -115,7 +115,7 @@ void THREAD_REGISTRY::reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type 
 	return;
 }
 
-void THREAD_REGISTRY::del_thread( THREAD_BASE* _thread, bool _lock ) throw( runtime_error )
+void THREAD_REGISTRY::del_thread( THREAD_BASE* _thread, bool _lock )
 {
 	if ( this->in_stop_all )
 	{
@@ -162,7 +162,7 @@ void THREAD_REGISTRY::del_thread( THREAD_BASE* _thread, bool _lock ) throw( runt
 	return;
 }
 
-void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
+void THREAD_REGISTRY::stop_all_threads( void )
 {
 	if ( this->in_stop_all )
 	{
@@ -219,7 +219,7 @@ void THREAD_REGISTRY::stop_all_threads( void ) throw( runtime_error )
 	LOG_DEBUG( "Finished." );
 }
 
-void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
+void THREAD_REGISTRY::__cleanup( void )
 {
 	bool io_thread = false;
 	std::string thread_tag;
@@ -265,7 +265,7 @@ void THREAD_REGISTRY::__cleanup( void ) throw( runtime_error )
 	this->dead_threads.clear();
 }
 
-void THREAD_REGISTRY::cleanup( bool _lock ) throw( runtime_error )
+void THREAD_REGISTRY::cleanup( bool _lock )
 {
 	if ( this->in_stop_all )
 	{
@@ -297,7 +297,7 @@ void THREAD_REGISTRY::destroy_global( void )
 }
 
 
-const vector<THREAD_BASE*>* THREAD_REGISTRY::get_io_threads( void )  throw( runtime_error )
+const vector<THREAD_BASE*>* THREAD_REGISTRY::get_io_threads( void )
 {
 	/*
 	XXX
@@ -309,7 +309,7 @@ const vector<THREAD_BASE*>* THREAD_REGISTRY::get_io_threads( void )  throw( runt
 	return &THREAD_REGISTRY::global_instance->io_threads;
 }
 
-IOCOMM::SER_IO_COMM* THREAD_REGISTRY::get_serial_io_thread( const std::string& _tag )  throw( runtime_error )
+IOCOMM::SER_IO_COMM* THREAD_REGISTRY::get_serial_io_thread( const std::string& _tag )
 {
 	for ( size_t i = 0; i < THREAD_REGISTRY::global_instance->io_threads.size(); i++ )
 	{

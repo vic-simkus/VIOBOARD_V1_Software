@@ -51,7 +51,7 @@ THREAD_BASE::~THREAD_BASE()
 	return;
 }
 
-void THREAD_BASE::obtain_lock( void ) throw( LOCK_ERROR )
+void THREAD_BASE::obtain_lock( void )
 {
 	try
 	{

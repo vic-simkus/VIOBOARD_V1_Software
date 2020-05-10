@@ -48,7 +48,7 @@ namespace BBB_HVAC
 		delete this->server_ctx;
 	}
 
-	void SHIM_LISTENER::init( void ) throw( exception )
+	void SHIM_LISTENER::init( void )
 	{
 		this->server_ctx = new HS_SERVER_CONTEXT( this->socket_type, this->path, this->port );
 		int reuse = 1;

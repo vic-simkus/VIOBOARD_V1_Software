@@ -163,7 +163,7 @@ HVAC_LOGIC_LOOP::HVAC_LOOP_INVOCATION_CONTEXT::HVAC_LOOP_INVOCATION_CONTEXT( HVA
 
 	return;
 }
-void HVAC_LOGIC_LOOP::process_logic( void ) throw( exception )
+void HVAC_LOGIC_LOOP::process_logic( void )
 {
 	/*
 	 * We do not touch the mutex here.  The thread loop takes care of that
@@ -538,11 +538,11 @@ void HVAC_LOGIC_LOOP::switch_op_state( OPERATING_STATE _new_state )
 /*
 	Thread and class lifetime management methods.
 */
-void HVAC_LOGIC_LOOP::pre_process( void ) throw( exception )
+void HVAC_LOGIC_LOOP::pre_process( void )
 {
 	return;
 }
-void HVAC_LOGIC_LOOP::post_process( void ) throw( exception )
+void HVAC_LOGIC_LOOP::post_process( void )
 {
 	return;
 }

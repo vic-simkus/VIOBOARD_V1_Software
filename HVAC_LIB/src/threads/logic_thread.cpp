@@ -479,7 +479,7 @@ double LOGIC_PROCESSOR_BASE::calculate_420_value( double _voltage, long _min, lo
 	return value;
 }
 
-double LOGIC_PROCESSOR_BASE::get_sp_value( const string& _name ) const throw( exception )
+double LOGIC_PROCESSOR_BASE::get_sp_value( const string& _name ) const
 {
 	try
 	{
@@ -490,7 +490,7 @@ double LOGIC_PROCESSOR_BASE::get_sp_value( const string& _name ) const throw( ex
 		THROW_EXCEPTION( invalid_argument, "Failed to find SP: " + _name + ": " + e.what() );
 	}
 }
-void LOGIC_PROCESSOR_BASE::set_sp_value( const string& _name, double _value ) throw ( exception )
+void LOGIC_PROCESSOR_BASE::set_sp_value( const string& _name, double _value )
 {
 
 	this->obtain_lock();
@@ -509,7 +509,7 @@ void LOGIC_PROCESSOR_BASE::set_sp_value( const string& _name, double _value ) th
 
 }
 
-void LOGIC_PROCESSOR_BASE::set_sp_value_ns( const string& _name, double _value ) throw ( exception )
+void LOGIC_PROCESSOR_BASE::set_sp_value_ns( const string& _name, double _value )
 {
 	try
 	{
@@ -521,7 +521,7 @@ void LOGIC_PROCESSOR_BASE::set_sp_value_ns( const string& _name, double _value )
 	}
 }
 
-double LOGIC_PROCESSOR_BASE::get_ai_value( const string& _name ) const throw ( exception )
+double LOGIC_PROCESSOR_BASE::get_ai_value( const string& _name ) const
 {
 	try
 	{
@@ -533,7 +533,7 @@ double LOGIC_PROCESSOR_BASE::get_ai_value( const string& _name ) const throw ( e
 	}
 }
 
-bool LOGIC_PROCESSOR_BASE::is_output_set( const string& _name ) const throw ( exception )
+bool LOGIC_PROCESSOR_BASE::is_output_set( const string& _name ) const
 {
 	try
 	{
@@ -555,7 +555,7 @@ bool LOGIC_PROCESSOR_BASE::is_output_set( const string& _name ) const throw ( ex
 	}
 }
 
-void LOGIC_PROCESSOR_BASE::set_output( const string& _name ) throw ( exception )
+void LOGIC_PROCESSOR_BASE::set_output( const string& _name )
 {
 	BOARD_POINT board_point;
 
@@ -583,7 +583,7 @@ void LOGIC_PROCESSOR_BASE::set_output( const string& _name ) throw ( exception )
 	thread_handle->cmd_set_do_status( do_status );
 	return;
 }
-void LOGIC_PROCESSOR_BASE::clear_output( const string& _name ) throw ( exception )
+void LOGIC_PROCESSOR_BASE::clear_output( const string& _name )
 {
 	BOARD_POINT board_point;
 
