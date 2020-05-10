@@ -57,7 +57,7 @@ MESSAGE_PROCESSOR::~MESSAGE_PROCESSOR()
 	this->protocol_negotiated = false;
 }
 
-void MESSAGE_PROCESSOR::send_message( MESSAGE_PTR& _msg, int _fd ) throw( exception )
+void MESSAGE_PROCESSOR::send_message( MESSAGE_PTR& _msg, int _fd )
 {
 	const string& payload = _msg->get_payload();
 	unique_ptr<char[] > buffer( new char[payload.length()] );
@@ -94,7 +94,7 @@ void MESSAGE_PROCESSOR::send_message( MESSAGE_PTR& _msg, int _fd ) throw( except
 	return;
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer )
 {
 	size_t sep_idx = 0;
 	sep_idx = _buffer.find_first_of( MESSAGE::sep_char );
@@ -267,7 +267,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::parse_message( const std::string& _buffer ) throw
 	return ret;
 }
 
-void MESSAGE_PROCESSOR::process_hello_message( void ) throw( exception )
+void MESSAGE_PROCESSOR::process_hello_message( void )
 {
 	if ( this->incomming_message_queue->get_message_count() > 1 )
 	{
@@ -298,7 +298,7 @@ void MESSAGE_PROCESSOR::process_hello_message( void ) throw( exception )
 	return;
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_TYPES _type ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_TYPES _type )
 {
 	vector<string> parts;
 	//parts.push_back( CONFIG_ENTRY::type_to_string( _type ) );
@@ -345,7 +345,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_response( ENUM_CONFIG_T
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::GET_LABELS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_request( ENUM_CONFIG_TYPES _type ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_request( ENUM_CONFIG_TYPES _type )
 {
 	vector<string> parts;
 	parts.push_back( CONFIG_ENTRY::type_to_string( _type ) );
@@ -353,7 +353,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_get_labels_message_request( ENUM_CONFIG_TY
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::GET_LABELS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_set_pmic_status( const std::string& _board_tag, uint8_t _status ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_pmic_status( const std::string& _board_tag, uint8_t _status )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
@@ -361,7 +361,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_set_pmic_status( const std::string& _board
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::SET_PMIC_STATUS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_set_status( const std::string& _board_tag, uint8_t _status ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_status( const std::string& _board_tag, uint8_t _status )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
@@ -369,14 +369,14 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_set_status( const std::string& _board_tag,
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::SET_STATUS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_get_raw_adc_values( const std::string& _board_tag ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_raw_adc_values( const std::string& _board_tag )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::READ_STATUS_RAW_ANALOG ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_get_status( const std::string& _board_tag ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_status( const std::string& _board_tag )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
@@ -402,7 +402,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_pong_message( void )
 	vector<string> parts;
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::PONG ), parts ) );
 }
-MESSAGE_PTR MESSAGE_PROCESSOR::create_error( int _code, const std::string& _message ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_error( int _code, const std::string& _message )
 {
 	vector<string> parts;
 	parts.push_back( num_to_str( _code ) );
@@ -410,21 +410,21 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_error( int _code, const std::string& _mess
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::ERROR ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_get_l1_cal_vals( const std::string& _board_tag ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_l1_cal_vals( const std::string& _board_tag )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::GET_L1_CAL_VALS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_get_l2_cal_vals( const std::string& _board_tag ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_l2_cal_vals( const std::string& _board_tag )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::GET_L2_CAL_VALS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l1_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l1_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals )
 {
 	if ( _vals.size() != GC_IO_AI_COUNT )
 	{
@@ -437,7 +437,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l1_cal_vals( const std::string& _board
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::SET_L1_CAL_VALS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_set_sp( const std::string& _sp_name, double _value ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_sp( const std::string& _sp_name, double _value )
 {
 	vector<string> parts;
 
@@ -447,7 +447,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_set_sp( const std::string& _sp_name, doubl
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::SET_SP ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l2_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l2_cal_vals( const std::string& _board_tag, const CAL_VALUE_ARRAY& _vals )
 {
 	if ( _vals.size() != GC_IO_AI_COUNT )
 	{
@@ -460,14 +460,14 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_set_l2_cal_vals( const std::string& _board
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::SET_L2_CAL_VALS ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_get_boot_count( const std::string& _board_tag ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_get_boot_count( const std::string& _board_tag )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::GET_BOOT_COUNT ), parts ) );
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_force_ai( const std::string& _board_tag, uint8_t _input, uint16_t _value ) throw ( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_force_ai( const std::string& _board_tag, uint8_t _input, uint16_t _value )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
@@ -475,7 +475,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::create_force_ai( const std::string& _board_tag, u
 	parts.push_back( num_to_str( _value ) );
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::FORCE_AI_VALUE ), parts ) );
 }
-MESSAGE_PTR MESSAGE_PROCESSOR::create_unforce_ai( const std::string& _board_tag, uint8_t _input ) throw ( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_unforce_ai( const std::string& _board_tag, uint8_t _input )
 {
 	vector<string> parts;
 	parts.push_back( _board_tag );
@@ -496,7 +496,7 @@ MESSAGE_PTR MESSAGE_PROCESSOR::get_latest_outgoing_ping( void )
 	return MESSAGE_PTR();
 }
 
-MESSAGE_PTR MESSAGE_PROCESSOR::create_read_logic_status( void ) throw( exception )
+MESSAGE_PTR MESSAGE_PROCESSOR::create_read_logic_status( void )
 {
 	vector<string> parts;
 	return MESSAGE_PTR( new MESSAGE( MESSAGE_TYPE_MAPPER::get_message_type_by_enum( ENUM_MESSAGE_TYPE::READ_LOGIC_STATUS ), parts ) );
@@ -565,7 +565,7 @@ bool MESSAGE_QUEUE::has_messages( void ) const
 	}
 }
 
-MESSAGE_PTR MESSAGE_QUEUE::pop_first( void ) throw( exception )
+MESSAGE_PTR MESSAGE_QUEUE::pop_first( void )
 {
 	if ( !this->has_messages() )
 	{
@@ -577,7 +577,7 @@ MESSAGE_PTR MESSAGE_QUEUE::pop_first( void ) throw( exception )
 	return ret;
 }
 
-void MESSAGE_QUEUE::add_message( MESSAGE_PTR& _message, ENUM_APPEND_MODE _mode ) throw( exception )
+void MESSAGE_QUEUE::add_message( MESSAGE_PTR& _message, ENUM_APPEND_MODE _mode )
 {
 	if ( this->messages.size() < this->size )
 	{
@@ -601,7 +601,7 @@ void MESSAGE_QUEUE::add_message( MESSAGE_PTR& _message, ENUM_APPEND_MODE _mode )
 	return;
 }
 
-MESSAGE_PTR MESSAGE_QUEUE::get_message( unsigned int _idx ) throw( exception )
+MESSAGE_PTR MESSAGE_QUEUE::get_message( unsigned int _idx )
 {
 	if ( _idx >= this->messages.size() )
 	{

@@ -54,7 +54,7 @@ namespace HMI_DATA_LOGGER
 			/**
 			Goes through all of the directory entries in the log_dir and guesses the next file index.
 			*/
-			size_t get_next_data_file_index( void ) throw( std::runtime_error );
+			size_t get_next_data_file_index( void ) ;
 
 			std::string get_data_file_name_before_index( void );
 
@@ -62,15 +62,15 @@ namespace HMI_DATA_LOGGER
 
 			std::string get_next_data_file_name( void );
 
-			void set_prog_name( const std::string& _p ) throw( std::logic_error );
+			void set_prog_name( const std::string& _p ) ;
 
-			void set_prog_name_fixed( const std::string& _p ) throw( std::logic_error );
+			void set_prog_name_fixed( const std::string& _p ) ;
 
 			std::string get_full_data_dir( void ) const;
 
 			std::ofstream& get_output_stream( void );
 
-			void open_output_stream( void ) throw( exception );
+			void open_output_stream( void ) ;
 
 			void close_output_stream( void );
 

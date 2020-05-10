@@ -43,7 +43,7 @@ SOCKET_READER::~SOCKET_READER()
 	this->read_buffer = nullptr;
 }
 
-size_t SOCKET_READER::read( int _fd ) throw( exception )
+size_t SOCKET_READER::read( int _fd )
 {
 	ssize_t rc = recv( _fd, this->read_buffer, GC_BUFFER_SIZE, MSG_DONTWAIT );
 

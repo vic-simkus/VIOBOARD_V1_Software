@@ -121,7 +121,7 @@ class MESSAGE_BUS : public QObject
 		*/
 		bool is_connected( void ) const;
 
-		void connect_to_remote( void ) throw( exception );
+		void connect_to_remote( void ) ;
 
 	public slots:
 		/**
@@ -221,7 +221,7 @@ class MESSAGE_BUS : public QObject
 		/**
 		Invoked by the timer every (1000/update_frequenct) milliseconds.
 		*/
-		void do_update( void ) throw( exception );
+		void do_update( void ) ;
 
 	private:
 		/// The command queue.  Commands are added by the add_message method and consumed periodically by the do_update method.

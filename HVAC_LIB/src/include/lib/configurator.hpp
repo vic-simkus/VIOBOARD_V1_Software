@@ -60,32 +60,32 @@ namespace BBB_HVAC
 			/**
 			Returns a specified part as an integer.  If the conversion fails an exception is thrown.
 			*/
-			int get_part_as_int( size_t _idx ) const throw( exception );
+			int get_part_as_int( size_t _idx ) const ;
 
 			/**
 			Returns a specified part as an unsigned character.  If the conversion fails an exception is thrown.
 			*/
-			unsigned char get_part_as_uchar( size_t _idx ) const throw( exception );
+			unsigned char get_part_as_uchar( size_t _idx ) const ;
 
 			/**
 			Returns a specified part as a double.  If the conversion fails an exception is thrown.
 			*/
-			double get_part_as_double( size_t _idx ) const throw( exception );
+			double get_part_as_double( size_t _idx ) const ;
 
 			/**
 			Returns a specified part as a string.  If the index is invalid an exception is thrown.
 			*/
-			string get_part_as_string( size_t _idx ) const throw( exception );
+			string get_part_as_string( size_t _idx ) const ;
 
-			bool get_part_as_bool( size_t _idx ) const throw( exception );
+			bool get_part_as_bool( size_t _idx ) const ;
 
 			/**
 			 * Sets a specified part to the supplied value.
 			 * \note The record type is not included in the part count.  For example, an SP record has two parts - label and value.  The 'SP' is not included in the part count.
 			 */
-			void set_part( size_t _idx, int _val ) throw( exception );
-			void set_part( size_t _idx, double _val ) throw( exception );
-			void set_part( size_t _idx, const string& _val ) throw( exception );
+			void set_part( size_t _idx, int _val ) ;
+			void set_part( size_t _idx, double _val ) ;
+			void set_part( size_t _idx, const string& _val ) ;
 
 
 			/**
@@ -101,7 +101,7 @@ namespace BBB_HVAC
 			/**
 			Returns the string representation of this instance suitable to be written to a file.
 			*/
-			string write_self_to_file( void ) const throw( exception );
+			string write_self_to_file( void ) const ;
 
 			/**
 			Returns the number of parts in this entry.  The record type is not included in the part count.
@@ -116,12 +116,12 @@ namespace BBB_HVAC
 			/**
 			Converts the type enum to a string suitable for outputting to a configuration file.  An exception is thrown in case of hinkiness.
 			*/
-			static string type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception );
+			static string type_to_string( ENUM_CONFIG_TYPES _type ) ;
 
 			/**
 			Converts a string representation of an entry type to an enum.  An exception is thrown if the conversion can not be made.
 			*/
-			static ENUM_CONFIG_TYPES string_to_type( const string& _type ) throw( exception );
+			static ENUM_CONFIG_TYPES string_to_type( const string& _type ) ;
 
 			/**
 			Comparison operator.
@@ -234,9 +234,9 @@ namespace BBB_HVAC
 			*/
 			~CONFIGURATOR();
 
-			void read_file( void ) throw( exception );
+			void read_file( void ) ;
 
-			void write_file( void ) const throw( exception );
+			void write_file( void ) const ;
 
 			const CONFIG_TYPE_INDEX_TYPE& get_board_index( void ) const;
 
@@ -244,9 +244,9 @@ namespace BBB_HVAC
 			Gets a config entry by a global config entry index.
 			\param _idx Global config entry index.
 			*/
-			CONFIG_ENTRY& get_config_entry( size_t _idx )  throw( exception );
+			CONFIG_ENTRY& get_config_entry( size_t _idx )  ;
 
-			const CONFIG_ENTRY& get_type_by_id( ENUM_CONFIG_TYPES _type, const string& _id )  throw( exception );
+			const CONFIG_ENTRY& get_type_by_id( ENUM_CONFIG_TYPES _type, const string& _id )  ;
 
 			/**
 			Returns the DO (digital output) configuration entries in the instance.
@@ -269,13 +269,13 @@ namespace BBB_HVAC
 			/**
 			Returns the value of the specified set point.  An exception is thrown if a set point with the specified name does not exist.
 			*/
-			double get_sp_value( const string& _name ) const throw( exception );
+			double get_sp_value( const string& _name ) const ;
 
 
 			/**
 			Sets the value of the specified set point.  An exception is thrown if a set point with the specified name does not exist.
 			*/
-			void set_sp_value( const string& _name, double _value ) throw( exception );
+			void set_sp_value( const string& _name, double _value ) ;
 
 
 			/**
@@ -291,19 +291,19 @@ namespace BBB_HVAC
 
 		private:
 
-			void normalize_file_names( void ) throw( exception );
-			void check_file_permissions( void ) throw( exception );
+			void normalize_file_names( void ) ;
+			void check_file_permissions( void ) ;
 
 			/**
 			 Loops through a file looking for EOL characters.  Once a line is built calls
 			 process_line(size_t).
 			*/
-			void process_file( const char* _file_name ) throw( exception );
+			void process_file( const char* _file_name ) ;
 			/**
 			Parses a configuration line.
 			*/
-			void process_line( size_t _line_idx ) throw( exception );
-			void process_mapping( const CONFIG_ENTRY& _ce ) throw( exception );
+			void process_line( size_t _line_idx ) ;
+			void process_mapping( const CONFIG_ENTRY& _ce ) ;
 
 			char* buffer;
 

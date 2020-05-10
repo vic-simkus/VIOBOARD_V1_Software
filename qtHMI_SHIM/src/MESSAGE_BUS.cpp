@@ -60,7 +60,7 @@ MESSAGE_BUS::~MESSAGE_BUS()
 	return;
 }
 
-void MESSAGE_BUS::connect_to_remote( void ) throw( exception )
+void MESSAGE_BUS::connect_to_remote( void )
 {
 	/*
 		Check if we're connected
@@ -95,7 +95,7 @@ void MESSAGE_BUS::connect_to_remote( void ) throw( exception )
 	this->timer_update->start( 1000 / update_frequency );
 }
 
-void MESSAGE_BUS::do_update( void ) throw( exception )
+void MESSAGE_BUS::do_update( void )
 {
 	/*
 	Invoked by the timer this->update_frequency times per second.

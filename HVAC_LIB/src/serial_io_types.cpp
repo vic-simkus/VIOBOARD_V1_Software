@@ -117,13 +117,13 @@ namespace BBB_HVAC
 			return ret;
 		}
 
-		void OUTGOING_MESSAGE_QUEUE::get_lock( void ) throw( LOCK_ERROR )
+		void OUTGOING_MESSAGE_QUEUE::get_lock( void )
 		{
 			this->obtain_lock_ex();
 			return;
 		}
 
-		void OUTGOING_MESSAGE_QUEUE::put_lock( void ) throw( LOCK_ERROR )
+		void OUTGOING_MESSAGE_QUEUE::put_lock( void )
 		{
 			if ( this->release_lock() == false )
 			{
@@ -133,7 +133,7 @@ namespace BBB_HVAC
 			return;
 		}
 
-		bool OUTGOING_MESSAGE_QUEUE::wait_for_signal( void ) throw( LOCK_ERROR )
+		bool OUTGOING_MESSAGE_QUEUE::wait_for_signal( void )
 		{
 			this->get_lock();
 			timespec timeout_time;

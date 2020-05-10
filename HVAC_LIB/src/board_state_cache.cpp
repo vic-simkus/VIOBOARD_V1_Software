@@ -96,7 +96,7 @@ namespace BBB_HVAC
 			return true;
 		}
 
-		void BOARD_STATE_CACHE::add_adc_value( size_t _x_index, uint16_t _value ) throw( logic_error )
+		void BOARD_STATE_CACHE::add_adc_value( size_t _x_index, uint16_t _value )
 		{
 			if ( _x_index >= GC_IO_AI_COUNT )
 			{
@@ -132,16 +132,16 @@ namespace BBB_HVAC
 			return;
 		}
 
-		void BOARD_STATE_CACHE::add_l1_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error )
+		void BOARD_STATE_CACHE::add_l1_cal_value( size_t _x_index, uint16_t _value )
 		{
 			this->add_cal_value( _x_index, _value, this->l1_cal_cache_index, ( this->cal_l1_cache ) );
 		}
-		void BOARD_STATE_CACHE::add_l2_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error )
+		void BOARD_STATE_CACHE::add_l2_cal_value( size_t _x_index, uint16_t _value )
 		{
 			this->add_cal_value( _x_index, _value, this->l1_cal_cache_index, ( this->cal_l2_cache ) );
 		}
 
-		void BOARD_STATE_CACHE::add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] ) throw( logic_error )
+		void BOARD_STATE_CACHE::add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] )
 		{
 			if ( _x_index >= GC_IO_AI_COUNT )
 			{

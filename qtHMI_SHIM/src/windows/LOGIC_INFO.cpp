@@ -20,6 +20,8 @@
 
 #include "LOGIC_INFO.h"
 #include "ui_util.h"
+#include "widgets/LOGIC_TABLE.h"
+#include "widgets/LOGIC_TABLE_SP.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -40,9 +42,11 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	this->setLayout( new QVBoxLayout( this ) );
 	this->splitter_main_window = new QSplitter( Qt::Vertical, this );
 	this->layout( )->addWidget( this->splitter_main_window );
+
 	// Create group splitters
 	this->splitter_io_points = new QSplitter( Qt::Horizontal, nullptr );
 	this->splitter_logic_points = new QSplitter( Qt::Horizontal, nullptr );
+
 	// Create groups
 	// Create IO point group
 	this->group_io_points = new QGroupBox( "I/O Points", nullptr );
@@ -59,114 +63,76 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	this->splitter_main_window->addWidget( this->group_io_points );
 	this->splitter_main_window->addWidget( this->group_point_map );
 	this->splitter_main_window->addWidget( this->group_logic_points );
-	// Temp variable
-	QFrame* temp_frame = nullptr;
-	/*
-	 * Setup the set point widgets
-	 */
-	temp_frame = new QFrame( nullptr );
-	temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
-	temp_frame->layout( )->addWidget( new QLabel( "<b>Set Points" ) );
-	temp_frame->layout( )->addWidget( ( this->table_sp_points = new QTableWidget( this->group_logic_points ) ) );
-	this->splitter_logic_points->addWidget( temp_frame );
-	/*
-	 * Setup the point value widgets
-	 */
-	temp_frame = new QFrame( nullptr );
-	temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
-	temp_frame->layout( )->addWidget( new QLabel( "<b>Point Values" ) );
-	temp_frame->layout( )->addWidget( ( this->table_point_values = new QTableWidget( this->group_logic_points ) ) );
-	this->splitter_logic_points->addWidget( temp_frame );
-	/*
-	 * Setup the DO widgets
-	 */
-	temp_frame = new QFrame( this->group_io_points );
-	temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
-	temp_frame->layout( )->addWidget( new QLabel( "<b>DO Points" ) );
-	temp_frame->layout( )->addWidget( this->table_do_points = new QTableWidget( nullptr ) );
-	this->splitter_io_points->addWidget( temp_frame );
-	/*
-	 * Setup the AI widgets
-	 */
-	temp_frame = new QFrame( this->group_io_points );
-	temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
-	temp_frame->layout( )->addWidget( new QLabel( "<b>AI Points" ) );
-	temp_frame->layout( )->addWidget( this->table_ai_points = new QTableWidget( nullptr ) );
-	this->splitter_io_points->addWidget( temp_frame );
-	/*
-	 * Setup the MAP widgets
-	 */
-	temp_frame = new QFrame( this->group_point_map );
-	temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
-	temp_frame->layout( )->addWidget( this->table_map_points = new QTableWidget( nullptr ) );
-	this->group_point_map->layout()->addWidget( temp_frame );
-	/*
-	 * Setup the TableWidget stuffs.
-	 */
-	QStringList table_column_headers;
-	table_column_headers.append( "Board" );
-	table_column_headers.append( "#" );
-	table_column_headers.append( "Description" );
-	this->table_do_points->setColumnCount( table_column_headers.count( ) );
-	this->table_ai_points->setColumnCount( table_column_headers.count( ) );
-	this->table_do_points->setHorizontalHeaderLabels( table_column_headers );
-	this->table_ai_points->setHorizontalHeaderLabels( table_column_headers );
-	table_column_headers.clear( );
-	table_column_headers.append( "Set Point Name" );
-	table_column_headers.append( "Set Point Value" );
-	this->table_sp_points->setColumnCount( table_column_headers.count( ) );
-	this->table_sp_points->setHorizontalHeaderLabels( table_column_headers );
-	table_column_headers.clear( );
-	table_column_headers.append( "Point Name" );
-	table_column_headers.append( "Point Value" );
-	this->table_point_values->setColumnCount( table_column_headers.count( ) );
-	this->table_point_values->setHorizontalHeaderLabels( table_column_headers );
-	table_column_headers.clear( );
-	table_column_headers.append( "Map Name" );
-	table_column_headers.append( "Board" );
-	table_column_headers.append( "Type" );
-	table_column_headers.append( "#" );
-	table_column_headers.append( "Description" );
-	this->table_map_points->setColumnCount( table_column_headers.count( ) );
-	this->table_map_points->setHorizontalHeaderLabels( table_column_headers );
-	/*
-	 * Global table properties
-	 */
-	this->table_do_points->setSelectionBehavior( QAbstractItemView::SelectRows );
-	this->table_ai_points->setSelectionBehavior( QAbstractItemView::SelectRows );
-	this->table_map_points->setSelectionBehavior( QAbstractItemView::SelectRows );
-	this->table_sp_points->setSelectionBehavior( QAbstractItemView::SelectRows );
-	this->table_point_values->setSelectionBehavior( QAbstractItemView::SelectRows );
 
-	this->table_do_points->setSelectionMode( QAbstractItemView::SingleSelection );
-	this->table_ai_points->setSelectionMode( QAbstractItemView::SingleSelection );
-	this->table_map_points->setSelectionMode( QAbstractItemView::SingleSelection );
-	this->table_sp_points->setSelectionMode( QAbstractItemView::SingleSelection );
-	this->table_point_values->setSelectionMode( QAbstractItemView::SingleSelection );
+	/*
+		Instantiate the tables containing the logic info.
+	*/
+	{
 
-	this->table_do_points->resizeColumnsToContents( );
-	this->table_ai_points->resizeColumnsToContents( );
-	this->table_map_points->resizeColumnsToContents( );
-	this->table_sp_points->resizeColumnsToContents( );
-	this->table_point_values->resizeColumnsToContents( );
+		// Temp variable
+		QFrame* temp_frame = nullptr;
+		QStringList table_column_headers;
 
-	this->table_do_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
-	this->table_ai_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
-	this->table_map_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
-	this->table_sp_points->setEditTriggers( QAbstractItemView::NoEditTriggers );
-	this->table_point_values->setEditTriggers( QAbstractItemView::NoEditTriggers );
+		temp_frame = new QFrame( nullptr );
+		temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
+		temp_frame->layout( )->addWidget( new QLabel( "<b>Set Points" ) );
+		temp_frame->layout( )->addWidget( ( this->table_sp_points = new LOGIC_TABLE_SP( this->group_logic_points ) ) );
+		this->splitter_logic_points->addWidget( temp_frame );
 
-	this->table_do_points->setAlternatingRowColors( true );
-	this->table_ai_points->setAlternatingRowColors( true );
-	this->table_map_points->setAlternatingRowColors( true );
-	this->table_sp_points->setAlternatingRowColors( true );
-	this->table_point_values->setAlternatingRowColors( true );
+		/*
+		 * Setup the point value widgets
+		 */
+		table_column_headers.clear( );
+		table_column_headers.append( "Point Name" );
+		table_column_headers.append( "Point Value" );
 
-	this->table_do_points->verticalHeader()->setVisible( false );
-	this->table_ai_points->verticalHeader()->setVisible( false );
-	this->table_map_points->verticalHeader()->setVisible( false );
-	this->table_sp_points->verticalHeader()->setVisible( false );
-	this->table_point_values->verticalHeader()->setVisible( false );
+		temp_frame = new QFrame( nullptr );
+		temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
+		temp_frame->layout( )->addWidget( new QLabel( "<b>Point Values" ) );
+		temp_frame->layout( )->addWidget( ( this->table_point_values = new LOGIC_TABLE( this->group_logic_points, table_column_headers ) ) );
+		this->splitter_logic_points->addWidget( temp_frame );
+
+		/*
+		 * Setup the DO widgets
+		 */
+		table_column_headers.clear( );
+		table_column_headers.append( "Board" );
+		table_column_headers.append( "#" );
+		table_column_headers.append( "Description" );
+
+		temp_frame = new QFrame( this->group_io_points );
+		temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
+		temp_frame->layout( )->addWidget( new QLabel( "<b>DO Points" ) );
+		temp_frame->layout( )->addWidget( this->table_do_points = new LOGIC_TABLE( nullptr, table_column_headers ) );
+		this->splitter_io_points->addWidget( temp_frame );
+
+		/*
+		 * Setup the AI widgets
+		 */
+
+		// AI table has same columns as DO table
+
+		temp_frame = new QFrame( this->group_io_points );
+		temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
+		temp_frame->layout( )->addWidget( new QLabel( "<b>AI Points" ) );
+		temp_frame->layout( )->addWidget( this->table_ai_points = new LOGIC_TABLE( nullptr , table_column_headers ) );
+		this->splitter_io_points->addWidget( temp_frame );
+
+		/*
+		 * Setup the MAP widgets
+		 */
+		table_column_headers.clear( );
+		table_column_headers.append( "Map Name" );
+		table_column_headers.append( "Board" );
+		table_column_headers.append( "Type" );
+		table_column_headers.append( "#" );
+		table_column_headers.append( "Description" );
+
+		temp_frame = new QFrame( this->group_point_map );
+		temp_frame->setLayout( new QVBoxLayout( temp_frame ) );
+		temp_frame->layout( )->addWidget( this->table_map_points = new LOGIC_TABLE( nullptr , table_column_headers ) );
+		this->group_point_map->layout()->addWidget( temp_frame );
+	}
 
 	/*
 	 * Set splitter ratios
@@ -180,13 +146,6 @@ LOGIC_INFO::LOGIC_INFO( QWidget* _p ) : QFrame( _p )
 	setup_splitter_handle( this->splitter_main_window );
 	setup_splitter_handle( this->splitter_io_points );
 	setup_splitter_handle( this->splitter_logic_points );
-
-	connect( this->table_do_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
-	connect( this->table_ai_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
-	connect( this->table_map_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
-	connect( this->table_sp_points, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
-	connect( this->table_point_values, SIGNAL( itemDoubleClicked( QTableWidgetItem* ) ), this, SLOT( slot_item_doubleclicked( QTableWidgetItem* ) ) );
-
 	/*
 	Connect the message bus listeners
 	*/
@@ -340,10 +299,4 @@ void LOGIC_INFO::slot_mb_set_point_update( MESSAGE_BUS::COMMANDS, const QMap<QSt
 	this->table_sp_points->resizeColumnsToContents( );
 	this->table_sp_points->setCurrentCell( current_row, 0 );
 	return;
-}
-
-void LOGIC_INFO::slot_item_doubleclicked( QTableWidgetItem* _item )
-{
-	_item->tableWidget()->setCurrentItem( nullptr , QItemSelectionModel::Clear );
-
 }

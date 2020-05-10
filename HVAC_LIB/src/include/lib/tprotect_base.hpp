@@ -59,7 +59,7 @@ namespace BBB_HVAC
 			 * \return Always returns true.  If something goes wonky and exception is thrown.
 			 * \see obtain_lock_ex(const bool*)
 			 */
-			bool obtain_lock_ex( void ) throw( LOCK_ERROR );
+			bool obtain_lock_ex( void ) ;
 			/**
 			 * \brief Attempts to obtain a lock on the mutex.
 			 * If an initial attempt fails, it tries GC_MUTEX_LOCK_ATTEMPT times to obtain a lock with an rand_r nanoseonds
@@ -67,20 +67,20 @@ namespace BBB_HVAC
 			 * All attempts are predicated on _cond being false.  If _cond becomes true the attemp loop aborts with an exception.
 			 * \return Always returns true.  If something goes wonky an exception is thrown.
 			 */
-			bool obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR );
+			bool obtain_lock_ex( const bool* _cond ) ;
 
 			/**
 			 * \brief Relieses lock obtained by obtain_lock
 			 * \return Always returns true.  If something goes wonky an exception is thrown.
 			 * \see obtain_lock(void)
 			 */
-			bool release_lock( void ) throw( LOCK_ERROR );
+			bool release_lock( void ) ;
 
 			/**
 			 * \brief Sleeps for a specified time.  The method will make a best faith effort to sleep for the full specified period.
 			 * \param _time Sleep period.  If nullptr is supplied this->thread_sleep is used.
 			 */
-			void nsleep( timespec* _time = nullptr ) const throw( runtime_error );
+			void nsleep( timespec* _time = nullptr ) const ;
 
 			/**
 			 * \brief Resets this->thread_sleep to the specified number of nanoseconds.

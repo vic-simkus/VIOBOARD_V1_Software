@@ -53,7 +53,7 @@ MESSAGE::MESSAGE( const MESSAGE_TYPE& _type, const vector<string>& _payload )
 	get_timestamp( this->class_created );
 }
 
-void MESSAGE::get_timestamp( timespec* _tm ) throw( runtime_error )
+void MESSAGE::get_timestamp( timespec* _tm )
 {
 	if ( clock_gettime( CLOCK_MONOTONIC, _tm ) != 0 )
 	{
@@ -109,7 +109,7 @@ const vector<string>& MESSAGE::get_parts( void ) const
 	return this->parts;
 }
 
-uint16_t MESSAGE::get_part_as_ui( size_t _part ) throw( exception )
+uint16_t MESSAGE::get_part_as_ui( size_t _part )
 {
 	this->check_part_index( _part );
 
@@ -122,7 +122,7 @@ uint16_t MESSAGE::get_part_as_ui( size_t _part ) throw( exception )
 		throw runtime_error( string( "Failed to parse part " ) + this->parts[_part] + " to an unsigned integer: " + e.what() );
 	}
 }
-int16_t MESSAGE::get_part_as_si( size_t _part ) throw( exception )
+int16_t MESSAGE::get_part_as_si( size_t _part )
 {
 	this->check_part_index( _part );
 
@@ -136,7 +136,7 @@ int16_t MESSAGE::get_part_as_si( size_t _part ) throw( exception )
 	}
 }
 
-double MESSAGE::get_part_as_d( size_t _part ) throw( exception )
+double MESSAGE::get_part_as_d( size_t _part )
 {
 	this->check_part_index( _part );
 
@@ -149,7 +149,7 @@ double MESSAGE::get_part_as_d( size_t _part ) throw( exception )
 		throw runtime_error( string( "Failed to parse part " ) + this->parts[_part] + " to a double: " + e.what() );
 	}
 }
-string MESSAGE::get_part_as_s( size_t _part ) throw( exception )
+string MESSAGE::get_part_as_s( size_t _part )
 {
 	this->check_part_index( _part );
 	return this->parts[_part];
@@ -159,7 +159,7 @@ size_t MESSAGE::get_part_count( void ) const
 {
 	return this->parts.size();
 }
-void MESSAGE::check_part_index( size_t _idx ) throw( exception )
+void MESSAGE::check_part_index( size_t _idx )
 {
 	if ( this->parts.size() == 0 || _idx >= this->parts.size() )
 	{
@@ -167,7 +167,7 @@ void MESSAGE::check_part_index( size_t _idx ) throw( exception )
 	}
 }
 
-void MESSAGE::tag_received( void ) throw( runtime_error )
+void MESSAGE::tag_received( void )
 {
 	if ( this->message_received->tv_sec != 0 )
 	{
@@ -178,7 +178,7 @@ void MESSAGE::tag_received( void ) throw( runtime_error )
 	return;
 }
 
-void MESSAGE::tag_sent( void ) throw( runtime_error )
+void MESSAGE::tag_sent( void )
 {
 	if ( this->message_sent->tv_sec != 0 )
 	{
@@ -255,7 +255,7 @@ string MESSAGE::to_string( void ) const
 	return ret;
 }
 
-void MESSAGE::message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) throw( exception )
+void MESSAGE::message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map )
 {
 	if ( _message->get_part_count() < 2 )
 	{

@@ -51,7 +51,7 @@ namespace BBB_HVAC
 			 * \param _fd File descriptor to read from.
 			 * \return Number of lines available for processing.  Note:  This does not mean how many lines were read during this method invocation.  The returned number of lines may include number of lines stored in the internal buffer that have not yet been consumed.
 			 */
-			size_t read( int _fd ) throw( exception );
+			size_t read( int _fd ) ;
 
 			/**
 			 * Gets the number of lines in the internal buffer that are available for processing.

@@ -21,7 +21,9 @@ HEADERS = src/widgets/AI_RAW_VALUE.h \
 	src/windows/DEBUG_WIDGET.h \
 	src/widgets/DEBUG_FORCE_WIDGET.h\
 	src/MESSAGE_BUS.h \
-	src/widgets/MAIN_WIDGET.h
+	src/widgets/MAIN_WIDGET.h \
+	src/widgets/LOGIC_TABLE.h \
+	src/widgets/LOGIC_TABLE_SP.h
 
 SOURCES = src/widgets/AI_RAW_VALUE.cpp \
 	src/windows/BOARD_INFO_WIDGET.cpp \
@@ -34,6 +36,8 @@ SOURCES = src/widgets/AI_RAW_VALUE.cpp \
 	src/windows/RAW_BOARD_INFO.cpp \
 	src/widgets/MAIN_WIDGET.cpp \
 	src/widgets/AI_VALUE.cpp \
+	src/widgets/LOGIC_TABLE.cpp \
+	src/widgets/LOGIC_TABLE_SP.cpp \
 	src/windows/DEBUG_FRAME.cpp \
 	src/windows/DEBUG_WIDGET.cpp \
 	src/widgets/DEBUG_FORCE_WIDGET.cpp \

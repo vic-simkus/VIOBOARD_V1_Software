@@ -103,7 +103,7 @@ bool Context::check_data_dir( void )
 	return true;
 }
 
-size_t Context::get_next_data_file_index( void ) throw( std::runtime_error )
+size_t Context::get_next_data_file_index( void )
 {
 	size_t next_file_index = 0;
 	std::string pre_index_fluff = this->get_data_file_name_before_index();
@@ -242,7 +242,7 @@ std::string Context::get_data_file_name_after_index( void )
 	}
 }
 
-void Context::set_prog_name( const std::string& _p ) throw( std::logic_error )
+void Context::set_prog_name( const std::string& _p )
 {
 	if ( !this->prog_name.empty() )
 	{
@@ -253,7 +253,7 @@ void Context::set_prog_name( const std::string& _p ) throw( std::logic_error )
 	return;
 }
 
-void Context::set_prog_name_fixed( const std::string& _p ) throw( std::logic_error )
+void Context::set_prog_name_fixed( const std::string& _p )
 {
 	if ( !this->prog_name_fixed.empty() )
 	{
@@ -322,7 +322,7 @@ std::ofstream& Context::get_output_stream( void )
 	return this->output_stream;
 }
 
-void Context::open_output_stream( void ) throw( exception )
+void Context::open_output_stream( void )
 {
 	if ( this->output_stream.is_open() )
 	{

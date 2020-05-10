@@ -85,12 +85,12 @@ namespace BBB_HVAC
 			/**
 			 * Tags the message as being received.  Calling this method more than once will raise a runtime_exception
 			 */
-			void tag_received( void ) throw( runtime_error );
+			void tag_received( void ) ;
 
 			/**
 			 * Tags the message as being sent.  Calling this method more than once will raise a runtime_exception
 			 */
-			void tag_sent( void ) throw( runtime_error );
+			void tag_sent( void ) ;
 
 			/**
 			 * Generates a string that is intended to be used for human consumption for debugging purposes.  The format is not guaranteed to be stable.
@@ -103,23 +103,23 @@ namespace BBB_HVAC
 			 * \param _part Index of the part to convert to a number.
 			 * \return Value of the part as an unsigned integer.  Throws an exception if the part payload can not be parsed into a numerical form.
 			 */
-			uint16_t get_part_as_ui( size_t _part ) throw( exception );
+			uint16_t get_part_as_ui( size_t _part ) ;
 			/**
 			 * Gets a message part as a signed integer.
 			 * \see get_par_as_ui(_part)
 			 */
-			int16_t get_part_as_si( size_t _part ) throw( exception );
+			int16_t get_part_as_si( size_t _part ) ;
 
 			/**
 			 * Gets a message part as a string
 			 * \return Part as a string.
 			 */
-			string get_part_as_s( size_t _part ) throw( exception );
+			string get_part_as_s( size_t _part ) ;
 			/**
 			 * Gets a message part as a double
 			 * \return Part as a string.
 			 */
-			double get_part_as_d( size_t _part ) throw( exception );
+			double get_part_as_d( size_t _part ) ;
 
 			/**
 			 * Gets the timestamp of when this message instance was sent to remote.
@@ -146,14 +146,14 @@ namespace BBB_HVAC
 			 */
 			static const char sep_char;
 
-			static void message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) throw( exception );
+			static void message_to_map( const MESSAGE_PTR& _message, std::map<std::string, std::string>& _dest_map ) ;
 
 		protected:
 			/**
 			 * Checks to see if the supplied part index is valid (is in range)
 			 * \param _part Part index.
 			 */
-			void check_part_index( size_t _part ) throw( exception );
+			void check_part_index( size_t _part ) ;
 
 			/**
 			 * Protected initializer.  Zeros out and resets all of the classe's properties.
@@ -204,7 +204,7 @@ namespace BBB_HVAC
 			 * Gets the current timestamp and places the supplied buffer.
 			 * \param _tm Destination buffer.
 			 */
-			static void get_timestamp( timespec* _tm ) throw( runtime_error );
+			static void get_timestamp( timespec* _tm ) ;
 	};
 }
 

@@ -75,7 +75,7 @@ TPROTECT_BASE::~TPROTECT_BASE()
 	return;
 }
 
-void TPROTECT_BASE::nsleep( timespec* _time ) const throw( runtime_error )
+void TPROTECT_BASE::nsleep( timespec* _time ) const
 {
 	timespec sleep_time;
 	timespec thread_sleep_rem;
@@ -118,13 +118,13 @@ void TPROTECT_BASE::nsleep( timespec* _time ) const throw( runtime_error )
 	return;
 }
 
-bool TPROTECT_BASE::obtain_lock_ex( void )  throw( LOCK_ERROR )
+bool TPROTECT_BASE::obtain_lock_ex( void )
 {
 	bool cond = false;
 	return this->obtain_lock_ex( &cond );
 }
 
-bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR )
+bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond )
 {
 	int mutex_lock_result = 0;
 	unsigned int mutex_lock_attempts = 0;
@@ -202,7 +202,7 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond ) throw( LOCK_ERROR )
 	THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Lock acquisition loop aborted on condition." );
 }
 
-bool TPROTECT_BASE::release_lock() throw( LOCK_ERROR )
+bool TPROTECT_BASE::release_lock()
 {
 	int rc = 0;
 

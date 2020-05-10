@@ -76,17 +76,17 @@ namespace BBB_HVAC
 				\param _x_index The index of the board's analog input
 				\param _value Value of the input
 				*/
-				void add_adc_value( size_t _x_index, uint16_t _value ) throw( logic_error );
+				void add_adc_value( size_t _x_index, uint16_t _value ) ;
 
 				/**
 				Adds a L1 (level 1) calibration value to the cache.  Calibration values are valid only for analog inputs.
 				*/
-				void add_l1_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error );
+				void add_l1_cal_value( size_t _x_index, uint16_t _value ) ;
 
 				/**
 				Adds a L2 (level 2) calibration value to the cache.  Calibration values are valid only for analog inputs.
 				*/
-				void add_l2_cal_value( size_t _x_index, uint16_t _value ) throw( logic_error );
+				void add_l2_cal_value( size_t _x_index, uint16_t _value ) ;
 
 				void set_boot_count( uint16_t _value );
 
@@ -150,7 +150,7 @@ namespace BBB_HVAC
 
 				std::string board_id;
 			private:
-				void add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] ) throw( logic_error );
+				void add_cal_value( size_t _x_index, uint16_t _value, size_t& _idx, CAL_VALUE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] ) ;
 		};
 	}
 }

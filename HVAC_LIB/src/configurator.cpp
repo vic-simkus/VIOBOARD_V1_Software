@@ -62,7 +62,7 @@ CONFIGURATOR::~CONFIGURATOR()
 	return;
 }
 
-void CONFIGURATOR::normalize_file_names( void ) throw( exception )
+void CONFIGURATOR::normalize_file_names( void )
 {
 	char* _buff = ( char* ) malloc( PATH_MAX );
 
@@ -82,7 +82,7 @@ void CONFIGURATOR::normalize_file_names( void ) throw( exception )
 	return;
 }
 
-void CONFIGURATOR::check_file_permissions( void ) throw( exception )
+void CONFIGURATOR::check_file_permissions( void )
 {
 	if ( access( this->file_name.data(), F_OK ) != 0 )
 	{
@@ -111,7 +111,7 @@ void CONFIGURATOR::check_file_permissions( void ) throw( exception )
 	return;
 }
 
-void CONFIGURATOR::process_file( const char* _file_name ) throw( exception )
+void CONFIGURATOR::process_file( const char* _file_name )
 {
 	LOG_DEBUG( "Processing file: " + string( _file_name ) );
 
@@ -169,7 +169,7 @@ void CONFIGURATOR::process_file( const char* _file_name ) throw( exception )
 	fclose( file );
 	return;
 }
-void CONFIGURATOR::process_mapping( const CONFIG_ENTRY& _ce ) throw( exception )
+void CONFIGURATOR::process_mapping( const CONFIG_ENTRY& _ce )
 {
 	ENUM_CONFIG_TYPES type = CONFIG_ENTRY::string_to_type( _ce.get_part_as_string( 0 ) );
 	std::string target_board = _ce.get_part_as_string( 1 );
@@ -208,7 +208,7 @@ void CONFIGURATOR::process_mapping( const CONFIG_ENTRY& _ce ) throw( exception )
 	std::string key = _ce.get_part_as_string( 3 );
 	this->point_map[key] = ( *target_entry );
 }
-void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
+void CONFIGURATOR::process_line( size_t _line_idx )
 {
 	char* line = trim_string( this->buffer );
 	size_t line_length = strlen( line );
@@ -355,7 +355,7 @@ void CONFIGURATOR::process_line( size_t _line_idx ) throw( exception )
 
 	return;
 }
-void CONFIGURATOR::read_file( void ) throw( exception )
+void CONFIGURATOR::read_file( void )
 {
 	this->normalize_file_names();
 	LOG_DEBUG( "Configuration file: " + this->file_name );
@@ -402,7 +402,7 @@ void CONFIGURATOR::read_file( void ) throw( exception )
 
 	return;
 }
-void CONFIGURATOR::write_file( void ) const throw( exception )
+void CONFIGURATOR::write_file( void ) const
 {
 	FILE* out_file = fopen( this->overlay_file_name.data(), "wt" );
 
@@ -433,7 +433,7 @@ const CONFIG_TYPE_INDEX_TYPE& CONFIGURATOR::get_board_index( void ) const
 	return this->board_configs;
 }
 
-CONFIG_ENTRY& CONFIGURATOR::get_config_entry( size_t _idx ) throw( exception )
+CONFIG_ENTRY& CONFIGURATOR::get_config_entry( size_t _idx )
 {
 	if ( _idx > this->config_entries.size() )
 	{
@@ -467,7 +467,7 @@ const SET_POINT_MAP& CONFIGURATOR::get_sp_points( void ) const
 /**
 Returns the value of the specified set point.  An exception is thrown if a set point with the specified name does not exist.
 */
-double CONFIGURATOR::get_sp_value( const string& _name ) const throw( exception )
+double CONFIGURATOR::get_sp_value( const string& _name ) const
 {
 	return this->sp_points.at( _name ).get_value();
 }
@@ -475,7 +475,7 @@ double CONFIGURATOR::get_sp_value( const string& _name ) const throw( exception 
 /**
 Sets the value of the specified set point.  An exception is thrown if a set point with the specified name does not exist.
 */
-void CONFIGURATOR::set_sp_value( const string& _name, double _value ) throw( exception )
+void CONFIGURATOR::set_sp_value( const string& _name, double _value )
 {
 	SET_POINT& sp = this->sp_points.at( _name );
 	sp.set_value( _value );

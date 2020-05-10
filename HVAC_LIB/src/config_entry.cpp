@@ -47,11 +47,11 @@ CONFIG_ENTRY::~CONFIG_ENTRY()
 	return;
 }
 
-unsigned char CONFIG_ENTRY::get_part_as_uchar( size_t _idx ) const throw( exception )
+unsigned char CONFIG_ENTRY::get_part_as_uchar( size_t _idx ) const
 {
 	return ( unsigned char )this->get_part_as_int( _idx );
 }
-int CONFIG_ENTRY::get_part_as_int( size_t _idx ) const throw( exception )
+int CONFIG_ENTRY::get_part_as_int( size_t _idx ) const
 {
 	if ( _idx >= this->parts.size() )
 	{
@@ -60,7 +60,7 @@ int CONFIG_ENTRY::get_part_as_int( size_t _idx ) const throw( exception )
 
 	return stoi( this->parts[_idx] );
 }
-double CONFIG_ENTRY::get_part_as_double( size_t _idx ) const throw( exception )
+double CONFIG_ENTRY::get_part_as_double( size_t _idx ) const
 {
 	if ( _idx >= this->parts.size() )
 	{
@@ -69,7 +69,7 @@ double CONFIG_ENTRY::get_part_as_double( size_t _idx ) const throw( exception )
 
 	return stod( this->parts[_idx] );
 }
-bool CONFIG_ENTRY::get_part_as_bool( size_t _idx ) const throw( exception )
+bool CONFIG_ENTRY::get_part_as_bool( size_t _idx ) const
 {
 	if ( _idx >= this->parts.size() )
 	{
@@ -85,7 +85,7 @@ bool CONFIG_ENTRY::get_part_as_bool( size_t _idx ) const throw( exception )
 		return false;
 	}
 }
-string CONFIG_ENTRY::get_part_as_string( size_t _idx ) const throw( exception )
+string CONFIG_ENTRY::get_part_as_string( size_t _idx ) const
 {
 	if ( _idx >= this->parts.size() )
 	{
@@ -95,7 +95,7 @@ string CONFIG_ENTRY::get_part_as_string( size_t _idx ) const throw( exception )
 	return this->parts[_idx];
 }
 
-void CONFIG_ENTRY::set_part( size_t _idx, int _val ) throw( exception )
+void CONFIG_ENTRY::set_part( size_t _idx, int _val )
 {
 	if ( _idx >= this->parts.size() )
 	{
@@ -106,7 +106,7 @@ void CONFIG_ENTRY::set_part( size_t _idx, int _val ) throw( exception )
 	this->parts[_idx] = num_to_str( _val );
 	return;
 }
-void CONFIG_ENTRY::set_part( size_t _idx, double _val ) throw( exception )
+void CONFIG_ENTRY::set_part( size_t _idx, double _val )
 {
 	if ( _idx >= this->parts.size() )
 	{
@@ -117,7 +117,7 @@ void CONFIG_ENTRY::set_part( size_t _idx, double _val ) throw( exception )
 	this->parts[_idx] = num_to_str( _val );
 	return;
 }
-void CONFIG_ENTRY::set_part( size_t _idx, const string& _val ) throw( exception )
+void CONFIG_ENTRY::set_part( size_t _idx, const string& _val )
 {
 	if ( _idx >= this->parts.size() )
 	{
@@ -138,7 +138,7 @@ bool CONFIG_ENTRY::get_is_dirty( void ) const
 	return this->is_dirty;
 }
 
-ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type ) throw( exception )
+ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type )
 {
 	if ( _type.length() == 0 )
 	{
@@ -180,7 +180,7 @@ ENUM_CONFIG_TYPES CONFIG_ENTRY::string_to_type( const string& _type ) throw( exc
 	}
 }
 
-string CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception )
+string CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES _type )
 {
 	switch ( _type )
 	{
@@ -213,7 +213,7 @@ string CONFIG_ENTRY::type_to_string( ENUM_CONFIG_TYPES _type ) throw( exception 
 			break;
 	}
 }
-string CONFIG_ENTRY::write_self_to_file( void ) const throw( exception )
+string CONFIG_ENTRY::write_self_to_file( void ) const
 {
 	if ( this->type == ENUM_CONFIG_TYPES::INVALID )
 	{

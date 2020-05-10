@@ -47,11 +47,11 @@ namespace BBB_HVAC
 
 				bool add_message( const OUTGOING_MESSAGE& _msg );
 
-				bool wait_for_signal( void ) throw( LOCK_ERROR );
+				bool wait_for_signal( void ) ;
 
 				bool has_more_messages( void ) const;
 				OUTGOING_MESSAGE get_message( void );
-				void put_lock( void ) throw( LOCK_ERROR );
+				void put_lock( void ) ;
 
 				inline void swap_message_queue( std::queue<OUTGOING_MESSAGE>* _destination ) {
 					std::swap( this->message_queue, *_destination );
@@ -66,7 +66,7 @@ namespace BBB_HVAC
 			protected:
 
 				void signal( void );
-				void get_lock( void ) throw( LOCK_ERROR );
+				void get_lock( void ) ;
 
 
 

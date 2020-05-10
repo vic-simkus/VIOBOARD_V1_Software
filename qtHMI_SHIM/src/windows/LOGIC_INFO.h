@@ -65,8 +65,6 @@ class LOGIC_INFO : public QFrame
 		void slot_mb_map_data( MESSAGE_BUS::COMMANDS _cmd, const QMap<QString, QVector<QString>>& _data );
 		void slot_mb_logic_status_update( MESSAGE_BUS::COMMANDS _cmd, const QMap<QString, QString>& _data );
 		void slot_mb_set_point_update( MESSAGE_BUS::COMMANDS _cmd, const QMap<QString, QString>& _data );
-
-		void slot_item_doubleclicked( QTableWidgetItem* );
 } ;
 
 #endif /* LOGIC_INFO_H */

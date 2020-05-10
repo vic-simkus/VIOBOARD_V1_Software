@@ -2,7 +2,7 @@
 #
 # This file is mechanically generated.  Any changes will most likely be lost.
 #
-# File generated on: 2020-01-25T18:46:12.601863
+# File generated on: 2020-05-09T21:35:43.401717
 #
 
 #
@@ -54,7 +54,7 @@ bin/bbb_hvac.o: src/bbb_hvac.cpp ../HVAC_LIB/src/include/lib/bbb_hvac.hpp \
   ../HVAC_LIB/src/include/lib/threads/thread_registry.hpp \
   ../HVAC_LIB/src/include/lib/log_configurator.hpp \
   ../HVAC_LIB/src/include/lib/command_line_parms.h
-	clang-8 -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++11 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/bbb_hvac.cpp -o bin/bbb_hvac.o
+	clang-8 -I../HVAC_LIB/src/include  -g -g3 -pedantic -pedantic-errors -Wall -Wextra -Werror -Wconversion -Wunused-parameter -Wsign-compare -std=c++17 -fPIC -fexceptions -Wno-deprecated -pthread  -c src/bbb_hvac.cpp -o bin/bbb_hvac.o
 
 #
 # EOF
