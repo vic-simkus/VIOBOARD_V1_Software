@@ -23,5 +23,7 @@ In this repository are the following sub-projects:
 For more details about the above see my website.  Relevant links:
 
 https://www.simkus.com
+
 https://www.simkus.com/projects/the-home-automation-system
+
 https://www.simkus.com/projects/vics-io-board/
