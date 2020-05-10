@@ -24,6 +24,7 @@ class MyContext(CLANGContext):
 			SourceFile("Connection.cpp"),
 			SourceFile("ConnectionFile.cpp"),
 			SourceFile("ConnectionPgsql.cpp"),
+			SourceFile("Exception.cpp")
 			)
 
 	TAG = "HMI_DATA_LOGGER"

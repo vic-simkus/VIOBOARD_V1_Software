@@ -34,18 +34,18 @@ namespace HMI_DATA_LOGGER
 			Connection( HMI_DATA_LOGGER::Context* );
 			virtual ~Connection();
 
-			virtual bool connect( void ) = 0;
-			virtual bool disconnect( void ) = 0;
-			virtual bool read_status( void ) = 0;
+			virtual void connect( void ) = 0;
+			virtual void disconnect( void ) = 0;
+			virtual void read_status( void ) = 0;
 
 			std::list<std::string> get_item_names( void );
 
+			HMI_DATA_LOGGER::Context* logger_context;
 		protected:
 
 			bool connect_to_logic_core( void );
 
 			BBB_HVAC::CLIENT::CLIENT_CONTEXT* client_context;
-			HMI_DATA_LOGGER::Context* logger_context;
 			std::list<std::string> logic_core_points;
 
 		private:

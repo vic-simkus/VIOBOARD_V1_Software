@@ -17,8 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "include/Connection.hpp"
 #include "include/Context.hpp"
-
-#include <exception>
+#include "include/Exception.hpp"
 
 using namespace HMI_DATA_LOGGER;
 
@@ -33,17 +32,13 @@ Connection::Connection( HMI_DATA_LOGGER::Context* _logger_context )
 }
 Connection::~Connection()
 {
-	LOG_DEBUG( "Closing connection" );
-
 	if ( this->client_context )
 	{
 		this->client_context->disconnect();
 	}
 
-	//delete this->client_context;
 	this->logger_context->close_output_stream();
 }
-
 
 bool Connection::connect_to_logic_core( void )
 {
@@ -55,11 +50,10 @@ bool Connection::connect_to_logic_core( void )
 	}
 	catch ( const exception& e )
 	{
-		LOG_ERROR( "Failed to connect to logic core: " + std::string( e.what() ) );
-		return false;
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect to logic core", e );
 	}
 
-	LOG_DEBUG( "Connected successfully." );
+	LOG_DEBUG( "Connected successfully to LOGIC_CORE" );
 
 	this->get_item_names();
 
@@ -70,7 +64,7 @@ std::list<std::string> Connection::get_item_names( void )
 {
 	if ( this->client_context == nullptr )
 	{
-		throw logic_error( "Not connected to remote" );
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Not connected to remote" );
 	}
 
 	if ( this->logic_core_points.size() > 0 )
@@ -87,7 +81,7 @@ std::list<std::string> Connection::get_item_names( void )
 	}
 	catch ( const exception& e )
 	{
-		throw runtime_error( "Failed to read from remote: " + std::string( e.what() ) );
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to read from remote", e );
 	}
 
 	std::map<std::string, std::string> map;

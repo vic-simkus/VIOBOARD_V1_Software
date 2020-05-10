@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "include/Context.hpp"
 #include "include/ConnectionFile.hpp"
 #include "include/ConnectionPgsql.hpp"
+#include "include/Exception.hpp"
 
 #include "lib/logger.hpp"
 #include "lib/threads/thread_registry.hpp"
@@ -51,29 +52,50 @@ namespace HMI_DATA_LOGGER
 	}
 }
 
-bool collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
+void collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
 {
-	if ( !_connection->connect() )
+	try
 	{
-		return false;
+		_connection->connect();
+	}
+	catch ( const HMI_DATA_LOGGER::Exception& _e )
+	{
+		throw HMI_DATA_LOGGER::Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect", HMI_DATA_LOGGER::ExceptionPtr( new HMI_DATA_LOGGER::Exception( _e ) ) );
 	}
 
 	while ( !BBB_HVAC::GLOBALS::global_exit_flag )
 	{
-		if ( !_connection->read_status() )
+		try
 		{
-			LOG_ERROR( "Failed to read status.  See previous error logs." );
-			_connection->disconnect();
-			return false;
+			_connection->read_status();
+
+			if ( _connection->logger_context->fail_flag )
+			{
+				LOG_INFO( "Clearing failure flag." );
+				_connection->logger_context->fail_flag = false;
+				_connection->logger_context->fail_count = 0;
+			}
+		}
+		catch ( const HMI_DATA_LOGGER::Exception& _e )
+		{
+			try
+			{
+				_connection->disconnect();
+			}
+			catch ( ... )
+			{
+				//ignore error at this point.
+			}
+
+			throw HMI_DATA_LOGGER::Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to read status.", HMI_DATA_LOGGER::ExceptionPtr( new HMI_DATA_LOGGER::Exception( _e ) ) );
 		}
 
 		sleep( 1 );
 	}
 
 	LOG_DEBUG( "Data collection finished." );
-	return true;
 }
-bool dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
+void dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
 {
 	_connection->connect();
 	std::list<std::string> names = _connection->get_item_names();
@@ -87,10 +109,8 @@ bool dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection> _connection )
 	}
 
 	std::cout << endl;
-
-	return true;
 }
-bool mode_pgsql( HMI_DATA_LOGGER::Context* _logger_context )
+void mode_pgsql( HMI_DATA_LOGGER::Context* _logger_context )
 {
 	std::shared_ptr<HMI_DATA_LOGGER::ConnectionPgsql> pgsql_conn( new HMI_DATA_LOGGER::ConnectionPgsql( _logger_context ) );
 
@@ -99,46 +119,47 @@ bool mode_pgsql( HMI_DATA_LOGGER::Context* _logger_context )
 		if ( pgsql_conn->test_connection() )
 		{
 			LOG_INFO( "PostgreSQL connection test succeeded." );
-			return true;
+			return;
 		}
 		else
 		{
 			LOG_ERROR( "PostgreSQL connection test failed." );
-			return false;
+			return;
 		}
 	}
 	else
 	{
-		return collect_data_loop( pgsql_conn );
+		collect_data_loop( pgsql_conn );
 	}
 }
-bool mode_file( HMI_DATA_LOGGER::Context* _logger_context )
+void  mode_file( HMI_DATA_LOGGER::Context* _logger_context )
 {
-	return collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
+	collect_data_loop( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
 }
-bool collect_data( HMI_DATA_LOGGER::Context* _logger_context )
+void collect_data( HMI_DATA_LOGGER::Context* _logger_context )
 {
 	switch ( _logger_context->configuration.mode )
 	{
 		case HMI_DATA_LOGGER::Config::MODE::NONE:
-			throw logic_error( "Mode is none." );
+			throw HMI_DATA_LOGGER::Exception( __FILE__, __LINE__, __FUNCTION__, "Mode is none." );
 
 		case HMI_DATA_LOGGER::Config::MODE::FILE:
-			return mode_file( _logger_context );
+			mode_file( _logger_context );
 			break;
 
 		case HMI_DATA_LOGGER::Config::MODE::PGSQL:
-			return mode_pgsql( _logger_context );
+			mode_pgsql( _logger_context );
 			break;
 
 		case HMI_DATA_LOGGER::Config::MODE::PFIELDS:
-			return dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
+			dump_fields( std::shared_ptr<HMI_DATA_LOGGER::Connection>( new HMI_DATA_LOGGER::ConnectionFile( _logger_context ) ) );
 			break;
 
 		default:
-			throw logic_error( "Unrecognized mode: " + HMI_DATA_LOGGER::Config::mode_to_string( _logger_context->configuration.mode ) );
+			throw HMI_DATA_LOGGER::Exception( __FILE__, __LINE__, __FUNCTION__, "Unrecognized mode: " + HMI_DATA_LOGGER::Config::mode_to_string( _logger_context->configuration.mode ) );
 	}
 }
+#define ERROR_SINK 5
 int main( int argc, const char** argv )
 {
 	HMI_DATA_LOGGER::Context logger_context = HMI_DATA_LOGGER::create_context( argc, argv );
@@ -179,14 +200,20 @@ int main( int argc, const char** argv )
 
 	try
 	{
-		/*
-		We can retry indefinitely on recoverable errors.  On Exceptions we bail.
-		*/
-
 		if ( logger_context.configuration.fail_hard == true )
 		{
-			collect_data( &logger_context );
-			LOG_DEBUG( "collect_data returned." );
+			try
+			{
+				collect_data( &logger_context );
+			}
+			catch ( const HMI_DATA_LOGGER::Exception& _e )
+			{
+				LOG_ERROR( "Data collection failed:\n" + _e.toString() ) ;
+			}
+			catch ( const std::exception& _e )
+			{
+				LOG_ERROR( "Data collection failed: " + std::string( _e.what() ) );
+			}
 		}
 		else
 		{
@@ -196,14 +223,32 @@ int main( int argc, const char** argv )
 			{
 				try
 				{
-					if ( collect_data( &logger_context ) )
+					collect_data( &logger_context );
+					LOG_INFO( "Data collection ended successfully.  Exiting." );
+					break;
+				}
+				catch ( const HMI_DATA_LOGGER::Exception& _e )
+				{
+					//LOG_ERROR( "Exception: \n" + std::string( _e.toString() ) );
+
+					if ( logger_context.fail_flag == false )
 					{
-						LOG_INFO( "Data collection ended successfully.  Exiting." );
-						break;
+						// This is a first failure
+
+						LOG_ERROR( "Error in data collection process.  FAIL_HARD is false.  Looping." );
+						LOG_ERROR( "Exception:\n " + _e.toString() );
+
+						logger_context.fail_flag = true;
+						logger_context.fail_count = 0;
 					}
 					else
 					{
-						LOG_ERROR( "Error in data collection process.  FAIL_HARD is false.  Looping." );
+						logger_context.fail_count += 1;
+
+						if ( logger_context.fail_count >= ERROR_SINK && ( ( logger_context.fail_count % ERROR_SINK ) == 0 ) )
+						{
+							LOG_ERROR( "Suppressed previous " + num_to_str( ERROR_SINK ) + " failure messages.  Most recent error:\n" + _e.toString() );
+						}
 					}
 
 					if ( BBB_HVAC::GLOBALS::global_exit_flag == true )
@@ -213,22 +258,26 @@ int main( int argc, const char** argv )
 					}
 
 					BBB_HVAC::THREAD_REGISTRY::global_cleanup();
-				}
-				catch ( const exception& _e )
-				{
-					LOG_ERROR( "*** Unexpected exception caught: " + string( _e.what() ) );
-				}
+				}//main try/catch block
 
 				sleep( 1 );
-			}
+			} // retry loop
 		}
 	}
-	catch ( const exception& _e )
+	catch ( const HMI_DATA_LOGGER::Exception& _e )
 	{
-		LOG_ERROR( "Unexpected exception caught: " + string( _e.what() ) );
+		LOG_ERROR( "Unexpected exception caught:\n" + _e.toString() ) ;
+	}
+	catch ( const std::exception& _e )
+	{
+		LOG_ERROR( "Unexpected exception caught: " + std::string( _e.what() ) );
 	}
 
 	LOG_INFO( "Application is exiting." );
+
+	BBB_HVAC::GLOBALS::global_exit_flag = true;
+	sleep( 1 );
+
 
 	return 0;
 }

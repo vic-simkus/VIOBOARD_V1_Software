@@ -36,6 +36,11 @@ namespace HMI_DATA_LOGGER
 
 			Context() {
 				INIT_LOGGER( "HMI_DATA_LOGGER_CONTEXT" );
+
+				fail_flag = false;
+				fail_count = 0;
+				new_file_flag = false;
+
 				return;
 			}
 
@@ -74,6 +79,9 @@ namespace HMI_DATA_LOGGER
 
 
 			Config configuration;
+
+			bool fail_flag;
+			unsigned long fail_count;
 
 		protected:
 

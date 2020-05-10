@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "include/ConnectionFile.hpp"
 #include "include/Context.hpp"
+#include "include/Exception.hpp"
 
 #include <vector>
 
@@ -36,7 +37,7 @@ ConnectionFile::~ConnectionFile()
 	return;
 }
 
-bool ConnectionFile::read_status( void )
+void ConnectionFile::read_status( void )
 {
 	if ( !this->opened_output )
 	{
@@ -51,10 +52,9 @@ bool ConnectionFile::read_status( void )
 		message = this->client_context->message_processor->create_read_logic_status( );
 		message = this->client_context->send_message_and_wait( message );
 	}
-	catch ( const exception& e )
+	catch ( const exception& _e )
 	{
-		LOG_ERROR( "Failed to read from remote: " + std::string( e.what() ) );
-		return false;
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to read from LOGIC_CORE.", _e );
 	}
 
 	std::map<std::string, std::string> map;
@@ -75,19 +75,22 @@ bool ConnectionFile::read_status( void )
 	}
 
 	this->logger_context->get_output_stream() << join_vector( output_vector, ',' ) << std::endl;
-
-	return true;
 }
 
 
-bool ConnectionFile::connect( void )
+void ConnectionFile::connect( void )
 {
-	return this->connect_to_logic_core();
+	try
+	{
+		this->connect_to_logic_core();
+	}
+	catch ( const Exception& _e )
+	{
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect to LOGIC_CORE.", ExceptionPtr( new Exception( _e ) ) );
+	}
 }
 
-bool ConnectionFile::disconnect( void )
+void ConnectionFile::disconnect( void )
 {
 	this->client_context->disconnect();
-	return true;
 }
-

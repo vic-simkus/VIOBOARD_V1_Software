@@ -17,6 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "include/ConnectionPgsql.hpp"
 #include "include/Context.hpp"
+#include "include/Exception.hpp"
+
 #include <libpq-fe.h>
 
 using namespace HMI_DATA_LOGGER;
@@ -45,12 +47,20 @@ void ConnectionPgsql::clear_connection( void ) noexcept
 	return;
 }
 
-bool ConnectionPgsql::connect( void )
+void ConnectionPgsql::connect( void )
 {
 	if ( this->logger_context->configuration.pg_url.length() < 1 )
 	{
-		LOG_ERROR( "Must specify " + std::string( CFG_CMDP_PG_URL ) );
-		return false;
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Command line error, must specify " + std::string( CFG_CMDP_PG_URL ) );
+	}
+
+	try
+	{
+		this->connect_to_logic_core() ;
+	}
+	catch ( const Exception& _e )
+	{
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect to logic core", ExceptionPtr( new Exception( _e ) ) );
 	}
 
 	string url = this->logger_context->configuration.get_command_line_value( CFG_CMDP_PG_URL );
@@ -59,35 +69,25 @@ bool ConnectionPgsql::connect( void )
 
 	if ( PQstatus( this->pg_connection ) != CONNECTION_OK )
 	{
-		LOG_ERROR( "Failed to connect to database using [" + url + "]: " + std::string( PQerrorMessage( this->pg_connection ) ) );
 		this->clear_connection();
-		return false;
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect to database using [" + url + "]: " + std::string( PQerrorMessage( this->pg_connection ) ) );
 	}
 
 	LOG_DEBUG( "Connected to the database." );
 
-	if ( !this->connect_to_logic_core() )
-	{
-		LOG_ERROR( "Failed to connect to logic core." );
-		return false;
-	}
-
-	return true;
+	return;
 }
 
-bool ConnectionPgsql::disconnect( void ) noexcept
+void ConnectionPgsql::disconnect( void )
 {
 	this->clear_connection();
-	return true;
 }
 
-bool ConnectionPgsql::read_status( void ) noexcept
+void ConnectionPgsql::read_status( void )
 {
 	if ( this->client_context == nullptr )
 	{
-		LOG_ERROR( "CLient context is null." );
-		return false;
-
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Client context is null" );
 	}
 
 	BBB_HVAC::MESSAGE_PTR message;
@@ -99,17 +99,15 @@ bool ConnectionPgsql::read_status( void ) noexcept
 	}
 	catch ( const exception& e )
 	{
-		LOG_ERROR( "Exception in remote comms: " + std::string( e.what() ) );
-		return false;
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Exception in remote comms" , e );
 	}
 	catch ( ... )
 	{
-		LOG_ERROR( "Unspecified exception." );
-		return false;
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Unspecified exception." );
+
 	}
 
 	std::map<std::string, std::string> map;
-
 	std::list<std::string> names;
 	std::list<std::string> values;
 
@@ -129,12 +127,9 @@ bool ConnectionPgsql::read_status( void ) noexcept
 
 	if ( res.is_null() )
 	{
-		return false;
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "NULL result" );
 	}
-	else
-	{
-		return true;
-	}
+
 }
 
 bool ConnectionPgsql::test_connection() noexcept
@@ -142,9 +137,13 @@ bool ConnectionPgsql::test_connection() noexcept
 	LOG_DEBUG( "Testing DB connection." );
 
 
-	if ( !this->connect() )
+	try
 	{
-		LOG_ERROR( "Connection test failed.  See log output for details." );
+		this->connect();
+	}
+	catch ( const Exception& _e )
+	{
+		LOG_ERROR( "Connection test failed: " + _e.toString() );
 		return false;
 	}
 

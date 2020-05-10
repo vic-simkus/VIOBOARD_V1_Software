@@ -30,9 +30,9 @@ namespace HMI_DATA_LOGGER
 			ConnectionFile( HMI_DATA_LOGGER::Context* );
 			virtual ~ConnectionFile();
 
-			virtual bool connect( void );
-			virtual bool disconnect( void );
-			virtual bool read_status( void );
+			virtual void connect( void );
+			virtual void disconnect( void );
+			virtual void read_status( void );
 
 
 		protected:
