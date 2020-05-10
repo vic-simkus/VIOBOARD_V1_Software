@@ -20,6 +20,9 @@ class MyContext(CLANGContext):
 	EXE_TARGET=os.path.join(Context.OUTPUT_DIR,"LOGIC_CORE")
 
 	RELATED_PROJECTS=("../HVAC_LIB",)
+        CXX="clang"
+        LD="clang"
+
 
 
 def vc_init():

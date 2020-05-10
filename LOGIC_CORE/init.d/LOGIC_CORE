@@ -14,7 +14,7 @@
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/opt/VIOBOARD_V1_Software/LOGIC_CORE/LOGIC_CORE.sh 
-PIDFILE=/var/run/LOGIC_CORE.pid
+PIDFILE=/tmp/bbb_hvac.pid
 USER=debian
 
 test -x $DAEMON || exit 0
