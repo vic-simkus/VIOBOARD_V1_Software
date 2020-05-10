@@ -49,7 +49,14 @@ void COMMAND_LINE_PARMS::init( size_t _argc, const char** _argv )
 		this->exe = string( argv[0] );
 	}
 
-	this->log_file = "/var/log/BBB_HVAC.log";
+	// Log file is set in COMMAND_LINE_PARMS::process
+	//this->log_file = "/var/log/BBB_HVAC.log";
+	this->config_file = "configuration.dev.cfg";
+
+	/*
+	Default for address depends on the socket type.
+	It's set in COMMAND_LINE_PARMS::process
+	*/
 
 	return;
 }
@@ -91,7 +98,7 @@ void COMMAND_LINE_PARMS::process( void )
 
 			st = BBB_HVAC::SOCKET_TYPE::TCPIP;
 		}
-		else if ( p == "-h" )
+		else if ( p == "-h" || p == "-?" )
 		{
 			print_help( exe );
 			exit( 0 );
@@ -109,6 +116,18 @@ void COMMAND_LINE_PARMS::process( void )
 			else
 			{
 				port_s = string( argv[i + 1] );
+				i += 1;
+			}
+		}
+		else if ( p == "-c" )
+		{
+			if ( i == ( argc - 1 ) )
+			{
+				print_cmd_error( exe, "No configuration file specified for the -c parameter." );
+			}
+			else
+			{
+				config_file = string( argv[i + 1] );
 				i += 1;
 			}
 		}
@@ -215,6 +234,20 @@ void COMMAND_LINE_PARMS::process( void )
 		cout << "    Address [-a]: [" << address << "]" << endl;
 		cout << "    Port [-p]: [" << port_i << "]" << endl;
 		cout << "    Server mode [-s]: [" << ( server_mode ? "TRUE" : "FALSE" ) << "]" << endl;
+
+		if ( !server_mode )
+		{
+			// We're NOT in server mode.
+
+			if ( this->log_file.length() < 1 )
+			{
+				// log file has not been explicitly specified.
+				// If we're not in server mode we default to STDOUT as log destination
+				//
+				cout << "    Server mode is false and a log file has not been specified.  Defaulting log output to STDOUT" << endl;
+				this->log_file = "-";
+			}
+		}
 	}
 
 	return;
@@ -256,20 +289,27 @@ const string& COMMAND_LINE_PARMS::get_log_file( void ) const
 	return this->log_file;
 }
 
+const string& COMMAND_LINE_PARMS::get_config_file( void ) const
+{
+	return this->config_file;
+}
+
 void COMMAND_LINE_PARMS::print_help( const string& _c )
 {
-	cout << "Usage: " << endl;
-	cout << _c << " {-d|i} [-a <address>] [-p <port>] [-s] [-v]" << endl;
+	cout << "Minimum required parameters: " << endl;
+	cout << _c << " {-d|i}" << endl;
 	cout << "Where: " << endl;
 	cout << "\t-d - Listen on domain socket (mutually exclusive with -i)" << endl;
 	cout << "\t-i - Listen on TCP/IP socket (mutually exclusive with -d)" << endl;
 	cout << "\t-a <address> - Address to listen on.  File name (optional) if -d is specified.  Interface to bind to if -i is specified." << endl;
-	cout << "\t  For -i, the interface should be specified in x.x.x.x notation. Default is 127.0.0.1." << endl;
+	cout << "\t  For -i, the interface should be specified in x.x.x.x notation. Default for -i is 127.0.0.1." << endl;
+	cout << "\t  Default for -d is " << endl;
 	cout << "\t-p <port> - Port to listen to.  Relevant only if -i is specified.  Defaults to 6666" << endl;
 	cout << "\t-l <log> - Log file.  Defaults to /var/log/BBB_HVAC.log.  Specify - to log to stdout." << endl;
 	cout << "\t-s - Server mode.  If not specified application runs in console." << endl;
 	cout << "\t-v - Verbose mode.  Produces extra debugging information to the console." << endl;
 	cout << "\t-h - This help" << endl;
+	cout << "\t-c - Configuration file.  Defaults to configuration.dev.cfg" << endl;
 
 	if ( this->ex_parm_list.size() > 0 )
 	{

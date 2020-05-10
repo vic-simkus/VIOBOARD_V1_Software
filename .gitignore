@@ -4,5 +4,5 @@
 bin
 *.o
 *.swp
-configuration.cfg.overlay
+*.cfg.overlay
 Makefile

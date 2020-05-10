@@ -211,8 +211,16 @@ int do_main( const COMMAND_LINE_PARMS& _clp )
 
 	BBB_HVAC::GLOBALS::drop_privs();
 
-	config = new CONFIGURATOR( "configuration.cfg" );
-	config->read_file();
+	try
+	{
+		config = new CONFIGURATOR( _clp.get_config_file() );
+		config->read_file();
+	}
+	catch ( const exception& _e )
+	{
+		LOG_ERROR( "Failed to process configuration: " + std::string( _e.what() ) );
+		return -1;
+	}
 
 	BBB_HVAC::THREAD_REGISTRY::get_instance();
 

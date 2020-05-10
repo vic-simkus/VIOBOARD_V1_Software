@@ -25,6 +25,7 @@ namespace BBB_HVAC
 			BBB_HVAC::SOCKET_TYPE get_socket_type( void ) const;
 			const string& get_exe( void ) const;
 			const string& get_log_file( void ) const;
+			const string& get_config_file( void ) const;
 
 			EX_PARAM_LIST ex_parm_values;
 
@@ -44,6 +45,7 @@ namespace BBB_HVAC
 			string address;
 			string port_s;
 			string log_file;
+			string config_file;
 			uint16_t port_i;
 			BBB_HVAC::SOCKET_TYPE st;
 			string exe;
