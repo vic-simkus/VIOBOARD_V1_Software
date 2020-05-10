@@ -234,19 +234,31 @@ void COMMAND_LINE_PARMS::process( void )
 		cout << "    Address [-a]: [" << address << "]" << endl;
 		cout << "    Port [-p]: [" << port_i << "]" << endl;
 		cout << "    Server mode [-s]: [" << ( server_mode ? "TRUE" : "FALSE" ) << "]" << endl;
+	}
 
-		if ( !server_mode )
+	if ( !server_mode )
+	{
+		// We're NOT in server mode.
+
+		if ( this->log_file.length() < 1 )
 		{
-			// We're NOT in server mode.
-
-			if ( this->log_file.length() < 1 )
+			// log file has not been explicitly specified.
+			// If we're not in server mode we default to STDOUT as log destination
+			//
+			if ( verbose_flag )
 			{
-				// log file has not been explicitly specified.
-				// If we're not in server mode we default to STDOUT as log destination
-				//
 				cout << "    Server mode is false and a log file has not been specified.  Defaulting log output to STDOUT" << endl;
-				this->log_file = "-";
 			}
+
+			this->log_file = "-";
+		}
+	}
+	else
+	{
+		if ( this->log_file.length() < 1 )
+		{
+			// Log file has not been specified.
+			this->log_file = "/var/log/BBB_HVAC.log";
 		}
 	}
 
