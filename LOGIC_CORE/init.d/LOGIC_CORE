@@ -24,7 +24,7 @@ test -x $DAEMON || exit 0
 case "$1" in
   start)
 	log_daemon_msg "Starting LOGIC_CORE" "BBB_HVAC"
-	start-stop-daemon --start --quiet --user $USER --chuid $USER -p $PIDFILE --exec $DAEMON -- -i -s -a 192.168.1.247
+	start-stop-daemon --start --quiet --user $USER --chuid $USER -p $PIDFILE --exec $DAEMON -- -i -s -a 192.168.1.247 -c configuration.prod.cfg
 	log_end_msg $?
     ;;
   stop)
