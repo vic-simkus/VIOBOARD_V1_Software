@@ -288,17 +288,25 @@ void HVAC_LOGIC_LOOP::process_logic_do( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx
 			if ( ( this->*_action_decider )( _ctx ) )
 			{
 				// Decider returned TRUE which means we continue operating
+				
+				//LOG_DEBUG("Action decider return true.  Continuing.");
 				this->mode_clicks = 0;
 			}
 			else
 			{
 				// Decider returned FALSE which means that we start the countdown for
 				// getting out of this operating mode.
+				//
+
+
+				//LOG_DEBUG("Action decider return false.  Calling delay decider.");
 				this->mode_clicks += 1;
 
 				if ( !( this->*_delay_decider )( _ctx ) )
 				{
 					// The delay decider return FALSE which means that the we should not continue delaying
+					
+					//LOG_DEBUG("Delay decider returned false.");
 					( this->*_mode_switcher )( OPERATING_MODE::DELAY_OFF );
 				}
 			}
@@ -322,11 +330,12 @@ bool HVAC_LOGIC_LOOP::action_decider_cooling( const HVAC_LOOP_INVOCATION_CONTEXT
 {
 	if ( ( ( float )_ctx.temp_value ) >= _ctx.cooling_action_off_point )
 	{
+		//LOG_DEBUG( "Cooling conitnue: space temp: " + num_to_str( ( float )_ctx.temp_value ) + ". Action off point:  " + num_to_str( _ctx.cooling_action_off_point ) );
 		return true;
 	}
 	else
 	{
-		LOG_DEBUG( "Cooling stop: space temp: " + num_to_str( ( float )_ctx.temp_value ) + " < " + num_to_str( _ctx.cooling_action_off_point ) );
+		//LOG_DEBUG( "Cooling stop: space temp: " + num_to_str( ( float )_ctx.temp_value ) + " < " + num_to_str( _ctx.cooling_action_off_point ) );
 		return false;
 	}
 }
@@ -367,6 +376,8 @@ bool HVAC_LOGIC_LOOP::action_decider_dehumidification( const HVAC_LOOP_INVOCATIO
 
 bool HVAC_LOGIC_LOOP::delay_decider( unsigned int _pre_sp, unsigned int _post_sp, unsigned int _sp ) const
 {
+	//LOG_DEBUG("_pre_sp: " + num_to_str(_pre_sp) +  ", _post_sp: " + num_to_str(_post_sp) + ", _sp: " + num_to_str(_sp) + ", mode_clicks: " + num_to_str(this->mode_clicks));
+
 	if ( this->op_mode == OPERATING_MODE::DELAY_ON )
 	{
 		if ( this->mode_clicks < _pre_sp )
@@ -391,7 +402,7 @@ bool HVAC_LOGIC_LOOP::delay_decider( unsigned int _pre_sp, unsigned int _post_sp
 	}
 	else if ( this->op_mode == OPERATING_MODE::OPERATING )
 	{
-		if ( this->mode_clicks > _sp )
+		if ( this->mode_clicks < _sp )
 		{
 			return true;
 		}
