@@ -1,0 +1,26 @@
+{
+	"folders":
+	[
+
+		{
+			"path": ".",
+			"name" : "ROOT",
+			"folder_exclude_patterns" : ["bin","doc","src"],
+			"file_exclude_patterns": [".tags*"]
+		},
+
+		{
+			"path": "src",
+			"name": "SOURCE",
+			"folder_exclude_patterns": ["include"],
+			"file_exclude_patterns": [".tags*"]
+		},
+
+		{
+			"path": "src/include",
+			"name": "INCLUDES",
+			"file_exclude_patterns": [".tags*"]
+			//"folder_exclude_patterns": ["include"]
+		},
+	]
+}
