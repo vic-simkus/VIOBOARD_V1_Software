@@ -88,7 +88,7 @@ ENUM_MESSAGE_CALLBACK_RESULT CLIENT_CONTEXT::process_message( ENUM_MESSAGE_DIREC
 
 CLIENT_CONTEXT::~CLIENT_CONTEXT()
 {
-	LOG_DEBUG( "Destroying CLIENT_CONTEXT" );
+	//LOG_DEBUG( "Destroying CLIENT_CONTEXT" );
 	this->abort_thread = true;
 	pthread_cond_destroy( & ( this->incomming_message_cond ) );
 }

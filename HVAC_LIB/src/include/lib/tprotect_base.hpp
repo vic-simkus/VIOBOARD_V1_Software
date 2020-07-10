@@ -88,6 +88,10 @@ namespace BBB_HVAC
 			 */
 			void reset_sleep_timespec( ssize_t _nsecs = -1 );
 
+			inline string get_tag( void ) const {
+				return tag;
+			}
+
 		protected:
 
 			/**

@@ -101,7 +101,7 @@ void THREAD_REGISTRY::reg_thread( THREAD_BASE* _thread, THREAD_TYPES_ENUM _type 
 	if ( this->is_thread_active( _thread ) )
 	{
 		this->release_lock();
-		THROW_EXCEPTION( runtime_error, "Tried to register more than once a thread with the same instance pointer." );
+		THROW_EXCEPTION( runtime_error, "Tried to register more than once a thread with the same instance pointer [" +  _thread->get_tag() + "]" );
 	}
 
 	this->active_threads.push_back( _thread );
