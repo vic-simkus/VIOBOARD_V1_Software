@@ -50,6 +50,15 @@ bool Connection::connect_to_logic_core( void )
 	}
 	catch ( const exception& e )
 	{
+		/*
+			Hinky shit allert!!!
+
+			If a connection is successfully launched and the client thread is launched, the client context instance cleanup is performed by the thread registry.
+			IF the connection succeeds. If it doesn't the thread is not launched we end up with a memory leak and file descriptors that arent closed.
+		*/
+		delete this->client_context;
+		this->client_context = nullptr;
+
 		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect to logic core", e );
 	}
 

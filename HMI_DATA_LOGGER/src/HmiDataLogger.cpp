@@ -256,10 +256,9 @@ int main( int argc, const char** argv )
 						LOG_INFO( "Exiting because BBB_HVAC::GLOBALS::global_exit_flag is true." );
 						break;
 					}
-
-					BBB_HVAC::THREAD_REGISTRY::global_cleanup();
 				}//main try/catch block
 
+				BBB_HVAC::THREAD_REGISTRY::global_cleanup();
 				sleep( 1 );
 			} // retry loop
 		}

@@ -36,7 +36,7 @@ namespace  HMI_DATA_LOGGER
 	{
 		public:
 			ConnectionPgsql( HMI_DATA_LOGGER::Context* ) noexcept;
-			~ConnectionPgsql();
+			virtual ~ConnectionPgsql();
 			virtual void connect( void );
 			virtual void disconnect( void );
 			virtual void read_status( void );
