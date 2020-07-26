@@ -178,7 +178,11 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond )
 					 * If we fail to obtain a lock in a LOGIC_CORE thread we need to start shedding client connections before aborting the whole process.
 					 */
 
+#ifdef __FreeBSD__
+					THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep." );
+#else
 					THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep.  Current owning thread: " + num_to_str( this->mutex.__data.__owner ) );
+#endif
 				}
 				else
 				{
