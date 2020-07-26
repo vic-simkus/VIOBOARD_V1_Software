@@ -51,7 +51,7 @@ THREAD_BASE::~THREAD_BASE()
 	return;
 }
 
-void THREAD_BASE::obtain_lock( void )
+void THREAD_BASE::obtain_lock( bool _abort_on_failure )
 {
 	try
 	{
@@ -61,7 +61,11 @@ void THREAD_BASE::obtain_lock( void )
 	{
 		//LOG_ERROR( "Failed to obtain lock: " + string( _ex.what() ) );
 
-		this->abort_thread = true;
+		if ( _abort_on_failure )
+		{
+			this->abort_thread = true;
+		}
+
 		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in thread [" + this->thread_tag + "]: " + _ex.what() );
 	}
 

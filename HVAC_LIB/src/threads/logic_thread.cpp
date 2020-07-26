@@ -100,7 +100,15 @@ LOGIC_PROCESSOR_BASE::~LOGIC_PROCESSOR_BASE()
 std::map<std::string, LOGIC_POINT_STATUS> LOGIC_PROCESSOR_BASE::get_logic_status( void )
 {
 	std::map<std::string, LOGIC_POINT_STATUS> ret;
-	this->obtain_lock();
+
+	try
+	{
+		this->obtain_lock( false );
+	}
+	catch ( const LOCK_ERROR& _e )
+	{
+		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in LOGIC_PROCESSOR::get_logic_status: " + _e.what() );
+	}
 
 	for ( auto map_iterator = this->configurator->get_point_map().cbegin(); map_iterator != this->configurator->get_point_map().cend(); ++map_iterator )
 	{
@@ -143,7 +151,7 @@ string LOGIC_STATUS_CORE::to_string( void )
 bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 {
 	LOG_INFO( "Starting logic thread." );
-	this->obtain_lock();
+	this->obtain_lock( true );
 	this->pre_process();
 	this->release_lock();
 
@@ -152,7 +160,7 @@ bool LOGIC_PROCESSOR_BASE::inner_thread_func( void )
 		this->reset_sleep_timespec( GC_LOGIC_THREAD_SLEEP );
 		this->nsleep();
 		GLOBALS::watchdog->reset_counter();
-		this->obtain_lock();
+		this->obtain_lock( true );
 
 		/*
 		 At this point we have the mutex lock.
@@ -493,7 +501,7 @@ double LOGIC_PROCESSOR_BASE::get_sp_value( const string& _name ) const
 void LOGIC_PROCESSOR_BASE::set_sp_value( const string& _name, double _value )
 {
 
-	this->obtain_lock();
+	this->obtain_lock( true );
 	// Lock is either obtained or an exception is thrown
 
 	try

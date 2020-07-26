@@ -299,7 +299,7 @@ bool BASE_CONTEXT::thread_func( void )
 			this->select_timeout_tv.tv_sec = GC_CLIENT_THREAD_SELECT_TIME;
 			this->select_timeout_tv.tv_usec = usec_timeout;
 			rc = select( this->remote_socket + 1, &read_fds, nullptr, nullptr, & ( this->select_timeout_tv ) );
-			this->obtain_lock();
+			this->obtain_lock( true );
 
 			if ( rc == -1 )
 			{

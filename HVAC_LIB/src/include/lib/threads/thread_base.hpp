@@ -51,7 +51,7 @@ namespace BBB_HVAC
 
 			string get_thread_tag( void ) const;
 
-			void obtain_lock( void );
+			void obtain_lock( bool _abort_on_failure );
 
 			inline bool get_is_io_thread( void ) const {
 				return this->is_io_thread;

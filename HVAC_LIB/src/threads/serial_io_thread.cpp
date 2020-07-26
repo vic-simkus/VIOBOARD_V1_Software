@@ -1298,7 +1298,7 @@ bool SER_IO_COMM::main_event_loop( void )
 
 	while ( this->abort_thread == false )
 	{
-		this->obtain_lock();
+		this->obtain_lock( true );
 		fds.fd = this->serial_fd;
 		fds.events = POLLIN;
 		int fds_ready_num = poll( &fds, 1, GC_SERIAL_THREAD_POLL_TIMEOUT );
@@ -1491,7 +1491,7 @@ void SER_IO_COMM::reset_buffer_context( void )
 
 bool SER_IO_COMM::get_dac_cache( ADC_CACHE_ENTRY( &_dest ) [GC_IO_STATE_BUFFER_DEPTH][GC_IO_AI_COUNT] )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 	this->state_cache->get_adc_cache( _dest );
 	this->release_lock();
 	return true;
@@ -1499,7 +1499,7 @@ bool SER_IO_COMM::get_dac_cache( ADC_CACHE_ENTRY( &_dest ) [GC_IO_STATE_BUFFER_D
 
 bool SER_IO_COMM::get_do_cache( DO_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 	this->state_cache->get_do_cache( _dest );
 	this->release_lock();
 	return true;
@@ -1507,7 +1507,7 @@ bool SER_IO_COMM::get_do_cache( DO_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DE
 
 bool SER_IO_COMM::get_pmic_cache( PMIC_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFER_DEPTH] )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 	this->state_cache->get_pmic_cache( _dest );
 	this->release_lock();
 	return true;
@@ -1515,7 +1515,7 @@ bool SER_IO_COMM::get_pmic_cache( PMIC_CACHE_ENTRY( & _dest ) [GC_IO_STATE_BUFFE
 
 bool SER_IO_COMM::get_latest_state_values( BOARD_STATE_CACHE& _target )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 	_target = *( this->state_cache );
 	this->release_lock();
 	return true;
@@ -1523,7 +1523,7 @@ bool SER_IO_COMM::get_latest_state_values( BOARD_STATE_CACHE& _target )
 
 bool SER_IO_COMM::get_latest_adc_values( ADC_CACHE_ENTRY( & _dest ) [GC_IO_AI_COUNT] )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 	this->state_cache->get_latest_adc_values( _dest );
 	this->release_lock();
 	return true;
@@ -1531,7 +1531,7 @@ bool SER_IO_COMM::get_latest_adc_values( ADC_CACHE_ENTRY( & _dest ) [GC_IO_AI_CO
 
 bool SER_IO_COMM::get_latest_do_status( DO_CACHE_ENTRY& _dest )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 	this->state_cache->get_latest_do_status( _dest );
 	this->release_lock();
 	return true;
@@ -1539,7 +1539,7 @@ bool SER_IO_COMM::get_latest_do_status( DO_CACHE_ENTRY& _dest )
 
 bool SER_IO_COMM::get_latest_pmic_status( PMIC_CACHE_ENTRY& _dest )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 	this->state_cache->get_latest_pmic_status( _dest );
 	this->release_lock();
 	return true;

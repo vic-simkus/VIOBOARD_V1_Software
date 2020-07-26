@@ -135,7 +135,7 @@ void CLIENT_CONTEXT::connect( void )
 
 bool CLIENT_CONTEXT::send_message( MESSAGE_PTR& _message )
 {
-	this->obtain_lock();
+	this->obtain_lock( true );
 
 	try
 	{
@@ -155,7 +155,7 @@ MESSAGE_PTR CLIENT_CONTEXT::send_message_and_wait( MESSAGE_PTR& _message )
 {
 	MESSAGE_PTR ret;
 	ENUM_MESSAGE_TYPE msg_type = _message->get_message_type()->type;
-	this->obtain_lock();
+	this->obtain_lock( true );
 
 	try
 	{
