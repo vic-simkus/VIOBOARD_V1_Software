@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <pthread.h>
 
-#include "lib/tprotect_base.hpp"
+#include "lib/threads/tprotect_base.hpp"
 #include "lib/exceptions.hpp"
 #include "lib/logger.hpp"
 

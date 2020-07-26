@@ -21,7 +21,7 @@
 #ifndef THREAD_REGISTRY_HPP
 #define THREAD_REGISTRY_HPP
 
-#include "lib/tprotect_base.hpp"
+#include "lib/threads/tprotect_base.hpp"
 #include "lib/logger.hpp"
 #include "lib/exceptions.hpp"
 

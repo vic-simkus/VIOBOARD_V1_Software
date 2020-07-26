@@ -33,7 +33,7 @@
 #include <cstdint>
 
 #include "lib/config.hpp"
-#include "lib/tprotect_base.hpp"
+#include "lib/threads/tprotect_base.hpp"
 #include "lib/exceptions.hpp"
 #include "lib/string_lib.hpp"
 

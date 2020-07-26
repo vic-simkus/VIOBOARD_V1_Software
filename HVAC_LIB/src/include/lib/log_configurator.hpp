@@ -1,7 +1,7 @@
 #ifndef __LOG_CONFIGURATOR_H__
 #define __LOG_CONFIGURATOR_H__
 
-#include "lib/tprotect_base.hpp"
+#include "lib/threads/tprotect_base.hpp"
 
 namespace BBB_HVAC
 {

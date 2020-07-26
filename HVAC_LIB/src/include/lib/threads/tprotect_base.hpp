@@ -27,7 +27,7 @@
 #include <string>
 
 #include "lib/exceptions.hpp"
-#include "logger.hpp"
+#include "lib/logger.hpp"
 
 using namespace std;
 

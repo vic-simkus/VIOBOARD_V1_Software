@@ -31,7 +31,7 @@
 #include "lib/logger.hpp"
 #include "lib/exceptions.hpp"
 #include "lib/message_callbacks.hpp"
-#include "lib/tprotect_base.hpp"
+#include "lib/threads/tprotect_base.hpp"
 #include "lib/hvac_types.hpp"
 #include "lib/threads/thread_base.hpp"
 #include "lib/config.hpp"
