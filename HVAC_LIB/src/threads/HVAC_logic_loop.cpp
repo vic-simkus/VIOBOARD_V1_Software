@@ -288,7 +288,7 @@ void HVAC_LOGIC_LOOP::process_logic_do( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx
 			if ( ( this->*_action_decider )( _ctx ) )
 			{
 				// Decider returned TRUE which means we continue operating
-				
+
 				//LOG_DEBUG("Action decider return true.  Continuing.");
 				this->mode_clicks = 0;
 			}
@@ -305,7 +305,7 @@ void HVAC_LOGIC_LOOP::process_logic_do( const HVAC_LOOP_INVOCATION_CONTEXT& _ctx
 				if ( !( this->*_delay_decider )( _ctx ) )
 				{
 					// The delay decider return FALSE which means that the we should not continue delaying
-					
+
 					//LOG_DEBUG("Delay decider returned false.");
 					( this->*_mode_switcher )( OPERATING_MODE::DELAY_OFF );
 				}
@@ -359,10 +359,12 @@ bool HVAC_LOGIC_LOOP::action_decider_dehumidification( const HVAC_LOOP_INVOCATIO
 		// Space temperature is greater than the general set point minus the cooling dead band.
 		if ( _ctx.rh_value < _ctx.dehum_action_off_point )
 		{
+			LOG_DEBUG( "Aborting dehum.  Space RH: " + num_to_str( ( float )_ctx.rh_value ) + " < " + num_to_str( _ctx.dehum_action_off_point ) );
 			return false;
 		}
 		else
 		{
+			LOG_DEBUG( "Continuing dehum.  Space RH: " + num_to_str( ( float )_ctx.rh_value ) + " < " + num_to_str( _ctx.dehum_action_off_point )  + "; Space temp: " + num_to_str( ( float )_ctx.temp_value ) + " < " + num_to_str( _ctx.dehum_cancel_temp_point ) );
 			return true;
 		}
 	}

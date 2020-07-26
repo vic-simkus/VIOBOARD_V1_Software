@@ -139,11 +139,11 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond )
 			 * If we're spinning waiting for a mutex add jitter to the sleep amount so that we don't accidentally synchronize with some other thread.
 			 */
 			memset( &sleep_tv, 0, sizeof( struct timespec ) );
-			sleep_tv.tv_nsec += rand_r( &this->rand_seed );
+			sleep_tv.tv_nsec = rand_r( &this->rand_seed );
 
 			if ( sleep_tv.tv_nsec == 0 )
 			{
-				sleep_tv.tv_nsec = 10000; // 10 uSec
+				sleep_tv.tv_nsec = 10000000; // 10 mSec
 			}
 
 			/*
@@ -151,9 +151,9 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond )
 			 */
 			sleep_tv.tv_nsec = sleep_tv.tv_nsec | 0x3E8;
 			/*
-			 * But we don't want to go over 1 millisecond
+			 * But we don't want to go over 10 millisecond
 			 */
-			sleep_tv.tv_nsec = sleep_tv.tv_nsec & 0xF4240;
+			sleep_tv.tv_nsec = sleep_tv.tv_nsec & 0x989680;
 
 			total_sleep_nsec += ( unsigned long )sleep_tv.tv_nsec;
 			this->nsleep( &sleep_tv );
@@ -177,7 +177,8 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond )
 					 * TODO - need to handle this better.  One misbehaving client can take the whole LOGIC_CORE down by hogging a mutex lock.
 					 * If we fail to obtain a lock in a LOGIC_CORE thread we need to start shedding client connections before aborting the whole process.
 					 */
-					THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep" );
+
+					THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep.  Current owning thread: " + num_to_str( this->mutex.__data.__owner ) );
 				}
 				else
 				{

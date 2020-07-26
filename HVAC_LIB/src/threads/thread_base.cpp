@@ -73,7 +73,7 @@ void THREAD_BASE::pthread_func( void )
 	pthread_detach( pthread_self() );
 	this->is_running = true;
 
-	LOG_DEBUG( "Thread started.  TID: " + num_to_str( gettid() ) );
+	LOG_DEBUG( "Thread started.  System TID: " + num_to_str( gettid() ) + "; pthread TID: " + num_to_str( ( unsigned long )pthread_self() ) );
 
 	if ( this->is_io_thread )
 	{
@@ -108,7 +108,7 @@ void THREAD_BASE::pthread_func( void )
 
 	this->is_running = false;
 
-	LOG_DEBUG( "Thread stopped." );
+	LOG_DEBUG( "Thread stopped.  System TID: " + num_to_str( gettid() ) + "; pthread TID: " + num_to_str( ( unsigned long )pthread_self() ) );
 	pthread_exit( nullptr );
 	return;
 }
