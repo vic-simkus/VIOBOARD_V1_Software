@@ -103,6 +103,11 @@ std::map<std::string, LOGIC_POINT_STATUS> LOGIC_PROCESSOR_BASE::get_logic_status
 
 	try
 	{
+		/*
+		We deliberately do not abort the thread on a lock failure.  We're hoping that by shedding callers we'll unwedge ourselves.
+		Also, it's in our best interest to keep the logic loop running even if the caller can not access it's state.
+		*/
+
 		this->obtain_lock( false );
 	}
 	catch ( const LOCK_ERROR& _e )

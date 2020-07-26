@@ -26,6 +26,8 @@
 
 #include <string.h>
 
+#include <execinfo.h>
+
 using namespace BBB_HVAC;
 
 TPROTECT_BASE::TPROTECT_BASE( const string& _tag )
@@ -178,11 +180,36 @@ bool TPROTECT_BASE::obtain_lock_ex( const bool* _cond )
 					 * If we fail to obtain a lock in a LOGIC_CORE thread we need to start shedding client connections before aborting the whole process.
 					 */
 
+					const size_t buffer_size = 20;
+					void* array[buffer_size];
+					int size;
+					char** formatted_trace;
+
+					size = backtrace( array, buffer_size );
+					formatted_trace = backtrace_symbols( array, size );
+
+					std::string exception_string;
+					std::string log_string;
+
 #ifdef __FreeBSD__
-					THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep." );
+					log_string =  "Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep.";
+					exception_string = this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep.";
 #else
-					THROW_EXCEPTION( LOCK_ERROR, this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep.  Current owning thread: " + num_to_str( this->mutex.__data.__owner ) );
+					log_string = "Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep.  Current owning thread: " + num_to_str( this->mutex.__data.__owner );
+					exception_string = this->tag + ": Failed to obtain mutex lock after " + num_to_str( mutex_lock_attempts ) + " attempts and " + num_to_str( total_sleep_nsec ) + " nanoseconds combined total of sleep.  Current owning thread: " + num_to_str( this->mutex.__data.__owner );
 #endif
+
+					LOG_ERROR( log_string );
+
+					LOG_ERROR( "Begin stack trace:" );
+
+					for ( int i = 0; i < size; i++ )
+					{
+						LOG_ERROR( "[" + num_to_str( i ) + "] - " + std::string( formatted_trace[i] ) );
+					}
+
+					free( formatted_trace );
+					THROW_EXCEPTION( LOCK_ERROR, exception_string );
 				}
 				else
 				{
