@@ -501,8 +501,15 @@ double LOGIC_PROCESSOR_BASE::get_sp_value( const string& _name ) const
 void LOGIC_PROCESSOR_BASE::set_sp_value( const string& _name, double _value )
 {
 
-	this->obtain_lock( true );
-	// Lock is either obtained or an exception is thrown
+	try
+	{
+		this->obtain_lock( false );
+	}
+	catch ( const LOCK_ERROR& _e )
+	{
+		THROW_EXCEPTION( LOCK_ERROR, "Failed to obtain lock in LOGIC_PROCESSOR::set_sp_value: " + _e.what() );
+	}
+
 
 	try
 	{
