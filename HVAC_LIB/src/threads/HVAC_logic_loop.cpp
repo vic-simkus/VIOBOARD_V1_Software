@@ -359,19 +359,19 @@ bool HVAC_LOGIC_LOOP::action_decider_dehumidification( const HVAC_LOOP_INVOCATIO
 		// Space temperature is greater than the general set point minus the cooling dead band.
 		if ( _ctx.rh_value < _ctx.dehum_action_off_point )
 		{
-			LOG_DEBUG( "Aborting dehum.  Space RH: " + num_to_str( ( float )_ctx.rh_value ) + " < " + num_to_str( _ctx.dehum_action_off_point ) );
+			//LOG_DEBUG( "Aborting dehum.  Space RH: " + num_to_str( ( float )_ctx.rh_value ) + " < " + num_to_str( _ctx.dehum_action_off_point ) );
 			return false;
 		}
 		else
 		{
-			LOG_DEBUG( "Continuing dehum.  Space RH: " + num_to_str( ( float )_ctx.rh_value ) + " > " + num_to_str( _ctx.dehum_action_off_point )  + "; Space temp: " + num_to_str( ( float )_ctx.temp_value ) + " > " + num_to_str( _ctx.dehum_cancel_temp_point ) );
+			//LOG_DEBUG( "Continuing dehum.  Space RH: " + num_to_str( ( float )_ctx.rh_value ) + " > " + num_to_str( _ctx.dehum_action_off_point )  + "; Space temp: " + num_to_str( ( float )_ctx.temp_value ) + " > " + num_to_str( _ctx.dehum_cancel_temp_point ) );
 			return true;
 		}
 	}
 	else
 	{
 		// It got too cold.  Abort dehumidification
-		LOG_DEBUG( "Aborting dehum.  Space temp: " + num_to_str( ( float )_ctx.temp_value ) + " < " + num_to_str( _ctx.dehum_cancel_temp_point ) );
+		//LOG_DEBUG( "Aborting dehum.  Space temp: " + num_to_str( ( float )_ctx.temp_value ) + " < " + num_to_str( _ctx.dehum_cancel_temp_point ) );
 		return false;
 	}
 }
