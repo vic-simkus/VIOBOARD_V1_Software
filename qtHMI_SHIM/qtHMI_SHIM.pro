@@ -6,7 +6,7 @@ debug {
 	DESTDIR = build/debug	
 }
 
-QT += widgets core
+QT += widgets core network
 
 HEADERS = src/widgets/AI_RAW_VALUE.h \
 	src/widgets/AI_VALUE.h \

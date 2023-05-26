@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QCommandLineParser>
 #include <QStringList>
+#include <QHostInfo>
 
 #include <iostream>
 #include "windows/MAIN_WINDOW.h"
@@ -108,6 +109,33 @@ int main( int argc, char* argv[] )
 	if ( domain_unix )
 	{
 		address = GC_LOCAL_COMMAND_SOCKET;
+
+		LOG_DEBUG( "Connecting via the local socket." );
+	}
+	else
+	{
+		// We're connecting via the network
+		LOG_DEBUG( "Connecting via the network." );
+
+		QHostInfo hi = QHostInfo::fromName( address );
+
+		QHostInfo::HostInfoError error =  hi.error();
+
+		if ( error != QHostInfo::NoError )
+		{
+			QMessageBox::critical( nullptr, "Connection failure", "Failed to resolve remote host name: " + hi.errorString() );
+			exit( -1 );
+		}
+
+		QList<QHostAddress> hal = hi.addresses();
+
+		for ( auto i = hal.begin(); i != hal.end(); ++i )
+		{
+			LOG_DEBUG( "Found host address: " + ( *i ).toString().toStdString() );
+			address = ( *i ).toString();
+			break;
+		}
+
 	}
 
 	message_bus = new MESSAGE_BUS( 10, ( domain_unix ? BBB_HVAC::SOCKET_TYPE::DOMAIN : BBB_HVAC::SOCKET_TYPE::TCPIP ), address, port );
