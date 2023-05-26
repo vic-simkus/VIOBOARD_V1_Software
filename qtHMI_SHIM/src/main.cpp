@@ -24,7 +24,6 @@
 #include <QStringList>
 #include <QHostInfo>
 
-#include <iostream>
 #include "windows/MAIN_WINDOW.h"
 
 #include "globals.h"
@@ -102,7 +101,7 @@ int main( int argc, char* argv[] )
 
 	if ( domain_unix && domain_inet )
 	{
-		std::cerr << "Confusing command line parameters.  Both -d and -i specified.  They are mutually exclusive" << endl;
+		LOG_ERROR( "Confusing command line parameters.  Both -d and -i specified.  They are mutually exclusive" );
 		exit( -1 );
 	}
 
