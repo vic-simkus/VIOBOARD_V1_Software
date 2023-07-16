@@ -408,7 +408,7 @@ void CONFIGURATOR::write_file( void ) const
 
 	fprintf( out_file, "#\n# This file is mechanically generated.  Manual edits will likely be lost.\n#\n" );
 
-	unsigned int line_idx = 0;
+	//unsigned int line_idx = 0;
 
 	for ( CONFIG_ENTRY_LIST_TYPE::const_iterator i = this->config_entries.cbegin(); i != this->config_entries.cend(); ++i )
 	{
@@ -419,7 +419,7 @@ void CONFIGURATOR::write_file( void ) const
 			fprintf( out_file, "%s\n", i->write_self_to_file().data() );
 		}
 
-		line_idx += 1;
+		//line_idx += 1;
 	}
 
 	fprintf( out_file, "# EOF\n" );

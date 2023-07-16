@@ -36,6 +36,7 @@
 #include <iterator>
 #include <iostream>
 #include <float.h>
+#include <limits>
 
 using namespace BBB_HVAC;
 
