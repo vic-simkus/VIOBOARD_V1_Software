@@ -3,6 +3,13 @@
 #include <iostream>
 using namespace BBB_HVAC;
 
+// For getaddrinfo and associated
+#include <netdb.h>
+
+// For exception
+#include <exception>
+using std::runtime_error;
+
 COMMAND_LINE_PARMS::COMMAND_LINE_PARMS()
 {
 	this->init( 0, nullptr );
@@ -106,6 +113,8 @@ void COMMAND_LINE_PARMS::process( void )
 		else if ( p == "-v" )
 		{
 			verbose_flag = true;
+
+			cout << "Verbose flag enabled.  Will produce extra output." << endl;
 		}
 		else if ( p == "-p" )
 		{
@@ -139,7 +148,44 @@ void COMMAND_LINE_PARMS::process( void )
 			}
 			else
 			{
+
 				address = string( argv[i + 1] );
+
+				struct addrinfo* result;
+				struct addrinfo hints;
+				memset( &hints, 0, sizeof( hints ) );
+
+				hints.ai_family = AF_UNSPEC;
+				hints.ai_flags = AI_CANONNAME | AI_V4MAPPED | AI_ADDRCONFIG;
+
+				int rc = getaddrinfo( address.data(), nullptr, &hints, &result );
+
+				if ( rc != 0 )
+				{
+					string e = "Failed to resolve address [" + address + "]: " + string( gai_strerror( rc ) );
+					throw ( runtime_error( e.data() ) );
+				}
+
+				char hbuf[NI_MAXHOST];
+
+				rc = getnameinfo( result->ai_addr, sizeof( sockaddr ), hbuf, sizeof( hbuf ), nullptr, 0, NI_NUMERICHOST );
+
+				if ( rc != 0 )
+				{
+					string e = "Failed to convert IP address to string: " + string( gai_strerror( rc ) );
+					throw ( runtime_error( e.data() ) );
+				}
+
+
+				if ( verbose_flag )
+				{
+					cout << "Resolved address: " << string( result->ai_canonname ) << ", " << string( hbuf )  <<  endl;
+				}
+
+				freeaddrinfo( result );
+
+				address = string( hbuf );
+
 				i += 1;
 			}
 		}
@@ -262,6 +308,11 @@ void COMMAND_LINE_PARMS::process( void )
 		}
 	}
 
+	if ( verbose_flag )
+	{
+		cout << "Finished parsing command line." << endl;
+	}
+
 	return;
 
 }
@@ -319,7 +370,7 @@ void COMMAND_LINE_PARMS::print_help( const string& _c )
 	cout << "\t-p <port> - Port to listen to.  Relevant only if -i is specified.  Defaults to 6666" << endl;
 	cout << "\t-l <log> - Log file.  Defaults to /var/log/BBB_HVAC.log.  Specify - to log to stdout." << endl;
 	cout << "\t-s - Server mode.  If not specified application runs in console." << endl;
-	cout << "\t-v - Verbose mode.  Produces extra debugging information to the console." << endl;
+	cout << "\t-v - Verbose mode.  Produces extra debugging information to the console.  Verbose flag should be first in the parameter list." << endl;
 	cout << "\t-h - This help" << endl;
 	cout << "\t-c - Configuration file.  Defaults to configuration.dev.cfg" << endl;
 
