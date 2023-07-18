@@ -163,27 +163,11 @@ void collect_data( HMI_DATA_LOGGER::Context* _logger_context )
 int main( int argc, const char** argv )
 {
 	HMI_DATA_LOGGER::Context logger_context = HMI_DATA_LOGGER::create_context( argc, argv );
-
 	int fd = BBB_HVAC::GLOBALS::create_logger_fd( *logger_context.configuration.get_command_line_processor().get(), true );
-
-	if ( fd < 0 )
-	{
-		return -1;
-	}
-
-	dump_config( logger_context.configuration );
-
-	if ( logger_context.configuration.get_command_line_processor()->is_server_mode() )
-	{
-		LOG_INFO( "Daemoning self." )
-		BBB_HVAC::GLOBALS::daemon_self( logger_context.configuration.pid_file.data() );
-	}
-
-	fd = BBB_HVAC::GLOBALS::create_logger_fd( *logger_context.configuration.get_command_line_processor().get(), false );
-
 	BBB_HVAC::GLOBALS::configure_logging( fd, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals();
 
+	dump_config( logger_context.configuration );
 	LOG_INFO( "Starting." );
 
 	if ( logger_context.configuration.mode == HMI_DATA_LOGGER::Config::MODE::FILE )
