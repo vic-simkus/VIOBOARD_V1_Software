@@ -148,43 +148,46 @@ void COMMAND_LINE_PARMS::process( void )
 			}
 			else
 			{
-
-				address = string( argv[i + 1] );
-
-				struct addrinfo* result;
-				struct addrinfo hints;
-				memset( &hints, 0, sizeof( hints ) );
-
-				hints.ai_family = AF_UNSPEC;
-				hints.ai_flags = AI_CANONNAME | AI_V4MAPPED | AI_ADDRCONFIG;
-
-				int rc = getaddrinfo( address.data(), nullptr, &hints, &result );
-
-				if ( rc != 0 )
+				if ( st == BBB_HVAC::SOCKET_TYPE::TCPIP )
 				{
-					string e = "Failed to resolve address [" + address + "]: " + string( gai_strerror( rc ) );
-					throw ( runtime_error( e.data() ) );
+
+					address = string( argv[i + 1] );
+
+					struct addrinfo* result;
+					struct addrinfo hints;
+					memset( &hints, 0, sizeof( hints ) );
+
+					hints.ai_family = AF_UNSPEC;
+					hints.ai_flags = AI_CANONNAME | AI_V4MAPPED | AI_ADDRCONFIG;
+
+					int rc = getaddrinfo( address.data(), nullptr, &hints, &result );
+
+					if ( rc != 0 )
+					{
+						string e = "Failed to resolve address [" + address + "]: " + string( gai_strerror( rc ) );
+						throw ( runtime_error( e.data() ) );
+					}
+
+					char hbuf[NI_MAXHOST];
+
+					rc = getnameinfo( result->ai_addr, sizeof( sockaddr ), hbuf, sizeof( hbuf ), nullptr, 0, NI_NUMERICHOST );
+
+					if ( rc != 0 )
+					{
+						string e = "Failed to convert IP address to string: " + string( gai_strerror( rc ) );
+						throw ( runtime_error( e.data() ) );
+					}
+
+
+					if ( verbose_flag )
+					{
+						cout << "Resolved address: " << string( result->ai_canonname ) << ", " << string( hbuf )  <<  endl;
+					}
+
+					freeaddrinfo( result );
+
+					address = string( hbuf );
 				}
-
-				char hbuf[NI_MAXHOST];
-
-				rc = getnameinfo( result->ai_addr, sizeof( sockaddr ), hbuf, sizeof( hbuf ), nullptr, 0, NI_NUMERICHOST );
-
-				if ( rc != 0 )
-				{
-					string e = "Failed to convert IP address to string: " + string( gai_strerror( rc ) );
-					throw ( runtime_error( e.data() ) );
-				}
-
-
-				if ( verbose_flag )
-				{
-					cout << "Resolved address: " << string( result->ai_canonname ) << ", " << string( hbuf )  <<  endl;
-				}
-
-				freeaddrinfo( result );
-
-				address = string( hbuf );
 
 				i += 1;
 			}
@@ -373,6 +376,7 @@ void COMMAND_LINE_PARMS::print_help( const string& _c )
 	cout << "\t-v - Verbose mode.  Produces extra debugging information to the console.  Verbose flag should be first in the parameter list." << endl;
 	cout << "\t-h - This help" << endl;
 	cout << "\t-c - Configuration file.  Defaults to configuration.dev.cfg" << endl;
+	cout << "NOTE: Parameters are position sensitive.  -v should be first in order to capture all possible command line processing output.  -a should be specified AFTER -i." << endl;
 
 	if ( this->ex_parm_list.size() > 0 )
 	{
