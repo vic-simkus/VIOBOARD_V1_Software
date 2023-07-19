@@ -163,6 +163,7 @@ void collect_data( HMI_DATA_LOGGER::Context* _logger_context )
 int main( int argc, const char** argv )
 {
 	HMI_DATA_LOGGER::Context logger_context = HMI_DATA_LOGGER::create_context( argc, argv );
+
 	int fd = BBB_HVAC::GLOBALS::create_logger_fd( *logger_context.configuration.get_command_line_processor().get(), true );
 	BBB_HVAC::GLOBALS::configure_logging( fd, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals();
@@ -170,9 +171,14 @@ int main( int argc, const char** argv )
 	dump_config( logger_context.configuration );
 	LOG_INFO( "Starting." );
 
+	if ( logger_context.configuration.mode == HMI_DATA_LOGGER::Config::MODE::NONE )
+	{
+		LOG_ERROR( "Mode is not specified." );
+		return -1;
+	}
+
 	if ( logger_context.configuration.mode == HMI_DATA_LOGGER::Config::MODE::FILE )
 	{
-
 		if ( logger_context.check_data_dir() == false )
 		{
 			LOG_ERROR( "Check of data log directory failed.  See previous error messages for hints.  Bailing." );

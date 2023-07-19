@@ -42,6 +42,7 @@ Connection::~Connection()
 
 bool Connection::connect_to_logic_core( void )
 {
+
 	this->client_context = BBB_HVAC::CLIENT::CLIENT_CONTEXT::create_instance( this->logger_context->configuration.get_command_line_processor( )->get_socket_type(), this->logger_context->configuration.get_command_line_processor( )->get_address(), this->logger_context->configuration.get_command_line_processor( )->get_port() );
 
 	try
@@ -53,9 +54,10 @@ bool Connection::connect_to_logic_core( void )
 		/*
 			Hinky shit allert!!!
 
-			If a connection is successfully launched and the client thread is launched, the client context instance cleanup is performed by the thread registry.
-			IF the connection succeeds. If it doesn't the thread is not launched we end up with a memory leak and file descriptors that arent closed.
+			If a connection is successfully launched and the client thread is launched, the client context instance cleanup is performed by the thread registry.  IF the connection succeeds.
+			If it doesn't the thread is not launched we end up with a memory leak and file descriptors that arent closed.
 		*/
+
 		delete this->client_context;
 		this->client_context = nullptr;
 

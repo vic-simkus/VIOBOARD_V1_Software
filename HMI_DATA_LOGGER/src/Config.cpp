@@ -1,4 +1,3 @@
-
 /*
 Copyright (C) 2019  Vidas Simkus (vic.simkus@simkus.com)
 
@@ -103,6 +102,10 @@ bool HMI_DATA_LOGGER::create_configuration( Context& _ctx, int _argc, const char
 			else if ( mode == "PFIELDS" )
 			{
 				_ctx.configuration.mode = Config::MODE::PFIELDS;
+			}
+			else
+			{
+				throw runtime_error( "Invalid mode parameter: "  + string( mode ) );
 			}
 		}
 		else if ( param == CFG_CMDP_FAIL_HARD )

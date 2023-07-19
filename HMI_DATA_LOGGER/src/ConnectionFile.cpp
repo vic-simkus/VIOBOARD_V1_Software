@@ -82,6 +82,7 @@ void ConnectionFile::connect( void )
 {
 	try
 	{
+		LOG_DEBUG( "Trying to connect to logic core" );
 		this->connect_to_logic_core();
 	}
 	catch ( const Exception& _e )
