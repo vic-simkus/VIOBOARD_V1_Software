@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "include/Exception.hpp"
 
 #include "lib/logger.hpp"
+#include "lib/string_lib.hpp"
 #include "lib/threads/thread_registry.hpp"
 #include "lib/globals.hpp"
 
@@ -30,6 +31,12 @@ For sleep
 #include <unistd.h>
 
 #include <iostream>
+
+/*
+For sd_notify
+*/
+
+#include <systemd/sd-daemon.h>
 
 DEF_LOGGER_STAT( "HMI_DATA_LOGGER::MAIN" );
 
@@ -168,14 +175,18 @@ int main( int argc, const char** argv )
 	BBB_HVAC::GLOBALS::configure_logging( fd, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals();
 
-	dump_config( logger_context.configuration );
-	LOG_INFO( "Starting." );
 
 	if ( logger_context.configuration.mode == HMI_DATA_LOGGER::Config::MODE::NONE )
 	{
 		LOG_ERROR( "Mode is not specified." );
 		return -1;
 	}
+
+	LOG_INFO( "Starting." );
+	dump_config( logger_context.configuration );
+
+	int rc = sd_notify( 0, "READY=1" );
+	LOG_INFO( "sd_notify returned: " + num_to_str( rc ) );
 
 	if ( logger_context.configuration.mode == HMI_DATA_LOGGER::Config::MODE::FILE )
 	{

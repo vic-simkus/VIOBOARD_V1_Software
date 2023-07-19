@@ -33,7 +33,7 @@ class MyContext(CLANGContext):
 
 	RELATED_PROJECTS=("../HVAC_LIB",)
 
-	LIBRARIES = ["pq"]
+	LIBRARIES = ["pq","systemd"]
 
 
         
