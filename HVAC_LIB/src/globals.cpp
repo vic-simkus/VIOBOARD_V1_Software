@@ -504,14 +504,7 @@ namespace BBB_HVAC
 
 			if ( log_file_name == "-" )
 			{
-				if ( _test )
-				{
-					return 0;
-				}
-				else
-				{
-					return 1;
-				}
+				return 1;
 			}
 
 			if ( _test )

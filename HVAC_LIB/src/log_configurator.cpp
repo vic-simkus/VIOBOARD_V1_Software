@@ -8,7 +8,7 @@ LOG_CONFIGURATOR* LOG_CONFIGURATOR::root_configurator = nullptr;
 #include <iostream>
 #include <ostream>
 #include <sstream>
-
+#include <string.h>
 #include <unistd.h>
 namespace BBB_HVAC
 {
@@ -84,12 +84,24 @@ void LOG_CONFIGURATOR::log( const string& _log_name, const ENUM_LOG_LEVEL& _leve
 	{
 		if ( write( this->fd, str.data(), str.length() ) < 0 )
 		{
+			if(this->had_error == false)
+			{
+				char* error_str = strerror(errno);
+				cerr << __FILE__ << ":" << __LINE__ << " -- Failed to write to fd " <<  this->fd << ": " << error_str << endl;
+			}
+
 			this->had_error = true;
 		}
 	}
 	catch ( ... )
 	{
 		//ignore
+
+		if(this->had_error == false)
+		{
+			cerr << __FILE__ << ":" << __LINE__ << " -- Exception cought while writing to fd " << this->fd << endl;
+		}
+
 		this->had_error = true;
 	}
 
