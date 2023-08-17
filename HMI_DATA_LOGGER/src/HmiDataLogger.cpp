@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "include/Exception.hpp"
 
 #include "lib/logger.hpp"
+#include "lib/log_configurator.hpp"
 #include "lib/string_lib.hpp"
 #include "lib/threads/thread_registry.hpp"
 #include "lib/globals.hpp"
@@ -171,7 +172,7 @@ int main( int argc, const char** argv )
 {
 	HMI_DATA_LOGGER::Context logger_context = HMI_DATA_LOGGER::create_context( argc, argv );
 
-	int fd = BBB_HVAC::GLOBALS::create_logger_fd( *logger_context.configuration.get_command_line_processor().get(), true );
+	int fd = BBB_HVAC::GLOBALS::create_logger_fd( *logger_context.configuration.get_command_line_processor().get(), false);
 	BBB_HVAC::GLOBALS::configure_logging( fd, BBB_HVAC::LOGGING::ENUM_LOG_LEVEL::DEBUG );
 	BBB_HVAC::GLOBALS::configure_signals();
 
@@ -183,6 +184,13 @@ int main( int argc, const char** argv )
 	}
 
 	LOG_INFO( "Starting." );
+
+	if(BBB_HVAC::GLOBALS::root_log_configurator->is_had_error())
+	{
+		cerr << "Something is wrong with root logger" << endl;
+	}
+
+
 	dump_config( logger_context.configuration );
 
 	int rc = sd_notify( 0, "READY=1" );

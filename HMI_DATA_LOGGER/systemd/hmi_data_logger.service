@@ -1,0 +1,17 @@
+[Install]
+WantedBy=multi-user.target
+
+[Unit]
+Description="Logs data from the LOGIC_LOOP to a PostgreSQL database"
+Requires=postgresql.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/data/dev/VIOBOARD_V1_Software/HMI_DATA_LOGGER/bin/HMI_DATA_LOGGER -i -a bb-ha-prod --mode PGSQL --pg_url postgres://hvacdb@/hvacdb -l -
+Restart=always
+RestartSec=10
+User=daemon
+StandardOutput=journal
+StandardError=journal
