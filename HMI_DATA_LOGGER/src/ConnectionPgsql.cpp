@@ -67,10 +67,16 @@ void ConnectionPgsql::connect( void )
 
 	this->pg_connection = PQconnectdb( url.data() );
 
+	if(this->pg_connection == nullptr)
+	{
+		throw Exception(__FILE__,__LINE__,__FUNCTION__,"PQConnectdb returned a NULL");
+	}
+
 	if ( PQstatus( this->pg_connection ) != CONNECTION_OK )
 	{
+		LOG_ERROR("Failed to connect to database using [" + url + "]: "  + std::string( PQerrorMessage( this->pg_connection ) ));
 		this->clear_connection();
-		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect to database using [" + url + "]: " + std::string( PQerrorMessage( this->pg_connection ) ) );
+		throw Exception( __FILE__, __LINE__, __FUNCTION__, "Failed to connect to database.  Check error log." );
 	}
 
 	LOG_DEBUG( "Connected to the database." );

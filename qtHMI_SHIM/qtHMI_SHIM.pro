@@ -46,6 +46,7 @@ SOURCES = src/widgets/AI_RAW_VALUE.cpp \
 	src/ui_util.cpp
 
 LIBS += -L../HVAC_LIB/bin -lHVAC_LIB
+QMAKE_RPATHDIR += "../../../HVAC_LIB/bin"
 INCLUDEPATH += "../HVAC_LIB/src/include" "./src/"
 CONFIG += qt debug 
 
