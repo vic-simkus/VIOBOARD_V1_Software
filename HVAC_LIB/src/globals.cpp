@@ -510,6 +510,7 @@ namespace BBB_HVAC
 				}
 				else
 				{
+					std::cout << "Logging to stdout." << endl;
 					return 1;
 				}
 			}
