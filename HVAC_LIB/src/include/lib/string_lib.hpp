@@ -25,6 +25,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <cstdint>
 
 /*\file Stuff here is to get around the fucking travesty that is the standard C++ library.
  */

@@ -31,7 +31,8 @@ import os
 class MyContext(CLANGContext):
 	def __init__(self):
 		super(MyContext,self).__init__()
-		self.CXX_FLAGS.append("-Wno-deprecated");
+		self.CXX_FLAGS.append("-Wno-deprecated")
+		self.CXX_FLAGS.append("-Wno-cast-function-type-mismatch")
 		self.LIB_TARGET="HVAC_LIB"
 		self.TAG = self.LIB_TARGET
 
